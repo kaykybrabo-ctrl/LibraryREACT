@@ -35,3 +35,6 @@ export async function getProfile(req: Request, res: Response) {
         });
     } catch (error) {
         console.error('Database error in getProfile:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
+}

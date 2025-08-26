@@ -8,6 +8,7 @@ interface UserProfile {
   username: string
   role: string
   profile_image?: string
+  description?: string
 }
 
 interface Loan {
@@ -37,6 +38,8 @@ const UserProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'loans' | 'favorite'>('profile')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [description, setDescription] = useState('')
+  const [editingDescription, setEditingDescription] = useState(false)
 
   useEffect(() => {
     fetchProfile()
@@ -46,8 +49,9 @@ const UserProfile: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get('/api/get-profile')
+      const response = await axios.get(`/api/get-profile?username=${user?.username}`)
       setProfile(response.data)
+      setDescription(response.data.description || '')
       setLoading(false)
     } catch (err) {
       setError('Failed to fetch profile')
@@ -57,7 +61,7 @@ const UserProfile: React.FC = () => {
 
   const fetchLoans = async () => {
     if (!user?.username) return
-    
+
     try {
       const response = await axios.get(`/api/loans?username=${user.username}`)
       setLoans(response.data)
@@ -68,12 +72,17 @@ const UserProfile: React.FC = () => {
 
   const fetchFavoriteBook = async () => {
     if (!user?.username) return
-    
+
     try {
       const response = await axios.get(`/api/users/favorite?username=${user.username}`)
-      setFavoriteBook(response.data)
+      if (response.data) {
+        setFavoriteBook(response.data)
+      } else {
+        setFavoriteBook(null)
+      }
     } catch (err) {
       console.error('Failed to fetch favorite book')
+      setFavoriteBook(null)
     }
   }
 
@@ -84,15 +93,45 @@ const UserProfile: React.FC = () => {
     setUploading(true)
     const formData = new FormData()
     formData.append('profile_image', imageFile)
+    if (user?.username) {
+      formData.append('username', user.username)
+    }
 
     try {
-      await axios.post('/api/update-profile', formData, {
+      const response = await axios.post('/api/update-profile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      fetchProfile()
+      setProfile(response.data)
       setImageFile(null)
-    } catch (err) {
-      setError('Failed to upload profile image')
+      setError('')
+      alert('Profile image updated successfully!')
+    } catch (err: any) {
+      console.error('Upload error:', err)
+      setError(err.response?.data?.error || 'Failed to upload profile image')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleUpdateDescription = async () => {
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('description', description)
+    if (user?.username) {
+      formData.append('username', user.username)
+    }
+
+    try {
+      const response = await axios.post('/api/update-profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setProfile(response.data)
+      setEditingDescription(false)
+      setError('')
+      alert('Description updated successfully!')
+    } catch (err: any) {
+      console.error('Description update error:', err)
+      setError(err.response?.data?.error || 'Failed to update description')
     } finally {
       setUploading(false)
     }
@@ -121,21 +160,21 @@ const UserProfile: React.FC = () => {
   return (
     <Layout title="User Profile">
       {error && <div className="error-message">{error}</div>}
-      
+
       <div className="tabs">
-        <button 
+        <button
           className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
           onClick={() => setActiveTab('profile')}
         >
           Profile
         </button>
-        <button 
+        <button
           className={`tab ${activeTab === 'loans' ? 'active' : ''}`}
           onClick={() => setActiveTab('loans')}
         >
           My Loans
         </button>
-        <button 
+        <button
           className={`tab ${activeTab === 'favorite' ? 'active' : ''}`}
           onClick={() => setActiveTab('favorite')}
         >
@@ -149,14 +188,50 @@ const UserProfile: React.FC = () => {
             <h2>Profile Information</h2>
             <p><strong>Username:</strong> {user?.username || 'Unknown'}</p>
             <p><strong>Role:</strong> {user?.role || 'User'}</p>
-            
+
             {profile?.profile_image && (
-              <img 
-                src={`/api/uploads/${profile.profile_image}`} 
+              <img
+                src={`/api/uploads/${profile.profile_image}`}
                 alt="Profile"
                 className="profile-image"
               />
             )}
+
+            <div className="description-section">
+              <h3>Description</h3>
+              {editingDescription ? (
+                <div>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Tell us about yourself..."
+                    rows={4}
+                    style={{ width: '100%', marginBottom: '10px' }}
+                  />
+                  <div>
+                    <button onClick={handleUpdateDescription} disabled={uploading}>
+                      {uploading ? 'Saving...' : 'Save Description'}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setEditingDescription(false)
+                        setDescription(profile?.description || '')
+                      }}
+                      style={{ marginLeft: '10px' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p>{profile?.description || 'No description added yet.'}</p>
+                  <button onClick={() => setEditingDescription(true)}>
+                    Edit Description
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div className="image-upload">
               <h3>Update Profile Image</h3>
@@ -182,9 +257,9 @@ const UserProfile: React.FC = () => {
             ) : (
               <div>
                 {loans.map(loan => (
-                  <div key={loan.loans_id} style={{ 
-                    border: '1px solid #ddd', 
-                    padding: '15px', 
+                  <div key={loan.loans_id} style={{
+                    border: '1px solid #ddd',
+                    padding: '15px',
                     marginBottom: '15px',
                     borderRadius: '8px',
                     display: 'flex',
@@ -198,8 +273,8 @@ const UserProfile: React.FC = () => {
                     </div>
                     <div>
                       {loan.photo && (
-                        <img 
-                          src={`/api/uploads/${loan.photo}`} 
+                        <img
+                          src={`/api/uploads/${loan.photo}`}
                           alt={loan.title}
                           className="book-image"
                           style={{ marginRight: '15px' }}
@@ -222,17 +297,17 @@ const UserProfile: React.FC = () => {
             {!favoriteBook ? (
               <p>You haven't set a favorite book yet.</p>
             ) : (
-              <div style={{ 
-                border: '1px solid #ddd', 
-                padding: '20px', 
+              <div style={{
+                border: '1px solid #ddd',
+                padding: '20px',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '20px'
               }}>
                 {favoriteBook.photo && (
-                  <img 
-                    src={`/api/uploads/${favoriteBook.photo}`} 
+                  <img
+                    src={`/api/uploads/${favoriteBook.photo}`}
                     alt={favoriteBook.title}
                     style={{ width: '120px', height: '160px', objectFit: 'cover' }}
                   />

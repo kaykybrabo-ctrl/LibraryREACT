@@ -31,7 +31,7 @@ const BookDetail: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' })
-  const [username, setUsername] = useState('')
+  const [username] = useState('')
 
   useEffect(() => {
     if (id) {
@@ -85,32 +85,28 @@ const BookDetail: React.FC = () => {
   }
 
   const handleRentBook = async () => {
-    if (!username.trim()) {
-      setError('Please enter a username to rent this book')
-      return
-    }
-
     try {
-      await axios.post(`/api/rent/${id}`, { username: username.trim() })
+      await axios.post(`/api/rent/${id}`)
       alert('Book rented successfully!')
-      setUsername('')
-    } catch (err) {
-      setError('Failed to rent book. User may not exist or book is already rented.')
+      setError('')
+    } catch (err: any) {
+      console.error('Rent error:', err)
+      const errorMsg = err.response?.data?.error || 'Failed to rent book. You may not be logged in or book is already rented.'
+      setError(errorMsg)
+      alert(`Error: ${errorMsg}`)
     }
   }
 
   const handleFavoriteBook = async () => {
-    if (!username.trim()) {
-      setError('Please enter a username to favorite this book')
-      return
-    }
-
     try {
-      await axios.post(`/api/favorite/${id}`, { username: username.trim() })
+      await axios.post(`/api/favorite/${id}`)
       alert('Book added to favorites!')
-      setUsername('')
-    } catch (err) {
-      setError('Failed to add book to favorites')
+      setError('')
+    } catch (err: any) {
+      console.error('Favorite error:', err)
+      const errorMsg = err.response?.data?.error || 'Failed to add book to favorites'
+      setError(errorMsg)
+      alert(`Error: ${errorMsg}`)
     }
   }
 
@@ -197,17 +193,6 @@ const BookDetail: React.FC = () => {
 
       <section className="form-section">
         <h3>Book Actions</h3>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="username">Username:</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter username for actions"
-          />
-        </div>
-        
         <div style={{ display: 'flex', gap: '10px' }}>
           <button onClick={handleRentBook}>Rent Book</button>
           <button onClick={handleFavoriteBook}>Add to Favorites</button>

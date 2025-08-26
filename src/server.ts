@@ -46,7 +46,7 @@ app.use(express.static(path.join(__dirname, '../FRONTEND/react-dist')));
 // Legacy static files for backward compatibility
 app.use('/dist', express.static(path.join(__dirname, '../FRONTEND/dist')));
 app.use('/interface/assets', express.static(path.join(__dirname, '../FRONTEND/dist/interface/assets')));
-app.use('/uploads', express.static(path.join(__dirname, '../FRONTEND/uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, '../FRONTEND/uploads')));
 app.use('/interface', express.static(path.join(__dirname, '../FRONTEND/interface'), { index: false }));
 app.use('/legacy', express.static(path.join(__dirname, '../FRONTEND'), { index: false }));
 
@@ -105,7 +105,7 @@ app.get('/users/favorite', async (req, res) => {
     
     try {
         const result: any[] = await executeQuery(`
-            SELECT b.*, a.name as author_name 
+            SELECT b.*, a.name_author as author_name 
             FROM users u 
             JOIN books b ON u.favorite_book_id = b.book_id 
             LEFT JOIN authors a ON b.author_id = a.author_id 
@@ -115,10 +115,11 @@ app.get('/users/favorite', async (req, res) => {
         if (result.length > 0) {
             res.json(result[0]);
         } else {
-            res.status(404).json({ error: 'No favorite book found' });
+            res.json(null);
         }
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        console.error('Database error in users/favorite:', error);
+        res.json(null);
     }
 });
 
@@ -127,20 +128,37 @@ app.get('/api/users/favorite', async (req, res) => {
     if (!username) return res.status(400).json({ error: 'Username required' });
     
     try {
-        const result: any[] = await executeQuery(`
-            SELECT b.*, a.name as author_name 
-            FROM users u 
-            JOIN books b ON u.favorite_book_id = b.book_id 
-            LEFT JOIN authors a ON b.author_id = a.author_id 
-            WHERE u.username = ?
+        // First check if user has a favorite book
+        const userResult: any[] = await executeQuery(`
+            SELECT favorite_book_id FROM users WHERE username = ?
         `, [username]);
+        
+        if (userResult.length === 0) {
+            return res.json(null);
+        }
+        
+        const favoriteBookId = userResult[0].favorite_book_id;
+        
+        // If no favorite book set, return null
+        if (!favoriteBookId) {
+            return res.json(null);
+        }
+        
+        // Get the favorite book details
+        const result: any[] = await executeQuery(`
+            SELECT b.*, a.name_author as author_name 
+            FROM books b 
+            LEFT JOIN authors a ON b.author_id = a.author_id 
+            WHERE b.book_id = ?
+        `, [favoriteBookId]);
         
         if (result.length > 0) {
             res.json(result[0]);
         } else {
-            res.status(404).json({ error: 'No favorite book found' });
+            res.json(null);
         }
     } catch (error) {
+        console.error('Database error in api/users/favorite:', error);
         res.status(500).json({ error: 'Database error' });
     }
 });
@@ -259,20 +277,24 @@ app.post('/api/authors/:id/update', requireAdmin, upload.single('author_image'),
 
 // Rent routes
 const rentHandler = async (req: Request, res: Response) => {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
     const bookId = Number(req.params.id);
-    if (isNaN(bookId)) return res.status(400).end();
-    const username = req.body.username;
-    if (!username) return res.status(400).end();
+    if (isNaN(bookId)) return res.status(400).json({ error: 'Invalid book ID' });
+    
     try {
-        const userResult: any = await executeQuery('SELECT id FROM users WHERE username = ?', [username]);
-        if (!userResult.length) return res.status(404).end();
-        const userId = userResult[0].id;
+        const userId = sessionUser.id;
         const alreadyLoaned: any = await executeQuery('SELECT * FROM loans WHERE user_id = ? AND book_id = ?', [userId, bookId]);
-        if (alreadyLoaned.length) return res.status(409).end();
+        if (alreadyLoaned.length) return res.status(409).json({ error: 'Book already rented by you' });
+        
         await executeQuery('INSERT INTO loans (user_id, book_id, loan_date) VALUES (?, ?, NOW())', [userId, bookId]);
-        res.status(201).end();
-    } catch {
-        res.status(500).end();
+        res.status(201).json({ message: 'Book rented successfully' });
+    } catch (error) {
+        console.error('Database error in rent:', error);
+        res.status(500).json({ error: 'Database error' });
     }
 };
 
@@ -281,17 +303,20 @@ app.post('/api/rent/:id', rentHandler);
 
 // Favorite routes
 const favoriteHandler = async (req: Request, res: Response) => {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
     const bookId = Number(req.params.id);
-    if (isNaN(bookId)) return res.status(400).end();
-    const username = req.body.username;
-    if (!username) return res.status(400).end();
+    if (isNaN(bookId)) return res.status(400).json({ error: 'Invalid book ID' });
+    
     try {
-        const userResult: any = await executeQuery('SELECT id FROM users WHERE username = ?', [username]);
-        if (!userResult.length) return res.status(404).end();
-        await executeQuery('UPDATE users SET favorite_book_id = ? WHERE username = ?', [bookId, username]);
-        res.status(200).end();
-    } catch {
-        res.status(500).end();
+        await executeQuery('UPDATE users SET favorite_book_id = ? WHERE username = ?', [bookId, sessionUser.username]);
+        res.status(200).json({ message: 'Book added to favorites' });
+    } catch (error) {
+        console.error('Database error in favorite:', error);
+        res.status(500).json({ error: 'Database error' });
     }
 };
 

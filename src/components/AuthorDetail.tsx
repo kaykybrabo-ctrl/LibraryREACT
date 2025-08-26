@@ -23,8 +23,7 @@ const AuthorDetail: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
+  // Removed unused imageFile state
 
   useEffect(() => {
     if (id) {
@@ -56,26 +55,7 @@ const AuthorDetail: React.FC = () => {
     }
   }
 
-  const handleImageUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!imageFile || !id) return
-
-    setUploading(true)
-    const formData = new FormData()
-    formData.append('author_image', imageFile)
-
-    try {
-      await axios.post(`/api/authors/${id}/update`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      fetchAuthor()
-      setImageFile(null)
-    } catch (err) {
-      setError('Failed to upload image')
-    } finally {
-      setUploading(false)
-    }
-  }
+  // Image upload functionality removed for now
 
   if (loading) {
     return (
@@ -114,19 +94,6 @@ const AuthorDetail: React.FC = () => {
           />
         )}
 
-        <div className="image-upload">
-          <h3>Update Author Image</h3>
-          <form onSubmit={handleImageUpload}>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-            />
-            <button type="submit" disabled={!imageFile || uploading}>
-              {uploading ? 'Uploading...' : 'Upload Image'}
-            </button>
-          </form>
-        </div>
       </section>
 
       <section className="book-list">
