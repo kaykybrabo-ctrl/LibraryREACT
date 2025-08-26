@@ -16,3 +16,4 @@ async function deletea(req, res) {
         res.sendStatus(500);
     }
 }
+//# sourceMappingURL=deletea.js.map

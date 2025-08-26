@@ -16,3 +16,4 @@ async function deleteb(req, res) {
         res.sendStatus(500);
     }
 }
+//# sourceMappingURL=deleteb.js.map

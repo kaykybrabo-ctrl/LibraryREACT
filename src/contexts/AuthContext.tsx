@@ -14,6 +14,7 @@ interface AuthContextType {
   register: (username: string, password: string) => Promise<boolean>
   logout: () => void
   isAuthenticated: boolean
+  isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -31,7 +32,10 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user')
+    return savedUser ? JSON.parse(savedUser) : null
+  })
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
 
   useEffect(() => {
@@ -53,6 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(userData)
       setToken(newToken)
       localStorage.setItem('token', newToken)
+      localStorage.setItem('user', JSON.stringify(userData))
       
       return true
     } catch (error) {
@@ -75,6 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null)
     setToken(null)
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
     delete axios.defaults.headers.common['Authorization']
   }
 
@@ -84,7 +90,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
-    isAuthenticated: !!token
+    isAuthenticated: !!token,
+    isAdmin: user?.role === 'admin'
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

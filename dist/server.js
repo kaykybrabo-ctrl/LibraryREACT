@@ -37,7 +37,7 @@ const storage = multer_1.default.diskStorage({
 });
 const upload = (0, multer_1.default)({ storage });
 app.use(express_1.default.json());
-app.use((0, cors_1.default)({ origin: 'http://localhost:8080', credentials: true }));
+app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use((0, express_session_1.default)({ secret: 'your-secret-key', resave: false, saveUninitialized: false, cookie: { secure: false } }));
 // Serve React app
 app.use(express_1.default.static(path_1.default.join(__dirname, '../FRONTEND/react-dist')));
@@ -47,26 +47,35 @@ app.use('/interface/assets', express_1.default.static(path_1.default.join(__dirn
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../FRONTEND/uploads')));
 app.use('/interface', express_1.default.static(path_1.default.join(__dirname, '../FRONTEND/interface'), { index: false }));
 app.use('/legacy', express_1.default.static(path_1.default.join(__dirname, '../FRONTEND'), { index: false }));
-app.post('/login', async (req, res) => {
+// Login routes (both /login and /api/login for compatibility)
+const loginHandler = async (req, res) => {
     let { username, password } = req.body;
+    console.log('Login attempt:', { username, password });
     if (typeof username !== 'string' || typeof password !== 'string')
         return res.status(400).end();
     username = username.trim().toLowerCase();
     try {
+        console.log('Executing query for user:', username);
         const results = await (0, connection_1.executeQuery)('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
+        console.log('Query results:', results);
         if (!results.length)
             return res.status(401).end();
         const user = results[0];
+        console.log('User found:', user);
         if (password !== user.password)
             return res.status(401).end();
         req.session.user = { id: user.id, username: user.username, role: user.role };
         res.json({ role: user.role, username: user.username, id: user.id });
     }
-    catch {
-        res.status(500).end();
+    catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-});
-app.post('/register', async (req, res) => {
+};
+app.post('/login', loginHandler);
+app.post('/api/login', loginHandler);
+// Register routes (both /register and /api/register for compatibility)
+const registerHandler = async (req, res) => {
     let { username, password } = req.body;
     if (typeof username !== 'string' || typeof password !== 'string')
         return res.status(400).end();
@@ -81,16 +90,77 @@ app.post('/register', async (req, res) => {
     catch {
         res.status(500).end();
     }
-});
+};
+app.post('/register', registerHandler);
+app.post('/api/register', registerHandler);
 app.post('/update-profile', upload.single('profile_image'), updateProfile_1.updateProfile);
+app.post('/api/update-profile', upload.single('profile_image'), updateProfile_1.updateProfile);
 app.get('/get-profile', getProfile_1.getProfile);
+app.get('/api/get-profile', getProfile_1.getProfile);
+// User favorite routes
+app.get('/users/favorite', async (req, res) => {
+    const username = req.query.username;
+    if (!username)
+        return res.status(400).json({ error: 'Username required' });
+    try {
+        const result = await (0, connection_1.executeQuery)(`
+            SELECT b.*, a.name as author_name 
+            FROM users u 
+            JOIN books b ON u.favorite_book_id = b.book_id 
+            LEFT JOIN authors a ON b.author_id = a.author_id 
+            WHERE u.username = ?
+        `, [username]);
+        if (result.length > 0) {
+            res.json(result[0]);
+        }
+        else {
+            res.status(404).json({ error: 'No favorite book found' });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+app.get('/api/users/favorite', async (req, res) => {
+    const username = req.query.username;
+    if (!username)
+        return res.status(400).json({ error: 'Username required' });
+    try {
+        const result = await (0, connection_1.executeQuery)(`
+            SELECT b.*, a.name as author_name 
+            FROM users u 
+            JOIN books b ON u.favorite_book_id = b.book_id 
+            LEFT JOIN authors a ON b.author_id = a.author_id 
+            WHERE u.username = ?
+        `, [username]);
+        if (result.length > 0) {
+            res.json(result[0]);
+        }
+        else {
+            res.status(404).json({ error: 'No favorite book found' });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Database error' });
+    }
+});
 // Serve React app for all routes (SPA)
 app.get('/', (_req, res) => res.sendFile(path_1.default.join(__dirname, '../FRONTEND/react-dist/index.html')));
 // Legacy routes for backward compatibility
 app.get('/legacy', (_req, res) => res.sendFile(path_1.default.join(__dirname, '../FRONTEND/interface/main.html')));
 app.get('/legacy/index.html', (_req, res) => res.sendFile(path_1.default.join(__dirname, '../FRONTEND/index.html')));
 app.get('/legacy/user.html', (_req, res) => res.sendFile(path_1.default.join(__dirname, '../FRONTEND/interface/user.html')));
+// Middleware to check admin role
+const requireAdmin = (req, res, next) => {
+    const user = req.session?.user;
+    if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+    next();
+};
+// Books routes (both /books and /api/books for compatibility)
 app.get('/books/count', count_1.count);
+app.get('/api/books/count', count_1.count);
 app.get('/books/:id', (req, res) => {
     if ((req.headers.accept || '').includes('text/html')) {
         // Serve React app for book detail pages
@@ -100,11 +170,17 @@ app.get('/books/:id', (req, res) => {
         (0, readOne_1.readOneBook)(req, res);
     }
 });
+app.get('/api/books/:id', readOne_1.readOneBook);
 app.get('/books', read_1.read);
-app.post('/books', create_1.create);
-app.put('/books/:id', update_1.update);
-app.delete('/books/:id', deleteb_1.deleteb);
-app.post('/books/:id/update', upload.single('book_image'), async (req, res) => {
+app.get('/api/books', read_1.read);
+// Admin-only routes for books CRUD
+app.post('/books', requireAdmin, create_1.create);
+app.post('/api/books', requireAdmin, create_1.create);
+app.put('/books/:id', requireAdmin, update_1.update);
+app.put('/api/books/:id', requireAdmin, update_1.update);
+app.delete('/books/:id', requireAdmin, deleteb_1.deleteb);
+app.delete('/api/books/:id', requireAdmin, deleteb_1.deleteb);
+app.post('/books/:id/update', requireAdmin, upload.single('book_image'), async (req, res) => {
     const { id } = req.params;
     if (!id || isNaN(Number(id)))
         return res.status(400).end();
@@ -128,7 +204,33 @@ app.post('/books/:id/update', upload.single('book_image'), async (req, res) => {
         res.status(500).end();
     }
 });
+app.post('/api/books/:id/update', requireAdmin, upload.single('book_image'), async (req, res) => {
+    const { id } = req.params;
+    if (!id || isNaN(Number(id)))
+        return res.status(400).end();
+    try {
+        if (req.file) {
+            const bookImage = req.file.filename;
+            const old = await (0, connection_1.executeQuery)('SELECT photo FROM books WHERE book_id = ?', [id]);
+            if (old.length && old[0].photo) {
+                const oldPath = path_1.default.join(__dirname, '../FRONTEND/uploads', old[0].photo);
+                try {
+                    await fs_1.default.promises.unlink(oldPath);
+                }
+                catch { }
+            }
+            await (0, connection_1.executeQuery)('UPDATE books SET photo = ? WHERE book_id = ?', [bookImage, id]);
+            return res.json({ photo: bookImage });
+        }
+        res.status(400).end();
+    }
+    catch {
+        res.status(500).end();
+    }
+});
+// Authors routes (both /authors and /api/authors for compatibility)
 app.get('/authors/count', count_2.count);
+app.get('/api/authors/count', count_2.count);
 app.get('/authors/:id', (req, res) => {
     if ((req.headers.accept || '').includes('text/html')) {
         // Serve React app for author detail pages
@@ -138,12 +240,20 @@ app.get('/authors/:id', (req, res) => {
         (0, readOneAuthor_1.readOneAuthor)(req, res);
     }
 });
-app.post('/authors/:id/update', upload.single('author_image'), updateAuthorImage_1.updateAuthorImage);
+app.get('/api/authors/:id', readOneAuthor_1.readOneAuthor);
 app.get('/authors', read_2.read);
-app.post('/authors', create_2.create);
-app.put('/authors/:id', update_2.update);
-app.delete('/authors/:id', deletea_1.deletea);
-app.post('/rent/:id', async (req, res) => {
+app.get('/api/authors', read_2.read);
+// Admin-only routes for authors CRUD
+app.post('/authors', requireAdmin, create_2.create);
+app.post('/api/authors', requireAdmin, create_2.create);
+app.put('/authors/:id', requireAdmin, update_2.update);
+app.put('/api/authors/:id', requireAdmin, update_2.update);
+app.delete('/authors/:id', requireAdmin, deletea_1.deletea);
+app.delete('/api/authors/:id', requireAdmin, deletea_1.deletea);
+app.post('/authors/:id/update', requireAdmin, upload.single('author_image'), updateAuthorImage_1.updateAuthorImage);
+app.post('/api/authors/:id/update', requireAdmin, upload.single('author_image'), updateAuthorImage_1.updateAuthorImage);
+// Rent routes
+const rentHandler = async (req, res) => {
     const bookId = Number(req.params.id);
     if (isNaN(bookId))
         return res.status(400).end();
@@ -164,8 +274,11 @@ app.post('/rent/:id', async (req, res) => {
     catch {
         res.status(500).end();
     }
-});
-app.post('/favorite/:id', async (req, res) => {
+};
+app.post('/rent/:id', rentHandler);
+app.post('/api/rent/:id', rentHandler);
+// Favorite routes
+const favoriteHandler = async (req, res) => {
     const bookId = Number(req.params.id);
     if (isNaN(bookId))
         return res.status(400).end();
@@ -182,8 +295,11 @@ app.post('/favorite/:id', async (req, res) => {
     catch {
         res.status(500).end();
     }
-});
-app.get('/users/favorite', async (req, res) => {
+};
+app.post('/favorite/:id', favoriteHandler);
+app.post('/api/favorite/:id', favoriteHandler);
+// Users favorite routes
+const usersFavoriteHandler = async (req, res) => {
     const username = req.query.username;
     if (!username)
         return res.status(400).end();
@@ -203,8 +319,11 @@ app.get('/users/favorite', async (req, res) => {
     catch {
         res.status(500).end();
     }
-});
-app.get('/loans', async (req, res) => {
+};
+app.get('/users/favorite', usersFavoriteHandler);
+app.get('/api/users/favorite', usersFavoriteHandler);
+// Loans routes
+const loansHandler = async (req, res) => {
     const username = req.query.username;
     if (!username)
         return res.status(400).end();
@@ -225,8 +344,11 @@ app.get('/loans', async (req, res) => {
     catch {
         res.status(500).end();
     }
-});
-app.post('/return/:loanId', async (req, res) => {
+};
+app.get('/loans', loansHandler);
+app.get('/api/loans', loansHandler);
+// Return routes
+const returnHandler = async (req, res) => {
     const loanId = Number(req.params.loanId);
     if (isNaN(loanId))
         return res.status(400).end();
@@ -239,8 +361,10 @@ app.post('/return/:loanId', async (req, res) => {
     catch {
         res.status(500).end();
     }
-});
-app.get('/reviews', async (_req, res) => {
+};
+app.post('/return/:loanId', returnHandler);
+app.post('/api/return/:loanId', returnHandler);
+const getReviewsHandler = async (_req, res) => {
     try {
         const reviews = await (0, connection_1.executeQuery)(`
             SELECT r.*, u.username, b.title as bookTitle 
@@ -254,8 +378,10 @@ app.get('/reviews', async (_req, res) => {
     catch {
         res.status(500).end();
     }
-});
-app.post('/reviews', async (req, res) => {
+};
+app.get('/reviews', getReviewsHandler);
+app.get('/api/reviews', getReviewsHandler);
+const reviewsHandler = async (req, res) => {
     const { book_id, user_id, rating, comment } = req.body;
     if (!book_id || !user_id || !rating)
         return res.status(400).end();
@@ -272,14 +398,36 @@ app.post('/reviews', async (req, res) => {
     catch {
         res.status(500).end();
     }
+};
+app.post('/reviews', reviewsHandler);
+app.post('/api/reviews', reviewsHandler);
+app.get('/user/me', (req, res) => {
+    const user = req.session?.user;
+    if (!user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+    res.json({ id: user.id, username: user.username, role: user.role });
 });
-app.get('/get-user-id-from-session', (req, res) => {
-    if (req.session?.user?.id) {
-        res.json({ user_id: req.session.user.id });
+app.get('/api/user/me', (req, res) => {
+    const user = req.session?.user;
+    if (!user) {
+        return res.status(401).json({ error: 'Not authenticated' });
     }
-    else {
-        res.status(401).end();
+    res.json({ id: user.id, username: user.username, role: user.role });
+});
+app.get('/user/role', (req, res) => {
+    const user = req.session?.user;
+    if (!user) {
+        return res.status(401).json({ error: 'Not authenticated' });
     }
+    res.json({ role: user.role, isAdmin: user.role === 'admin' });
+});
+app.get('/api/user/role', (req, res) => {
+    const user = req.session?.user;
+    if (!user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+    res.json({ role: user.role, isAdmin: user.role === 'admin' });
 });
 // Catch-all handler: send back React's index.html file for any non-API routes
 app.get('*', (req, res) => {
@@ -287,6 +435,7 @@ app.get('*', (req, res) => {
         res.sendFile(path_1.default.join(__dirname, '../FRONTEND/react-dist/index.html'));
     }
     else {
+        console.log(`404 - API endpoint not found: ${req.path}`);
         res.status(404).json({ error: 'API endpoint not found' });
     }
 });
@@ -295,3 +444,4 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`React app available at: http://localhost:${PORT}`);
     console.log(`Legacy interface available at: http://localhost:${PORT}/legacy`);
 });
+//# sourceMappingURL=server.js.map

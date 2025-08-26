@@ -40,7 +40,9 @@ const react_1 = __importStar(require("react"));
 const react_router_dom_1 = require("react-router-dom");
 const axios_1 = __importDefault(require("axios"));
 const Layout_1 = __importDefault(require("./Layout"));
+const AuthContext_1 = require("../contexts/AuthContext");
 const Books = () => {
+    const { isAdmin } = (0, AuthContext_1.useAuth)();
     const [books, setBooks] = (0, react_1.useState)([]);
     const [authors, setAuthors] = (0, react_1.useState)([]);
     const [loading, setLoading] = (0, react_1.useState)(true);
@@ -153,23 +155,23 @@ const Books = () => {
     return (<Layout_1.default title="Books">
       {error && <div className="error-message">{error}</div>}
       
-      <section className="form-section">
-        <h2>Add Book</h2>
-        <form onSubmit={handleCreateBook}>
-          <label htmlFor="author-select">Author:</label>
-          <select id="author-select" value={newBook.author_id} onChange={(e) => setNewBook({ ...newBook, author_id: e.target.value })} required>
-            <option value="">Select an Author</option>
-            {authors.map(author => (<option key={author.author_id} value={author.author_id}>
-                {author.name_author}
-              </option>))}
-          </select>
-          
-          <label htmlFor="book-title">Title:</label>
-          <input type="text" id="book-title" value={newBook.title} onChange={(e) => setNewBook({ ...newBook, title: e.target.value })} required/>
-          
-          <button type="submit">Add</button>
-        </form>
-      </section>
+      {isAdmin && (<section className="form-section">
+          <h2>Add Book</h2>
+          <form onSubmit={handleCreateBook}>
+            <label htmlFor="author-select">Author:</label>
+            <select id="author-select" value={newBook.author_id} onChange={(e) => setNewBook({ ...newBook, author_id: e.target.value })} required>
+              <option value="">Select an Author</option>
+              {authors.map(author => (<option key={author.author_id} value={author.author_id}>
+                  {author.name_author}
+                </option>))}
+            </select>
+            
+            <label htmlFor="book-title">Title:</label>
+            <input type="text" id="book-title" value={newBook.title} onChange={(e) => setNewBook({ ...newBook, title: e.target.value })} required/>
+            
+            <button type="submit">Add</button>
+          </form>
+        </section>)}
 
       <section className="search-section">
         <h2>Search Books</h2>
@@ -212,8 +214,10 @@ const Books = () => {
                           <button onClick={handleCancelEdit}>Cancel</button>
                         </>) : (<>
                           <button onClick={() => navigate(`/books/${book.book_id}`)}>View</button>
-                          <button onClick={() => handleEditBook(book)}>Edit</button>
-                          <button onClick={() => handleDeleteBook(book.book_id)}>Delete</button>
+                          {isAdmin && (<>
+                              <button onClick={() => handleEditBook(book)}>Edit</button>
+                              <button onClick={() => handleDeleteBook(book.book_id)}>Delete</button>
+                            </>)}
                         </>)}
                     </div>
                   </td>

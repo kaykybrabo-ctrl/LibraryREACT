@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Book {
   book_id: number
@@ -16,6 +17,7 @@ interface Author {
 }
 
 const Books: React.FC = () => {
+  const { isAdmin } = useAuth()
   const [books, setBooks] = useState<Book[]>([])
   const [authors, setAuthors] = useState<Author[]>([])
   const [loading, setLoading] = useState(true)
@@ -140,36 +142,38 @@ const Books: React.FC = () => {
     <Layout title="Books">
       {error && <div className="error-message">{error}</div>}
       
-      <section className="form-section">
-        <h2>Add Book</h2>
-        <form onSubmit={handleCreateBook}>
-          <label htmlFor="author-select">Author:</label>
-          <select
-            id="author-select"
-            value={newBook.author_id}
-            onChange={(e) => setNewBook({ ...newBook, author_id: e.target.value })}
-            required
-          >
-            <option value="">Select an Author</option>
-            {authors.map(author => (
-              <option key={author.author_id} value={author.author_id}>
-                {author.name_author}
-              </option>
-            ))}
-          </select>
-          
-          <label htmlFor="book-title">Title:</label>
-          <input
-            type="text"
-            id="book-title"
-            value={newBook.title}
-            onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
-            required
-          />
-          
-          <button type="submit">Add</button>
-        </form>
-      </section>
+      {isAdmin && (
+        <section className="form-section">
+          <h2>Add Book</h2>
+          <form onSubmit={handleCreateBook}>
+            <label htmlFor="author-select">Author:</label>
+            <select
+              id="author-select"
+              value={newBook.author_id}
+              onChange={(e) => setNewBook({ ...newBook, author_id: e.target.value })}
+              required
+            >
+              <option value="">Select an Author</option>
+              {authors.map(author => (
+                <option key={author.author_id} value={author.author_id}>
+                  {author.name_author}
+                </option>
+              ))}
+            </select>
+            
+            <label htmlFor="book-title">Title:</label>
+            <input
+              type="text"
+              id="book-title"
+              value={newBook.title}
+              onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
+              required
+            />
+            
+            <button type="submit">Add</button>
+          </form>
+        </section>
+      )}
 
       <section className="search-section">
         <h2>Search Books</h2>
@@ -241,8 +245,12 @@ const Books: React.FC = () => {
                       ) : (
                         <>
                           <button onClick={() => navigate(`/books/${book.book_id}`)}>View</button>
-                          <button onClick={() => handleEditBook(book)}>Edit</button>
-                          <button onClick={() => handleDeleteBook(book.book_id)}>Delete</button>
+                          {isAdmin && (
+                            <>
+                              <button onClick={() => handleEditBook(book)}>Edit</button>
+                              <button onClick={() => handleDeleteBook(book.book_id)}>Delete</button>
+                            </>
+                          )}
                         </>
                       )}
                     </div>

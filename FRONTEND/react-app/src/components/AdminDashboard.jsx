@@ -129,8 +129,6 @@ function AdminDashboard() {
             console.error(err);
         }
     };
-
-    // Logout corrigido: remove token e redireciona
     const handleLogout = () => {
         localStorage.removeItem("token");
         navigate("/login", { replace: true });

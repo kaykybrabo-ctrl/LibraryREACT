@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const react_1 = __importDefault(require("react"));
 const react_router_dom_1 = require("react-router-dom");
 const AuthContext_1 = require("./contexts/AuthContext");
+const ProtectedRoute_1 = __importDefault(require("./components/ProtectedRoute"));
 const Login_1 = __importDefault(require("./components/Login"));
 const Register_1 = __importDefault(require("./components/Register"));
 const Books_1 = __importDefault(require("./components/Books"));
@@ -13,7 +13,7 @@ const Authors_1 = __importDefault(require("./components/Authors"));
 const BookDetail_1 = __importDefault(require("./components/BookDetail"));
 const AuthorDetail_1 = __importDefault(require("./components/AuthorDetail"));
 const UserProfile_1 = __importDefault(require("./components/UserProfile"));
-const ProtectedRoute_1 = __importDefault(require("./components/ProtectedRoute"));
+require("./index.css");
 function App() {
     return (<AuthContext_1.AuthProvider>
       <react_router_dom_1.BrowserRouter>

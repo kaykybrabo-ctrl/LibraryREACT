@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Author {
   author_id: number
@@ -10,6 +11,7 @@ interface Author {
 }
 
 const Authors: React.FC = () => {
+  const { isAdmin } = useAuth()
   const [authors, setAuthors] = useState<Author[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
@@ -108,20 +110,22 @@ const Authors: React.FC = () => {
     <Layout title="Authors">
       {error && <div className="error-message">{error}</div>}
       
-      <section className="form-section">
-        <h2>Add Author</h2>
-        <form onSubmit={handleCreateAuthor}>
-          <label htmlFor="author-name">Name:</label>
-          <input
-            type="text"
-            id="author-name"
-            value={newAuthor.name}
-            onChange={(e) => setNewAuthor({ ...newAuthor, name: e.target.value })}
-            required
-          />
-          <button type="submit">Add</button>
-        </form>
-      </section>
+      {isAdmin && (
+        <section className="form-section">
+          <h2>Add Author</h2>
+          <form onSubmit={handleCreateAuthor}>
+            <label htmlFor="author-name">Name:</label>
+            <input
+              type="text"
+              id="author-name"
+              value={newAuthor.name}
+              onChange={(e) => setNewAuthor({ ...newAuthor, name: e.target.value })}
+              required
+            />
+            <button type="submit">Add</button>
+          </form>
+        </section>
+      )}
 
       <section className="author-list">
         <h2>Authors</h2>
@@ -158,8 +162,12 @@ const Authors: React.FC = () => {
                     ) : (
                       <>
                         <button onClick={() => navigate(`/authors/${author.author_id}`)}>View</button>
-                        <button onClick={() => handleEditAuthor(author)}>Edit</button>
-                        <button onClick={() => handleDeleteAuthor(author.author_id)}>Delete</button>
+                        {isAdmin && (
+                          <>
+                            <button onClick={() => handleEditAuthor(author)}>Edit</button>
+                            <button onClick={() => handleDeleteAuthor(author.author_id)}>Delete</button>
+                          </>
+                        )}
                       </>
                     )}
                   </div>

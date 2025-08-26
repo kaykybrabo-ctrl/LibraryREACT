@@ -22,3 +22,4 @@ async function read(req, res) {
         res.sendStatus(500);
     }
 }
+//# sourceMappingURL=readUser.js.map

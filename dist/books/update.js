@@ -24,3 +24,4 @@ async function update(req, res) {
         res.sendStatus(500);
     }
 }
+//# sourceMappingURL=update.js.map

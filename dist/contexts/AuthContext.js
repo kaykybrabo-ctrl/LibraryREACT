@@ -49,7 +49,10 @@ const useAuth = () => {
 };
 exports.useAuth = useAuth;
 const AuthProvider = ({ children }) => {
-    const [user, setUser] = (0, react_1.useState)(null);
+    const [user, setUser] = (0, react_1.useState)(() => {
+        const savedUser = localStorage.getItem('user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const [token, setToken] = (0, react_1.useState)(localStorage.getItem('token'));
     (0, react_1.useEffect)(() => {
         if (token) {
@@ -68,6 +71,7 @@ const AuthProvider = ({ children }) => {
             setUser(userData);
             setToken(newToken);
             localStorage.setItem('token', newToken);
+            localStorage.setItem('user', JSON.stringify(userData));
             return true;
         }
         catch (error) {
@@ -89,6 +93,7 @@ const AuthProvider = ({ children }) => {
         setUser(null);
         setToken(null);
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         delete axios_1.default.defaults.headers.common['Authorization'];
     };
     const value = {
@@ -97,7 +102,8 @@ const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        isAuthenticated: !!token
+        isAuthenticated: !!token,
+        isAdmin: user?.role === 'admin'
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

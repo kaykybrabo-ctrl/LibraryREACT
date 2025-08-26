@@ -4,11 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const dbConfig = {
-    host: '172.23.0.2',
+    host: process.env.DB_HOST || 'db',
     port: 3306,
-    user: 'root',
-    password: '12345678',
-    database: 'library1'
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '12345678',
+    database: process.env.DB_NAME || 'library1'
 };
 
 console.log('Database config:', {
