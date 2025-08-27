@@ -25,4 +25,3 @@ async function executeQuery(query, params = []) {
     await connection.end();
     return result;
 }
-//# sourceMappingURL=connection.js.map

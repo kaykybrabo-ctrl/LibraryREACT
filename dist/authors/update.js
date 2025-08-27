@@ -4,7 +4,7 @@ exports.update = update;
 const connection_1 = require("../DB/connection");
 async function update(req, res) {
     const id = Number(req.params.id);
-    let { name_author } = req.body;
+    let { name_author, biography } = req.body;
     if (!name_author || typeof name_author !== 'string' || name_author.trim() === '') {
         return res.sendStatus(400);
     }
@@ -13,7 +13,15 @@ async function update(req, res) {
     }
     name_author = name_author.toLowerCase().replace(/\b\w/g, char => char.toUpperCase()).trim();
     try {
-        const result = await (0, connection_1.executeQuery)('UPDATE authors SET name_author = ? WHERE author_id = ?', [name_author, id]);
+        let query = 'UPDATE authors SET name_author = ?';
+        let params = [name_author];
+        if (biography !== undefined) {
+            query += ', biography = ?';
+            params.push(biography);
+        }
+        query += ' WHERE author_id = ?';
+        params.push(id);
+        const result = await (0, connection_1.executeQuery)(query, params);
         if (result.affectedRows === 0) {
             return res.sendStatus(404);
         }
@@ -23,4 +31,3 @@ async function update(req, res) {
         res.sendStatus(500);
     }
 }
-//# sourceMappingURL=update.js.map

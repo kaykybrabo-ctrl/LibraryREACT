@@ -28,7 +28,7 @@ const readOneAuthor_1 = require("./interface/authorInterface/readOneAuthor");
 const updateAuthorImage_1 = require("./interface/authorInterface/updateAuthorImage");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = Number(process.env.PORT) || 8082;
 const storage = multer_1.default.diskStorage({
     destination: path_1.default.join(__dirname, '../FRONTEND/uploads'),
     filename: (_req, file, cb) => {
@@ -456,4 +456,3 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`React app available at: http://localhost:${PORT}`);
     console.log(`Legacy interface available at: http://localhost:${PORT}/legacy`);
 });
-//# sourceMappingURL=server.js.map

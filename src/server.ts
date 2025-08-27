@@ -26,7 +26,7 @@ import { updateAuthorImage } from './interface/authorInterface/updateAuthorImage
 dotenv.config();
 
 const app = express();
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = Number(process.env.PORT) || 8082;
 
 const storage = multer.diskStorage({
     destination: path.join(__dirname, '../FRONTEND/uploads'),

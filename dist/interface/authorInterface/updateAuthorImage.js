@@ -30,4 +30,3 @@ async function updateAuthorImage(req, res) {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
-//# sourceMappingURL=updateAuthorImage.js.map

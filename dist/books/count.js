@@ -18,4 +18,3 @@ async function count(req, res) {
         res.sendStatus(500);
     }
 }
-//# sourceMappingURL=count.js.map

@@ -33,4 +33,3 @@ async function readOneBook(req, res) {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
-//# sourceMappingURL=readOne.js.map

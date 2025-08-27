@@ -7,6 +7,7 @@ interface Author {
   author_id: number
   name_author: string
   photo?: string
+  biography?: string
 }
 
 interface Book {
@@ -23,7 +24,10 @@ const AuthorDetail: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  // Removed unused imageFile state
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [editingBio, setEditingBio] = useState(false)
+  const [biography, setBiography] = useState('')
 
   useEffect(() => {
     if (id) {
@@ -36,6 +40,7 @@ const AuthorDetail: React.FC = () => {
     try {
       const response = await axios.get(`/api/authors/${id}`)
       setAuthor(response.data)
+      setBiography(response.data.biography || '')
       setLoading(false)
     } catch (err) {
       setError('Failed to fetch author details')
@@ -55,7 +60,48 @@ const AuthorDetail: React.FC = () => {
     }
   }
 
-  // Image upload functionality removed for now
+  const handleImageUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!imageFile) return
+
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('author_image', imageFile)
+
+    try {
+      const response = await axios.post(`/api/authors/${id}/update`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setAuthor(prev => prev ? { ...prev, photo: response.data.photo } : null)
+      setImageFile(null)
+      setError('')
+      alert('Author image updated successfully!')
+    } catch (err: any) {
+      console.error('Upload error:', err)
+      setError(err.response?.data?.error || 'Failed to upload author image')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleUpdateBiography = async () => {
+    setUploading(true)
+    try {
+      await axios.put(`/api/authors/${id}`, {
+        name_author: author?.name_author,
+        biography: biography
+      })
+      setAuthor(prev => prev ? { ...prev, biography: biography } : null)
+      setEditingBio(false)
+      setError('')
+      alert('Biography updated successfully!')
+    } catch (err: any) {
+      console.error('Biography update error:', err)
+      setError(err.response?.data?.error || 'Failed to update biography')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -85,14 +131,78 @@ const AuthorDetail: React.FC = () => {
         
         <h2>{author.name_author}</h2>
         
-        {author.photo && (
-          <img 
-            src={`/api/uploads/${author.photo}`} 
-            alt={author.name_author}
-            className="author-image"
-            style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%' }}
-          />
-        )}
+        <div className="author-info">
+          {author.photo && (
+            <img 
+              src={`/api/uploads/${author.photo}`} 
+              alt={author.name_author}
+              className="author-image"
+              style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%', marginBottom: '20px' }}
+            />
+          )}
+
+          <div className="biography-section">
+            <h3>Biography</h3>
+            {editingBio ? (
+              <div>
+                <textarea
+                  value={biography}
+                  onChange={(e) => setBiography(e.target.value)}
+                  placeholder="Enter author biography..."
+                  rows={6}
+                  style={{ width: '100%', marginBottom: '10px', padding: '10px' }}
+                />
+                <div>
+                  <button onClick={handleUpdateBiography} disabled={uploading}>
+                    {uploading ? 'Saving...' : 'Save Biography'}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setEditingBio(false)
+                      setBiography(author?.biography || '')
+                    }}
+                    style={{ marginLeft: '10px' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p style={{ marginBottom: '15px', lineHeight: '1.6' }}>
+                  {author.biography || 'No biography available yet.'}
+                </p>
+                <button onClick={() => setEditingBio(true)}>
+                  Edit Biography
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="image-upload" style={{ marginTop: '20px' }}>
+            <h3>Update Author Photo</h3>
+            <form onSubmit={handleImageUpload}>
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file && file.type.startsWith('image/')) {
+                    setImageFile(file)
+                    setError('')
+                  } else {
+                    setError('Please select a valid image file (JPG, PNG, GIF, WebP)')
+                    e.target.value = ''
+                  }
+                }}
+                style={{ marginBottom: '10px' }}
+              />
+              <button type="submit" disabled={!imageFile || uploading}>
+                {uploading ? 'Uploading...' : 'Upload Photo'}
+              </button>
+            </form>
+          </div>
+        </div>
 
       </section>
 

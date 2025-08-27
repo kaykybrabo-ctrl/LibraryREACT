@@ -32,4 +32,3 @@ async function getProfile(req, res) {
         res.status(500).json({ error: 'Database error' });
     }
 }
-//# sourceMappingURL=getProfile.js.map

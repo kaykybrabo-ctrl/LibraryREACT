@@ -45,4 +45,3 @@ async function updateProfile(req, res) {
         res.status(500).json({ error: 'Database error' });
     }
 }
-//# sourceMappingURL=updateProfile.js.map
