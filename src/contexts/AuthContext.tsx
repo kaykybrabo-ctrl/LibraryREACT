@@ -51,7 +51,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await axios.post('/api/login', { username, password })
       const userData = response.data
       
-      // Generate a simple token (in production, this should come from the server)
       const newToken = btoa(`${username}:${Date.now()}`)
       
       setUser(userData)
@@ -61,7 +60,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       return true
     } catch (error) {
-      console.error('Login failed:', error)
       return false
     }
   }
@@ -71,7 +69,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await axios.post('/api/register', { username, password })
       return true
     } catch (error) {
-      console.error('Registration failed:', error)
       return false
     }
   }

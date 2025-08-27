@@ -66,10 +66,8 @@ const UserProfile: React.FC = () => {
       const response = await axios.get(`/api/loans?username=${user.username}`, {
         withCredentials: true
       })
-      console.log('Loans fetched:', response.data)
       setLoans(response.data)
     } catch (err) {
-      console.error('Failed to fetch loans:', err)
     }
   }
 
@@ -84,7 +82,6 @@ const UserProfile: React.FC = () => {
         setFavoriteBook(null)
       }
     } catch (err) {
-      console.error('Failed to fetch favorite book')
       setFavoriteBook(null)
     }
   }
@@ -109,7 +106,6 @@ const UserProfile: React.FC = () => {
       setError('')
       alert('Profile image updated successfully!')
     } catch (err: any) {
-      console.error('Upload error:', err)
       setError(err.response?.data?.error || 'Failed to upload profile image')
     } finally {
       setUploading(false)
@@ -133,7 +129,6 @@ const UserProfile: React.FC = () => {
       setError('')
       alert('Description updated successfully!')
     } catch (err: any) {
-      console.error('Description update error:', err)
       setError(err.response?.data?.error || 'Failed to update description')
     } finally {
       setUploading(false)
@@ -141,27 +136,18 @@ const UserProfile: React.FC = () => {
   }
 
   const handleReturnBook = async (loanId: number) => {
-    console.log('handleReturnBook called with loanId:', loanId)
-    console.log('Proceeding with return...')
-    
     try {
-      console.log('Making API call to /api/return/' + loanId)
       const response = await axios.post(`/api/return/${loanId}`, {}, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }
       })
-      console.log('Return response:', response.data)
-      
-      // Force refresh the loans list
-      console.log('Refreshing loans list...')
       await fetchLoans()
       
       alert('Book returned successfully!')
       setError('')
     } catch (err: any) {
-      console.error('Return error:', err)
       const errorMsg = err.response?.data?.error || 'Failed to return book'
       setError(errorMsg)
       alert(`Error: ${errorMsg}`)
@@ -302,7 +288,6 @@ const UserProfile: React.FC = () => {
                       <button 
                         onClick={(e) => {
                           e.preventDefault()
-                          console.log('Button clicked for loan:', loan.loans_id)
                           handleReturnBook(loan.loans_id)
                         }}
                         style={{ 

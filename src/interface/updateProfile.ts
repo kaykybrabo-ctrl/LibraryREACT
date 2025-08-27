@@ -6,17 +6,14 @@ interface MulterRequest extends Request {
 }
 
 export async function updateProfile(req: MulterRequest, res: Response) {
-    // Check if user is authenticated
     const sessionUser = (req.session as any)?.user;
     if (!sessionUser) {
         return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    // Get username from body or use session user
     const username = req.body.username || sessionUser.username;
     const description = req.body.description || '';
 
-    // Users can only edit their own profile, admins can edit any profile
     if (sessionUser.role !== 'admin' && sessionUser.username !== username) {
         return res.status(403).json({ error: 'You can only edit your own profile' });
     }
@@ -24,7 +21,6 @@ export async function updateProfile(req: MulterRequest, res: Response) {
     try {
         let imageFilename = req.file?.filename;
 
-        // If no new image uploaded, keep existing image
         if (!imageFilename) {
             const result: any[] = await executeQuery(
                 'SELECT photo FROM users WHERE username = ? LIMIT 1',
@@ -33,13 +29,11 @@ export async function updateProfile(req: MulterRequest, res: Response) {
             imageFilename = result.length > 0 ? result[0].photo : 'default-user.png';
         }
 
-        // Update profile with new data
         await executeQuery(
             'UPDATE users SET photo = ?, description = ? WHERE username = ?',
             [imageFilename, description, username]
         );
 
-        // Return updated profile data
         const updatedProfile: any[] = await executeQuery(
             'SELECT id, username, role, photo AS profile_image, description FROM users WHERE username = ? LIMIT 1',
             [username]
@@ -58,7 +52,6 @@ export async function updateProfile(req: MulterRequest, res: Response) {
             res.status(404).json({ error: 'User not found' });
         }
     } catch (error) {
-        console.error('Database error in updateProfile:', error);
         res.status(500).json({ error: 'Database error' });
     }
 }

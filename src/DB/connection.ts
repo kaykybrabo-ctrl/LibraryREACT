@@ -11,11 +11,6 @@ const dbConfig = {
     database: process.env.DB_NAME || 'library1'
 };
 
-console.log('Database config:', {
-    host: dbConfig.host,
-    user: dbConfig.user,
-    database: dbConfig.database
-});
 
 
 

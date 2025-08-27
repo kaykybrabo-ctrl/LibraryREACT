@@ -1,7 +1,5 @@
--- Fix database structure to match application requirements
 USE library1;
 
--- Add missing columns to existing tables
 ALTER TABLE users ADD COLUMN IF NOT EXISTS photo VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS favorite_book_id INT;
@@ -11,7 +9,6 @@ ALTER TABLE books ADD COLUMN IF NOT EXISTS photo VARCHAR(255);
 
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS photo VARCHAR(255);
 
--- Create reviews table
 CREATE TABLE IF NOT EXISTS reviews (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     book_id INT NOT NULL,
@@ -23,8 +20,6 @@ CREATE TABLE IF NOT EXISTS reviews (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Add foreign key constraint for favorite_book_id if it doesn't exist
--- First check if constraint exists, if not add it
 SET @constraint_exists = (SELECT COUNT(*) 
     FROM information_schema.TABLE_CONSTRAINTS 
     WHERE CONSTRAINT_SCHEMA = 'library1' 
@@ -39,7 +34,6 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- Create reviews table if it doesn't exist
 CREATE TABLE IF NOT EXISTS reviews (
   review_id INT NOT NULL AUTO_INCREMENT,
   user_id INT NOT NULL,
@@ -53,7 +47,6 @@ CREATE TABLE IF NOT EXISTS reviews (
   FOREIGN KEY (book_id) REFERENCES books(book_id)
 );
 
--- Update existing books with descriptions
 UPDATE books SET description = CASE book_id
   WHEN 1 THEN 'A touching story about overcoming personal struggles through silence and introspection.'
   WHEN 2 THEN 'Short stories capturing the beauty and complexity of daily moments.'

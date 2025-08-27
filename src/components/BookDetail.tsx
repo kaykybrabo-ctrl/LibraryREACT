@@ -70,7 +70,6 @@ const BookDetail: React.FC = () => {
       )
       setReviews(bookReviews)
     } catch (err) {
-      console.error('Failed to fetch reviews')
     }
   }
 
@@ -101,7 +100,6 @@ const BookDetail: React.FC = () => {
       alert('Book rented successfully!')
       setError('')
     } catch (err: any) {
-      console.error('Rent error:', err)
       const errorMsg = err.response?.data?.error || 'Failed to rent book. You may not be logged in or book is already rented.'
       setError(errorMsg)
       alert(`Error: ${errorMsg}`)
@@ -114,7 +112,6 @@ const BookDetail: React.FC = () => {
       alert('Book added to favorites!')
       setError('')
     } catch (err: any) {
-      console.error('Favorite error:', err)
       const errorMsg = err.response?.data?.error || 'Failed to add book to favorites'
       setError(errorMsg)
       alert(`Error: ${errorMsg}`)
@@ -142,7 +139,6 @@ const BookDetail: React.FC = () => {
       alert('Review submitted successfully!')
       setError('')
     } catch (err: any) {
-      console.error('Review error:', err)
       const errorMsg = err.response?.data?.error || 'Failed to submit review'
       setError(errorMsg)
       alert(`Error: ${errorMsg}`)

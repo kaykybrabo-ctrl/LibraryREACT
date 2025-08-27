@@ -56,7 +56,6 @@ const AuthorDetail: React.FC = () => {
       )
       setBooks(authorBooks)
     } catch (err) {
-      console.error('Failed to fetch author books')
     }
   }
 
@@ -77,7 +76,6 @@ const AuthorDetail: React.FC = () => {
       setError('')
       alert('Author image updated successfully!')
     } catch (err: any) {
-      console.error('Upload error:', err)
       setError(err.response?.data?.error || 'Failed to upload author image')
     } finally {
       setUploading(false)
@@ -96,7 +94,6 @@ const AuthorDetail: React.FC = () => {
       setError('')
       alert('Biography updated successfully!')
     } catch (err: any) {
-      console.error('Biography update error:', err)
       setError(err.response?.data?.error || 'Failed to update biography')
     } finally {
       setUploading(false)
