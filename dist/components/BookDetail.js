@@ -18,13 +18,23 @@ const BookDetail = () => {
     const [imageFile, setImageFile] = (0, react_1.useState)(null);
     const [uploading, setUploading] = (0, react_1.useState)(false);
     const [newReview, setNewReview] = (0, react_1.useState)({ rating: 5, comment: '' });
-    const [username] = (0, react_1.useState)('');
+    const [isLoggedIn, setIsLoggedIn] = (0, react_1.useState)(false);
     (0, react_1.useEffect)(() => {
         if (id) {
             fetchBook();
             fetchReviews();
+            checkAuthStatus();
         }
     }, [id]);
+    const checkAuthStatus = async () => {
+        try {
+            await axios_1.default.get('/api/user/me');
+            setIsLoggedIn(true);
+        }
+        catch {
+            setIsLoggedIn(false);
+        }
+    };
     const fetchBook = async () => {
         try {
             const response = await axios_1.default.get(`/api/books/${id}`);
@@ -95,14 +105,10 @@ const BookDetail = () => {
     };
     const handleSubmitReview = async (e) => {
         e.preventDefault();
-        if (!username.trim()) {
-            setError('Please enter a username to submit a review');
-            return;
-        }
         try {
-            // Get user ID from username (simplified - in production you'd get this from auth)
-            const userResponse = await axios_1.default.get(`/api/get-user-id-from-session`);
-            const userId = userResponse.data.user_id;
+            // Get user info from session
+            const userResponse = await axios_1.default.get('/api/user/me');
+            const userId = userResponse.data.id;
             await axios_1.default.post('/api/reviews', {
                 book_id: Number(id),
                 user_id: userId,
@@ -112,9 +118,13 @@ const BookDetail = () => {
             setNewReview({ rating: 5, comment: '' });
             fetchReviews();
             alert('Review submitted successfully!');
+            setError('');
         }
         catch (err) {
-            setError('Failed to submit review');
+            console.error('Review error:', err);
+            const errorMsg = err.response?.data?.error || 'Failed to submit review. Please make sure you are logged in.';
+            setError(errorMsg);
+            alert(`Error: ${errorMsg}`);
         }
     };
     if (loading) {
@@ -123,7 +133,7 @@ const BookDetail = () => {
     if (!book) {
         return ((0, jsx_runtime_1.jsxs)(Layout_1.default, { title: "Book Details", children: [(0, jsx_runtime_1.jsx)("div", { className: "error-message", children: "Book not found" }), (0, jsx_runtime_1.jsx)("button", { onClick: () => navigate('/books'), children: "Back to Books" })] }));
     }
-    return ((0, jsx_runtime_1.jsxs)(Layout_1.default, { title: `Book: ${book.title}`, children: [error && (0, jsx_runtime_1.jsx)("div", { className: "error-message", children: error }), (0, jsx_runtime_1.jsxs)("section", { className: "profile-section", children: [(0, jsx_runtime_1.jsx)("button", { onClick: () => navigate('/books'), style: { marginBottom: '20px' }, children: "\u2190 Back to Books" }), (0, jsx_runtime_1.jsx)("h2", { children: book.title }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "Author:" }), " ", book.author_name || 'Unknown'] }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "Description:" }), " ", book.description || 'No description available'] }), book.photo && ((0, jsx_runtime_1.jsx)("img", { src: `/api/uploads/${book.photo}`, alt: book.title, className: "book-image", style: { width: '200px', height: '250px', objectFit: 'cover' } })), (0, jsx_runtime_1.jsxs)("div", { className: "image-upload", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Update Book Image" }), (0, jsx_runtime_1.jsxs)("form", { onSubmit: handleImageUpload, children: [(0, jsx_runtime_1.jsx)("input", { type: "file", accept: "image/*", onChange: (e) => setImageFile(e.target.files?.[0] || null) }), (0, jsx_runtime_1.jsx)("button", { type: "submit", disabled: !imageFile || uploading, children: uploading ? 'Uploading...' : 'Upload Image' })] })] })] }), (0, jsx_runtime_1.jsxs)("section", { className: "form-section", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Book Actions" }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', gap: '10px' }, children: [(0, jsx_runtime_1.jsx)("button", { onClick: handleRentBook, children: "Rent Book" }), (0, jsx_runtime_1.jsx)("button", { onClick: handleFavoriteBook, children: "Add to Favorites" })] })] }), (0, jsx_runtime_1.jsxs)("section", { className: "form-section", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Write a Review" }), (0, jsx_runtime_1.jsxs)("form", { onSubmit: handleSubmitReview, children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "rating", children: "Rating:" }), (0, jsx_runtime_1.jsx)("select", { id: "rating", value: newReview.rating, onChange: (e) => setNewReview({ ...newReview, rating: Number(e.target.value) }), children: [1, 2, 3, 4, 5].map(num => ((0, jsx_runtime_1.jsxs)("option", { value: num, children: [num, " Star", num > 1 ? 's' : ''] }, num))) }), (0, jsx_runtime_1.jsx)("label", { htmlFor: "comment", children: "Comment:" }), (0, jsx_runtime_1.jsx)("textarea", { id: "comment", value: newReview.comment, onChange: (e) => setNewReview({ ...newReview, comment: e.target.value }), rows: 4, style: { width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' } }), (0, jsx_runtime_1.jsx)("button", { type: "submit", children: "Submit Review" })] })] }), (0, jsx_runtime_1.jsxs)("section", { className: "form-section", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Reviews" }), reviews.length === 0 ? ((0, jsx_runtime_1.jsx)("p", { children: "No reviews yet." })) : ((0, jsx_runtime_1.jsx)("div", { children: reviews.map(review => ((0, jsx_runtime_1.jsxs)("div", { style: {
+    return ((0, jsx_runtime_1.jsxs)(Layout_1.default, { title: `Book: ${book.title}`, children: [error && (0, jsx_runtime_1.jsx)("div", { className: "error-message", children: error }), (0, jsx_runtime_1.jsxs)("section", { className: "profile-section", children: [(0, jsx_runtime_1.jsx)("button", { onClick: () => navigate('/books'), style: { marginBottom: '20px' }, children: "\u2190 Back to Books" }), (0, jsx_runtime_1.jsx)("h2", { children: book.title }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "Author:" }), " ", book.author_name || 'Unknown'] }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "Description:" }), " ", book.description || 'No description available'] }), book.photo && ((0, jsx_runtime_1.jsx)("img", { src: `/api/uploads/${book.photo}`, alt: book.title, className: "book-image", style: { width: '200px', height: '250px', objectFit: 'cover' } })), (0, jsx_runtime_1.jsxs)("div", { className: "image-upload", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Update Book Image" }), (0, jsx_runtime_1.jsxs)("form", { onSubmit: handleImageUpload, children: [(0, jsx_runtime_1.jsx)("input", { type: "file", accept: "image/*", onChange: (e) => setImageFile(e.target.files?.[0] || null) }), (0, jsx_runtime_1.jsx)("button", { type: "submit", disabled: !imageFile || uploading, children: uploading ? 'Uploading...' : 'Upload Image' })] })] })] }), (0, jsx_runtime_1.jsxs)("section", { className: "form-section", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Book Actions" }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', gap: '10px' }, children: [(0, jsx_runtime_1.jsx)("button", { onClick: handleRentBook, children: "Rent Book" }), (0, jsx_runtime_1.jsx)("button", { onClick: handleFavoriteBook, children: "Add to Favorites" })] })] }), (0, jsx_runtime_1.jsxs)("section", { className: "form-section", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Write a Review" }), !isLoggedIn ? ((0, jsx_runtime_1.jsx)("p", { children: "Please log in to write a review." })) : ((0, jsx_runtime_1.jsxs)("form", { onSubmit: handleSubmitReview, children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "rating", children: "Rating:" }), (0, jsx_runtime_1.jsx)("select", { id: "rating", value: newReview.rating, onChange: (e) => setNewReview({ ...newReview, rating: Number(e.target.value) }), children: [1, 2, 3, 4, 5].map(num => ((0, jsx_runtime_1.jsxs)("option", { value: num, children: [num, " Star", num > 1 ? 's' : ''] }, num))) }), (0, jsx_runtime_1.jsx)("label", { htmlFor: "comment", children: "Comment:" }), (0, jsx_runtime_1.jsx)("textarea", { id: "comment", value: newReview.comment, onChange: (e) => setNewReview({ ...newReview, comment: e.target.value }), rows: 4, style: { width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' } }), (0, jsx_runtime_1.jsx)("button", { type: "submit", children: "Submit Review" })] }))] }), (0, jsx_runtime_1.jsxs)("section", { className: "form-section", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Reviews" }), reviews.length === 0 ? ((0, jsx_runtime_1.jsx)("p", { children: "No reviews yet." })) : ((0, jsx_runtime_1.jsx)("div", { children: reviews.map(review => ((0, jsx_runtime_1.jsxs)("div", { style: {
                                 border: '1px solid #ddd',
                                 padding: '15px',
                                 marginBottom: '10px',

@@ -63,10 +63,13 @@ const UserProfile: React.FC = () => {
     if (!user?.username) return
 
     try {
-      const response = await axios.get(`/api/loans?username=${user.username}`)
+      const response = await axios.get(`/api/loans?username=${user.username}`, {
+        withCredentials: true
+      })
+      console.log('Loans fetched:', response.data)
       setLoans(response.data)
     } catch (err) {
-      console.error('Failed to fetch loans')
+      console.error('Failed to fetch loans:', err)
     }
   }
 
@@ -138,14 +141,30 @@ const UserProfile: React.FC = () => {
   }
 
   const handleReturnBook = async (loanId: number) => {
-    if (!confirm('Are you sure you want to return this book?')) return
-
+    console.log('handleReturnBook called with loanId:', loanId)
+    console.log('Proceeding with return...')
+    
     try {
-      await axios.post(`/api/return/${loanId}`)
-      fetchLoans()
+      console.log('Making API call to /api/return/' + loanId)
+      const response = await axios.post(`/api/return/${loanId}`, {}, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      console.log('Return response:', response.data)
+      
+      // Force refresh the loans list
+      console.log('Refreshing loans list...')
+      await fetchLoans()
+      
       alert('Book returned successfully!')
-    } catch (err) {
-      setError('Failed to return book')
+      setError('')
+    } catch (err: any) {
+      console.error('Return error:', err)
+      const errorMsg = err.response?.data?.error || 'Failed to return book'
+      setError(errorMsg)
+      alert(`Error: ${errorMsg}`)
     }
   }
 
@@ -280,7 +299,21 @@ const UserProfile: React.FC = () => {
                           style={{ marginRight: '15px' }}
                         />
                       )}
-                      <button onClick={() => handleReturnBook(loan.loans_id)}>
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          console.log('Button clicked for loan:', loan.loans_id)
+                          handleReturnBook(loan.loans_id)
+                        }}
+                        style={{ 
+                          padding: '8px 16px',
+                          backgroundColor: '#dc3545',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
                         Return Book
                       </button>
                     </div>

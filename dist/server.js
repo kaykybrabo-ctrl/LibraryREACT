@@ -363,15 +363,21 @@ app.get('/api/loans', loansHandler);
 const returnHandler = async (req, res) => {
     const loanId = Number(req.params.loanId);
     if (isNaN(loanId))
-        return res.status(400).end();
+        return res.status(400).json({ error: 'Invalid loan ID' });
     try {
+        console.log(`Attempting to return book with loan ID: ${loanId}`);
         const result = await (0, connection_1.executeQuery)('DELETE FROM loans WHERE loans_id = ?', [loanId]);
-        if (!result.affectedRows)
-            return res.status(404).end();
-        res.status(200).end();
+        console.log(`Return result:`, result);
+        if (!result.affectedRows) {
+            console.log(`No loan found with ID: ${loanId}`);
+            return res.status(404).json({ error: 'Loan not found' });
+        }
+        console.log(`Book returned successfully for loan ID: ${loanId}`);
+        res.status(200).json({ message: 'Book returned successfully' });
     }
-    catch {
-        res.status(500).end();
+    catch (error) {
+        console.error('Database error in return:', error);
+        res.status(500).json({ error: 'Database error' });
     }
 };
 app.post('/return/:loanId', returnHandler);

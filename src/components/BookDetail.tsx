@@ -31,14 +31,24 @@ const BookDetail: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' })
-  const [username] = useState('')
+  const [currentUser, setCurrentUser] = useState<any>(null)
 
   useEffect(() => {
     if (id) {
       fetchBook()
       fetchReviews()
+      checkAuthStatus()
     }
   }, [id])
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await axios.get('/api/user/me')
+      setCurrentUser(response.data)
+    } catch {
+      setCurrentUser(null)
+    }
+  }
 
   const fetchBook = async () => {
     try {
@@ -112,19 +122,16 @@ const BookDetail: React.FC = () => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!username.trim()) {
-      setError('Please enter a username to submit a review')
+
+    if (!currentUser) {
+      setError('Please log in to submit a review')
       return
     }
 
     try {
-      // Get user ID from username (simplified - in production you'd get this from auth)
-      const userResponse = await axios.get(`/api/get-user-id-from-session`)
-      const userId = userResponse.data.user_id
-
       await axios.post('/api/reviews', {
         book_id: Number(id),
-        user_id: userId,
+        user_id: currentUser.id,
         rating: newReview.rating,
         comment: newReview.comment
       })
@@ -132,8 +139,12 @@ const BookDetail: React.FC = () => {
       setNewReview({ rating: 5, comment: '' })
       fetchReviews()
       alert('Review submitted successfully!')
-    } catch (err) {
-      setError('Failed to submit review')
+      setError('')
+    } catch (err: any) {
+      console.error('Review error:', err)
+      const errorMsg = err.response?.data?.error || 'Failed to submit review'
+      setError(errorMsg)
+      alert(`Error: ${errorMsg}`)
     }
   }
 
@@ -201,29 +212,33 @@ const BookDetail: React.FC = () => {
 
       <section className="form-section">
         <h3>Write a Review</h3>
-        <form onSubmit={handleSubmitReview}>
-          <label htmlFor="rating">Rating:</label>
-          <select
-            id="rating"
-            value={newReview.rating}
-            onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
-          >
-            {[1, 2, 3, 4, 5].map(num => (
-              <option key={num} value={num}>{num} Star{num > 1 ? 's' : ''}</option>
-            ))}
-          </select>
+        {!currentUser ? (
+          <p>Please log in to write a review.</p>
+        ) : (
+          <form onSubmit={handleSubmitReview}>
+            <label htmlFor="rating">Rating:</label>
+            <select
+              id="rating"
+              value={newReview.rating}
+              onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
+            >
+              {[1, 2, 3, 4, 5].map(num => (
+                <option key={num} value={num}>{num} Star{num > 1 ? 's' : ''}</option>
+              ))}
+            </select>
 
-          <label htmlFor="comment">Comment:</label>
-          <textarea
-            id="comment"
-            value={newReview.comment}
-            onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-            rows={4}
-            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
+            <label htmlFor="comment">Comment:</label>
+            <textarea
+              id="comment"
+              value={newReview.comment}
+              onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+              rows={4}
+              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
 
-          <button type="submit">Submit Review</button>
-        </form>
+            <button type="submit">Submit Review</button>
+          </form>
+        )}
       </section>
 
       <section className="form-section">
