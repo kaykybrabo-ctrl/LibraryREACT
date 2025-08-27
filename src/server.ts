@@ -406,8 +406,9 @@ const getReviewsHandler = async (_req: Request, res: Response) => {
             ORDER BY r.review_date DESC
         `);
         res.json(reviews);
-    } catch {
-        res.status(500).end();
+    } catch (error) {
+        console.error('Database error in getReviews:', error);
+        res.status(500).json({ error: 'Database error' });
     }
 };
 

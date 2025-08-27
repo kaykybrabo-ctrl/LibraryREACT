@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
+import { Rating, Typography, Box } from '@mui/material'
 
 interface Book {
   book_id: number
@@ -216,16 +217,18 @@ const BookDetail: React.FC = () => {
           <p>Please log in to write a review.</p>
         ) : (
           <form onSubmit={handleSubmitReview}>
-            <label htmlFor="rating">Rating:</label>
-            <select
-              id="rating"
-              value={newReview.rating}
-              onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
-            >
-              {[1, 2, 3, 4, 5].map(num => (
-                <option key={num} value={num}>{num} Star{num > 1 ? 's' : ''}</option>
-              ))}
-            </select>
+            <Box sx={{ mb: 2 }}>
+              <Typography component="legend" sx={{ mb: 1 }}>Rating:</Typography>
+              <Rating
+                name="book-rating"
+                value={newReview.rating}
+                onChange={(_, newValue) => {
+                  setNewReview({ ...newReview, rating: newValue || 1 })
+                }}
+                max={5}
+                size="large"
+              />
+            </Box>
 
             <label htmlFor="comment">Comment:</label>
             <textarea

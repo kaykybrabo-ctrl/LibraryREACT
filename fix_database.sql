@@ -1,20 +1,27 @@
 -- Fix database structure to match application requirements
 USE library1;
 
--- Add missing columns to users table
-ALTER TABLE users 
-ADD COLUMN IF NOT EXISTS photo VARCHAR(255) DEFAULT NULL,
-ADD COLUMN IF NOT EXISTS description TEXT DEFAULT NULL,
-ADD COLUMN IF NOT EXISTS favorite_book_id INT DEFAULT NULL;
+-- Add missing columns to existing tables
+ALTER TABLE users ADD COLUMN IF NOT EXISTS photo VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS favorite_book_id INT;
 
--- Add missing columns to books table
-ALTER TABLE books 
-ADD COLUMN IF NOT EXISTS description TEXT DEFAULT NULL,
-ADD COLUMN IF NOT EXISTS photo VARCHAR(255) DEFAULT NULL;
+ALTER TABLE books ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE books ADD COLUMN IF NOT EXISTS photo VARCHAR(255);
 
--- Add missing columns to authors table
-ALTER TABLE authors 
-ADD COLUMN IF NOT EXISTS photo VARCHAR(255) DEFAULT NULL;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS photo VARCHAR(255);
+
+-- Create reviews table
+CREATE TABLE IF NOT EXISTS reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    user_id INT NOT NULL,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (book_id) REFERENCES books(book_id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
 
 -- Add foreign key constraint for favorite_book_id if it doesn't exist
 -- First check if constraint exists, if not add it
