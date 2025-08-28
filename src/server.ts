@@ -161,12 +161,10 @@ const requireAdmin = async (req: Request, res: Response, next: any) => {
             return res.status(401).json({ error: 'Authorization token required' });
         }
 
-        // Decode the token to get username
         const token = authHeader.substring(7);
         const decoded = atob(token);
         const username = decoded.split(':')[0];
 
-        // Get user from database
         const results: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
         if (!results.length) {
             return res.status(401).json({ error: 'Invalid token' });
@@ -177,7 +175,6 @@ const requireAdmin = async (req: Request, res: Response, next: any) => {
             return res.status(403).json({ error: 'Admin access required' });
         }
 
-        // Add user to request for use in handlers
         (req as any).user = user;
         next();
     } catch (error) {
