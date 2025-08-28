@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { Rating, Typography, Box } from '@mui/material'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Book {
   book_id: number
@@ -33,6 +34,7 @@ const BookDetail: React.FC = () => {
   const [uploading, setUploading] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' })
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const { isAdmin } = useAuth()
 
   useEffect(() => {
     if (id) {
@@ -184,19 +186,21 @@ const BookDetail: React.FC = () => {
           />
         )}
 
-        <div className="image-upload">
-          <h3>Update Book Image</h3>
-          <form onSubmit={handleImageUpload}>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-            />
-            <button type="submit" disabled={!imageFile || uploading}>
-              {uploading ? 'Uploading...' : 'Upload Image'}
-            </button>
-          </form>
-        </div>
+        {isAdmin && (
+          <div className="image-upload">
+            <h3>Update Book Image</h3>
+            <form onSubmit={handleImageUpload}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              />
+              <button type="submit" disabled={!imageFile || uploading}>
+                {uploading ? 'Uploading...' : 'Upload Image'}
+              </button>
+            </form>
+          </div>
+        )}
       </section>
 
       <section className="form-section">

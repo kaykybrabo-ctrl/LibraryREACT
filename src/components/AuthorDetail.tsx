@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Author {
   author_id: number
@@ -28,6 +29,7 @@ const AuthorDetail: React.FC = () => {
   const [uploading, setUploading] = useState(false)
   const [editingBio, setEditingBio] = useState(false)
   const [biography, setBiography] = useState('')
+  const { isAdmin } = useAuth()
 
   useEffect(() => {
     if (id) {
@@ -169,36 +171,40 @@ const AuthorDetail: React.FC = () => {
                 <p style={{ marginBottom: '15px', lineHeight: '1.6' }}>
                   {author.biography || 'No biography available yet.'}
                 </p>
-                <button onClick={() => setEditingBio(true)}>
-                  Edit Biography
-                </button>
+                {isAdmin && (
+                  <button onClick={() => setEditingBio(true)}>
+                    Edit Biography
+                  </button>
+                )}
               </div>
             )}
           </div>
 
-          <div className="image-upload" style={{ marginTop: '20px' }}>
-            <h3>Update Author Photo</h3>
-            <form onSubmit={handleImageUpload}>
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file && file.type.startsWith('image/')) {
-                    setImageFile(file)
-                    setError('')
-                  } else {
-                    setError('Please select a valid image file (JPG, PNG, GIF, WebP)')
-                    e.target.value = ''
-                  }
-                }}
-                style={{ marginBottom: '10px' }}
-              />
-              <button type="submit" disabled={!imageFile || uploading}>
-                {uploading ? 'Uploading...' : 'Upload Photo'}
-              </button>
-            </form>
-          </div>
+          {isAdmin && (
+            <div className="image-upload" style={{ marginTop: '20px' }}>
+              <h3>Update Author Photo</h3>
+              <form onSubmit={handleImageUpload}>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file && file.type.startsWith('image/')) {
+                      setImageFile(file)
+                      setError('')
+                    } else {
+                      setError('Please select a valid image file (JPG, PNG, GIF, WebP)')
+                      e.target.value = ''
+                    }
+                  }}
+                  style={{ marginBottom: '10px' }}
+                />
+                <button type="submit" disabled={!imageFile || uploading}>
+                  {uploading ? 'Uploading...' : 'Upload Photo'}
+                </button>
+              </form>
+            </div>
+          )}
         </div>
 
       </section>

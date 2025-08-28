@@ -154,12 +154,35 @@ app.get('/legacy', (_req, res) => res.sendFile(path.join(__dirname, '../FRONTEND
 app.get('/legacy/index.html', (_req, res) => res.sendFile(path.join(__dirname, '../FRONTEND/index.html')));
 app.get('/legacy/user.html', (_req, res) => res.sendFile(path.join(__dirname, '../FRONTEND/interface/user.html')));
 
-const requireAdmin = (req: Request, res: Response, next: any) => {
-    const user = (req.session as any)?.user;
-    if (!user || user.role !== 'admin') {
-        return res.status(403).json({ error: 'Admin access required' });
+const requireAdmin = async (req: Request, res: Response, next: any) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Authorization token required' });
+        }
+
+        // Decode the token to get username
+        const token = authHeader.substring(7);
+        const decoded = atob(token);
+        const username = decoded.split(':')[0];
+
+        // Get user from database
+        const results: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
+        if (!results.length) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const user = results[0];
+        if (user.role !== 'admin') {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        // Add user to request for use in handlers
+        (req as any).user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Invalid token' });
     }
-    next();
 };
 
 app.get('/books/count', countBooks);
