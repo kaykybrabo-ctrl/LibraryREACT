@@ -2,23 +2,8 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
-
-interface UserProfile {
-  id: number
-  username: string
-  role: string
-  profile_image?: string
-  description?: string
-}
-
-interface Loan {
-  loans_id: number
-  loan_date: string
-  book_id: number
-  title: string
-  photo?: string
-  description?: string
-}
+import { User, Loan } from '../types'
+import './UserProfile.css'
 
 interface FavoriteBook {
   book_id: number
@@ -30,7 +15,7 @@ interface FavoriteBook {
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [profile, setProfile] = useState<User | null>(null)
   const [loans, setLoans] = useState<Loan[]>([])
   const [favoriteBook, setFavoriteBook] = useState<FavoriteBook | null>(null)
   const [loading, setLoading] = useState(true)
@@ -211,7 +196,7 @@ const UserProfile: React.FC = () => {
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Tell us about yourself..."
                     rows={4}
-                    style={{ width: '100%', marginBottom: '10px' }}
+                    className="description-textarea"
                   />
                   <div>
                     <button onClick={handleUpdateDescription} disabled={uploading}>
@@ -222,7 +207,7 @@ const UserProfile: React.FC = () => {
                         setEditingDescription(false)
                         setDescription(profile?.description || '')
                       }}
-                      style={{ marginLeft: '10px' }}
+                      className="cancel-button"
                     >
                       Cancel
                     </button>
@@ -262,15 +247,7 @@ const UserProfile: React.FC = () => {
             ) : (
               <div>
                 {loans.map(loan => (
-                  <div key={loan.loans_id} style={{
-                    border: '1px solid #ddd',
-                    padding: '15px',
-                    marginBottom: '15px',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
+                  <div key={loan.loans_id} className="loan-card">
                     <div>
                       <h4>{loan.title}</h4>
                       <p><strong>Loan Date:</strong> {new Date(loan.loan_date).toLocaleDateString()}</p>
@@ -281,8 +258,7 @@ const UserProfile: React.FC = () => {
                         <img
                           src={`/api/uploads/${loan.photo}`}
                           alt={loan.title}
-                          className="book-image"
-                          style={{ marginRight: '15px' }}
+                          className="loan-book-image"
                         />
                       )}
                       <button 
@@ -290,14 +266,7 @@ const UserProfile: React.FC = () => {
                           e.preventDefault()
                           handleReturnBook(loan.loans_id)
                         }}
-                        style={{ 
-                          padding: '8px 16px',
-                          backgroundColor: '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
+                        className="return-button"
                       >
                         Return Book
                       </button>
@@ -315,19 +284,12 @@ const UserProfile: React.FC = () => {
             {!favoriteBook ? (
               <p>You haven't set a favorite book yet.</p>
             ) : (
-              <div style={{
-                border: '1px solid #ddd',
-                padding: '20px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '20px'
-              }}>
+              <div className="favorite-book-card">
                 {favoriteBook.photo && (
                   <img
                     src={`/api/uploads/${favoriteBook.photo}`}
                     alt={favoriteBook.title}
-                    style={{ width: '120px', height: '160px', objectFit: 'cover' }}
+                    className="favorite-book-image"
                   />
                 )}
                 <div>

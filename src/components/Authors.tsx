@@ -3,12 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
-
-interface Author {
-  author_id: number
-  name_author: string
-  photo?: string
-}
+import { Author } from '../types'
 
 const Authors: React.FC = () => {
   const { isAdmin } = useAuth()

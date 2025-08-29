@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import './Register.css'
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('')
@@ -85,7 +86,7 @@ const Register: React.FC = () => {
         </button>
       </form>
 
-      <p style={{ textAlign: 'center', marginTop: '20px' }}>
+      <p className="auth-link">
         Already have an account? <Link to="/">Login here</Link>
       </p>
     </div>

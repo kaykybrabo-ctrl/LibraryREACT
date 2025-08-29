@@ -4,24 +4,8 @@ import axios from 'axios'
 import Layout from './Layout'
 import { Rating, Typography, Box } from '@mui/material'
 import { useAuth } from '../contexts/AuthContext'
-
-interface Book {
-  book_id: number
-  title: string
-  description?: string
-  author_id: number
-  author_name?: string
-  photo?: string
-}
-
-interface Review {
-  review_id: number
-  book_id: number
-  rating: number
-  comment: string
-  username: string
-  review_date: string
-}
+import { Book, Review } from '../types'
+import './BookDetail.css'
 
 const BookDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -169,7 +153,7 @@ const BookDetail: React.FC = () => {
       {error && <div className="error-message">{error}</div>}
       
       <section className="profile-section">
-        <button onClick={() => navigate('/books')} style={{ marginBottom: '20px' }}>
+        <button onClick={() => navigate('/books')} className="back-button">
           ← Back to Books
         </button>
         
@@ -182,7 +166,6 @@ const BookDetail: React.FC = () => {
             src={`/api/uploads/${book.photo}`} 
             alt={book.title}
             className="book-image"
-            style={{ width: '200px', height: '250px', objectFit: 'cover' }}
           />
         )}
 
@@ -205,7 +188,7 @@ const BookDetail: React.FC = () => {
 
       <section className="form-section">
         <h3>Book Actions</h3>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="book-actions">
           <button onClick={handleRentBook}>Rent Book</button>
           <button onClick={handleFavoriteBook}>Add to Favorites</button>
         </div>
@@ -236,7 +219,7 @@ const BookDetail: React.FC = () => {
               value={newReview.comment}
               onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
               rows={4}
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+              className="review-textarea"
             />
 
             <button type="submit">Submit Review</button>
@@ -251,18 +234,13 @@ const BookDetail: React.FC = () => {
         ) : (
           <div>
             {reviews.map(review => (
-              <div key={review.review_id} style={{ 
-                border: '1px solid #ddd', 
-                padding: '15px', 
-                marginBottom: '10px',
-                borderRadius: '4px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div key={review.review_id} className="review-card">
+                <div className="review-header">
                   <strong>{review.username}</strong>
                   <span>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
                 </div>
                 <p>{review.comment}</p>
-                <small style={{ color: '#666' }}>
+                <small className="review-date">
                   {new Date(review.review_date).toLocaleDateString()}
                 </small>
               </div>

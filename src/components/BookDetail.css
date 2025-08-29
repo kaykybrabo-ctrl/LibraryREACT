@@ -1,0 +1,54 @@
+.back-button {
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}
+
+.book-image {
+  width: 200px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.book-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.review-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.review-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.review-date {
+  color: #666;
+  font-size: 0.9em;
+}
