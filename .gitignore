@@ -1,2 +1,3 @@
 .env
 rest/api/db/data/
+node_modules/
