@@ -6,6 +6,7 @@ RUN npm install
 
 COPY src/ ./src/
 COPY tsconfig.json ./
+COPY .env ./
 
 COPY FRONTEND/react-dist/ ./FRONTEND/react-dist/
 COPY FRONTEND/uploads/ ./FRONTEND/uploads/
