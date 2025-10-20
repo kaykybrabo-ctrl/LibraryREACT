@@ -1,0 +1,553 @@
+.homeHeader {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: #162c74;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
+}
+
+.brand:hover {
+  opacity: 0.8;
+}
+
+.logo {
+  font-size: 20px;
+  color: #fff;
+}
+
+.title {
+  margin: 0;
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.2px;
+}
+
+.homeNav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navLink {
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.loginBtn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.loginBtn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #fff;
+}
+
+/* Card hover effects */
+.homeCard {
+  padding: 2rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.homeCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .title {
+    font-size: 16px;
+  }
+  
+  .navLink {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  
+  .homeNav {
+    gap: 8px;
+  }
+  
+  .loginBtn {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .homeNav {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .navLink, .loginBtn {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+}
+
+/* Main Content */
+.homeMain {
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Carousel Section */
+.carouselSection {
+  position: relative;
+  height: 500px;
+  overflow: hidden;
+}
+
+.carousel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carouselSlide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.carouselSlide.active {
+  opacity: 1;
+}
+
+.carouselLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.carouselImage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.carouselImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.carouselLink:hover .carouselImage img {
+  transform: scale(1.05);
+}
+
+.carouselOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  color: white;
+  padding: 60px 40px 40px;
+  text-align: center;
+}
+
+.carouselOverlay h2 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.carouselOverlay p {
+  font-size: 1.3rem;
+  margin: 0;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.carouselControls {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  pointer-events: none;
+}
+
+.carouselBtn {
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.5);
+  color: white;
+  font-size: 1.5rem;
+  padding: 15px 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: all;
+  backdrop-filter: blur(10px);
+}
+
+.carouselBtn:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.8);
+  transform: scale(1.1);
+}
+
+.carouselDots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+.dot:hover {
+  background: rgba(255,255,255,0.8);
+}
+
+/* Stats Section */
+.statsSection {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.statCard {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.statIcon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.statNumber {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #162c74;
+  margin-bottom: 10px;
+}
+
+.statLabel {
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+/* Featured Section */
+.featuredSection {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  color: #162c74;
+  text-align: center;
+  margin-bottom: 40px;
+  font-weight: 700;
+}
+
+.loadingBooks {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+.booksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.bookCard {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.bookCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+}
+
+.bookImage {
+  height: 200px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bookImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bookPlaceholder {
+  font-size: 4rem;
+  color: #ccc;
+}
+
+.bookInfo {
+  padding: 20px;
+}
+
+.bookTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #162c74;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.bookAuthor {
+  color: #666;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.bookDescription {
+  color: #777;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sectionFooter {
+  text-align: center;
+}
+
+.viewAllBtn {
+  display: inline-block;
+  padding: 12px 30px;
+  background: #162c74;
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.viewAllBtn:hover {
+  background: #1a2f7a;
+}
+
+/* Actions Section */
+.actionsSection {
+  padding: 40px 20px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.actionCard {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.actionCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.actionIcon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.actionCard h3 {
+  color: #162c74;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.actionCard p {
+  color: #666;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Additional Responsive Design */
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+  
+  .heroSubtitle {
+    font-size: 1.1rem;
+  }
+  
+  .searchForm {
+    margin: 0 20px;
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  .statCard {
+    padding: 20px;
+  }
+  
+  .statNumber {
+    font-size: 2rem;
+  }
+  
+  .sectionTitle {
+    font-size: 2rem;
+  }
+  
+  .booksGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .actionsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .heroSection {
+    padding: 40px 15px;
+  }
+  
+  .heroTitle {
+    font-size: 2rem;
+  }
+  
+  .searchInput, .searchBtn {
+    padding: 12px 15px;
+  }
+  
+  /* Carousel responsive */
+  .carouselSection {
+    height: 350px;
+  }
+  
+  .carouselOverlay {
+    padding: 40px 20px 30px;
+  }
+  
+  .carouselOverlay h2 {
+    font-size: 2rem;
+  }
+  
+  .carouselOverlay p {
+    font-size: 1rem;
+  }
+  
+  .carouselBtn {
+    font-size: 1.2rem;
+    padding: 10px 15px;
+  }
+  
+  .carouselControls {
+    padding: 0 10px;
+  }
+}

@@ -122,7 +122,7 @@ const UserProfile: React.FC = () => {
 
   const handleReturnBook = async (loanId: number) => {
     try {
-      const response = await axios.post(`/api/return/${loanId}`, {}, {
+      await axios.post(`/api/return/${loanId}`, {}, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'

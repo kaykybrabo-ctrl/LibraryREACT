@@ -2,3 +2,45 @@
   text-align: center;
   margin-top: 20px;
 }
+
+.link-button {
+  background: transparent;
+  border: none;
+  color: #162c74;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  display: inline-block;
+}
+
+.email-preview {
+  margin-top: 20px;
+  padding: 16px;
+  background: #e8f4fd;
+  border: 2px solid #0b5cab;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(11, 92, 171, 0.1);
+}
+
+.email-preview-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0b5cab;
+  margin-bottom: 10px;
+}
+
+.email-preview-link {
+  display: inline-block;
+  color: #0b5cab;
+  font-weight: 500;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.email-preview-link:hover {
+  color: #084179;
+  text-decoration: underline;
+}

@@ -4,6 +4,7 @@ import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { Author } from '../types'
+import './Cards.css'
 
 const Authors: React.FC = () => {
   const { isAdmin } = useAuth()
@@ -79,7 +80,7 @@ const Authors: React.FC = () => {
   }
 
   const handleDeleteAuthor = async (authorId: number) => {
-    if (!confirm('Are you sure you want to delete this author?')) return
+    if (!confirm('Tem certeza que deseja excluir este autor?')) return
 
     try {
       await axios.delete(`/api/authors/${authorId}`)
@@ -95,21 +96,21 @@ const Authors: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout title="Authors">
-        <div className="loading">Loading authors...</div>
+      <Layout title="Autores">
+        <div className="loading">Carregando autores...</div>
       </Layout>
     )
   }
 
   return (
-    <Layout title="Authors">
+    <Layout title="Autores">
       {error && <div className="error-message">{error}</div>}
       
       {isAdmin && (
         <section className="form-section">
-          <h2>Add Author</h2>
+          <h2>Adicionar Autor</h2>
           <form onSubmit={handleCreateAuthor}>
-            <label htmlFor="author-name">Name:</label>
+            <label htmlFor="author-name">Nome:</label>
             <input
               type="text"
               id="author-name"
@@ -117,60 +118,78 @@ const Authors: React.FC = () => {
               onChange={(e) => setNewAuthor({ ...newAuthor, name: e.target.value })}
               required
             />
-            <button type="submit">Add</button>
+            <button type="submit">Adicionar</button>
           </form>
         </section>
       )}
 
       <section className="author-list">
-        <h2>Authors</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {authors.map(author => (
-              <tr key={author.author_id}>
-                <td>{author.author_id}</td>
-                <td>
+        <h2>Autores ({authors.length})</h2>
+        <div className="cards-grid">
+          {authors.map(author => (
+            <div key={author.author_id} className={`card author-card ${editingAuthor === author.author_id ? 'editing' : ''}`}>
+              <div className="card-header">
+                <h3 className="card-title">
                   {editingAuthor === author.author_id ? (
                     <input
                       type="text"
                       value={editData.name}
                       onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                      style={{ fontSize: '1.2em', fontWeight: '600' }}
                     />
                   ) : (
                     author.name_author
                   )}
-                </td>
-                <td>
-                  <div className="action-buttons">
-                    {editingAuthor === author.author_id ? (
+                </h3>
+                <span className="card-id">#{author.author_id}</span>
+              </div>
+
+              <div className="author-avatar">
+                {author.name_author.charAt(0).toUpperCase()}
+              </div>
+
+              <div className="card-content">
+                <div className="card-field">
+                  <label>Nome do Autor:</label>
+                  <div className="card-field-value">{author.name_author}</div>
+                </div>
+                
+                {author.photo && (
+                  <div className="card-field">
+                    <label>Foto:</label>
+                    <img 
+                      src={`/api/uploads/${author.photo}`} 
+                      alt={author.name_author}
+                      style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none'
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="card-actions">
+                {editingAuthor === author.author_id ? (
+                  <>
+                    <button className="btn-success" onClick={handleSaveEdit}>Salvar</button>
+                    <button className="btn-secondary" onClick={handleCancelEdit}>Cancelar</button>
+                  </>
+                ) : (
+                  <>
+                    <button className="btn-primary" onClick={() => navigate(`/authors/${author.author_id}`)}>Ver Detalhes</button>
+                    {isAdmin && (
                       <>
-                        <button onClick={handleSaveEdit}>Save</button>
-                        <button onClick={handleCancelEdit}>Cancel</button>
-                      </>
-                    ) : (
-                      <>
-                        <button onClick={() => navigate(`/authors/${author.author_id}`)}>View</button>
-                        {isAdmin && (
-                          <>
-                            <button onClick={() => handleEditAuthor(author)}>Edit</button>
-                            <button onClick={() => handleDeleteAuthor(author.author_id)}>Delete</button>
-                          </>
-                        )}
+                        <button className="btn-secondary" onClick={() => handleEditAuthor(author)}>Editar</button>
+                        <button className="btn-danger" onClick={() => handleDeleteAuthor(author.author_id)}>Excluir</button>
                       </>
                     )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
 
         {totalPages > 1 && (
           <div className="pagination">

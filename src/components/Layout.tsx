@@ -13,6 +13,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
 
   const handleLogout = () => {
     logout()
+    window.location.replace('/')
   }
 
   return (
@@ -20,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
       <header>
         <h1>{title}</h1>
         <button id="logout-button" onClick={handleLogout}>
-          Logout
+          Sair
         </button>
       </header>
 
@@ -29,26 +30,26 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
           to="/books" 
           className={location.pathname === '/books' ? 'active' : ''}
         >
-          Books
+          Livros
         </Link>
         <Link 
           to="/authors" 
           className={location.pathname === '/authors' ? 'active' : ''}
         >
-          Authors
+          Autores
         </Link>
         <Link 
           to="/profile" 
           className={location.pathname === '/profile' ? 'active' : ''}
         >
-          Profile
+          Perfil
         </Link>
       </nav>
 
       <main>{children}</main>
 
       <footer>
-        <p>&copy; 2025 Library System</p>
+        <p>&copy; 2025 PedBook</p>
       </footer>
     </>
   )
