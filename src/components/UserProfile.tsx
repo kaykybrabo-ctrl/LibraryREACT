@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
@@ -14,7 +15,9 @@ interface FavoriteBook {
 }
 
 const UserProfile: React.FC = () => {
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
+  const { username: urlUsername } = useParams<{ username: string }>()
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<User | null>(null)
   const [loans, setLoans] = useState<Loan[]>([])
   const [favoriteBook, setFavoriteBook] = useState<FavoriteBook | null>(null)
@@ -26,29 +29,39 @@ const UserProfile: React.FC = () => {
   const [description, setDescription] = useState('')
   const [editingDescription, setEditingDescription] = useState(false)
 
+  const targetUsername = urlUsername || user?.username
+  const isOwnProfile = !urlUsername || urlUsername === user?.username
+  const canEdit = isOwnProfile
+  const showBackButton = !!urlUsername
+
   useEffect(() => {
-    fetchProfile()
-    fetchLoans()
-    fetchFavoriteBook()
-  }, [])
+    if (targetUsername) {
+      fetchProfile()
+      fetchLoans()
+      fetchFavoriteBook()
+    }
+  }, [targetUsername])
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`/api/get-profile?username=${user?.username}`)
+      const response = await axios.get(`/api/get-profile?username=${targetUsername}&t=${Date.now()}`)
       setProfile(response.data)
       setDescription(response.data.description || '')
       setLoading(false)
     } catch (err) {
-      setError('Failed to fetch profile')
+      setError('Falha ao carregar perfil')
       setLoading(false)
     }
   }
 
   const fetchLoans = async () => {
-    if (!user?.username) return
+    if (!targetUsername) return
+    
+    const canFetchLoans = (isOwnProfile && user?.role !== 'admin') || (isAdmin && profile?.role !== 'admin')
+    if (!canFetchLoans) return
 
     try {
-      const response = await axios.get(`/api/loans?username=${user.username}`, {
+      const response = await axios.get(`/api/loans?username=${targetUsername}`, {
         withCredentials: true
       })
       setLoans(response.data)
@@ -57,10 +70,10 @@ const UserProfile: React.FC = () => {
   }
 
   const fetchFavoriteBook = async () => {
-    if (!user?.username) return
+    if (!targetUsername) return
 
     try {
-      const response = await axios.get(`/api/users/favorite?username=${user.username}`)
+      const response = await axios.get(`/api/users/favorite?username=${targetUsername}`)
       if (response.data) {
         setFavoriteBook(response.data)
       } else {
@@ -141,66 +154,98 @@ const UserProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout title="User Profile">
-        <div className="loading">Loading profile...</div>
+      <Layout title={isOwnProfile ? "Meu Perfil" : `Perfil de ${targetUsername}`}>
+        <div className="loading">Carregando perfil...</div>
       </Layout>
     )
   }
 
   return (
-    <Layout title="User Profile">
+    <Layout title={isOwnProfile ? "Meu Perfil" : `Perfil de ${targetUsername}`}>
       {error && <div className="error-message">{error}</div>}
+
+      {showBackButton && (
+        <div style={{ marginBottom: '20px' }}>
+          <button 
+            onClick={() => navigate('/users')}
+            style={{
+              background: '#6b7280',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            ← Voltar aos Usuários
+          </button>
+        </div>
+      )}
 
       <div className="tabs">
         <button
           className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
           onClick={() => setActiveTab('profile')}
         >
-          Profile
+          Perfil
         </button>
-        <button
-          className={`tab ${activeTab === 'loans' ? 'active' : ''}`}
-          onClick={() => setActiveTab('loans')}
-        >
-          My Loans
-        </button>
+        {(isOwnProfile && user?.role !== 'admin') && (
+          <button
+            className={`tab ${activeTab === 'loans' ? 'active' : ''}`}
+            onClick={() => setActiveTab('loans')}
+          >
+            Meus Aluguéis
+          </button>
+        )}
+        {(!isOwnProfile && isAdmin && profile?.role !== 'admin') && (
+          <button
+            className={`tab ${activeTab === 'loans' ? 'active' : ''}`}
+            onClick={() => setActiveTab('loans')}
+          >
+            Aluguéis
+          </button>
+        )}
         <button
           className={`tab ${activeTab === 'favorite' ? 'active' : ''}`}
           onClick={() => setActiveTab('favorite')}
         >
-          Favorite Book
+          Livro Favorito
         </button>
       </div>
 
       <div className="tab-content">
         {activeTab === 'profile' && (
           <section className="profile-section">
-            <h2>Profile Information</h2>
-            <p><strong>Username:</strong> {user?.username || 'Unknown'}</p>
-            <p><strong>Role:</strong> {user?.role || 'User'}</p>
+            <h2>Informações do Perfil</h2>
+            <p><strong>Usuário:</strong> {profile?.username || targetUsername || 'Desconhecido'}</p>
+            <p><strong>Função:</strong> {profile?.role === 'admin' ? 'Administrador' : 'Usuário'}</p>
 
-            {profile?.profile_image && (
-              <img
-                src={`/api/uploads/${profile.profile_image}`}
-                alt="Profile"
-                className="profile-image"
-              />
-            )}
+            <img
+              src={profile?.profile_image ? `/api/uploads/${profile.profile_image}` : `/api/uploads/default-user.png`}
+              alt="Perfil"
+              className="profile-image"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `/api/uploads/default-user.png`
+              }}
+            />
 
             <div className="description-section">
-              <h3>Description</h3>
-              {editingDescription ? (
+              <h3>Descrição</h3>
+              {canEdit && editingDescription ? (
                 <div>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Tell us about yourself..."
+                    placeholder="Conte-nos sobre você..."
                     rows={4}
                     className="description-textarea"
                   />
                   <div>
                     <button onClick={handleUpdateDescription} disabled={uploading}>
-                      {uploading ? 'Saving...' : 'Save Description'}
+                      {uploading ? 'Salvando...' : 'Salvar Descrição'}
                     </button>
                     <button 
                       onClick={() => {
@@ -209,67 +254,77 @@ const UserProfile: React.FC = () => {
                       }}
                       className="cancel-button"
                     >
-                      Cancel
+                      Cancelar
                     </button>
                   </div>
                 </div>
               ) : (
                 <div>
-                  <p>{profile?.description || 'No description added yet.'}</p>
-                  <button onClick={() => setEditingDescription(true)}>
-                    Edit Description
-                  </button>
+                  <p>{profile?.description || 'Nenhuma descrição adicionada ainda.'}</p>
+                  {canEdit && (
+                    <button onClick={() => setEditingDescription(true)}>
+                      Editar Descrição
+                    </button>
+                  )}
                 </div>
               )}
             </div>
 
-            <div className="image-upload">
-              <h3>Update Profile Image</h3>
-              <form onSubmit={handleImageUpload}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                />
-                <button type="submit" disabled={!imageFile || uploading}>
-                  {uploading ? 'Uploading...' : 'Upload Image'}
-                </button>
-              </form>
-            </div>
+            {canEdit && (
+              <div className="image-upload">
+                <h3>Atualizar Foto do Perfil</h3>
+                <form onSubmit={handleImageUpload}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  />
+                  <button type="submit" disabled={!imageFile || uploading}>
+                    {uploading ? 'Enviando...' : 'Enviar Imagem'}
+                  </button>
+                </form>
+              </div>
+            )}
           </section>
         )}
 
         {activeTab === 'loans' && (
+          (isOwnProfile && user?.role !== 'admin') || 
+          (!isOwnProfile && isAdmin && profile?.role !== 'admin')
+        ) && (
           <section className="profile-section">
-            <h2>My Borrowed Books</h2>
+            <h2>{isOwnProfile ? 'Meus Livros Emprestados' : `Livros Emprestados por ${targetUsername}`}</h2>
             {loans.length === 0 ? (
-              <p>You haven't borrowed any books yet.</p>
+              <p>{isOwnProfile ? 'Você ainda não pegou nenhum livro emprestado.' : 'Este usuário não tem livros emprestados.'}</p>
             ) : (
               <div>
                 {loans.map(loan => (
                   <div key={loan.loans_id} className="loan-card">
                     <div>
                       <h4>{loan.title}</h4>
-                      <p><strong>Loan Date:</strong> {new Date(loan.loan_date).toLocaleDateString()}</p>
+                      <p><strong>Data do Empréstimo:</strong> {new Date(loan.loan_date).toLocaleDateString('pt-BR')}</p>
                       {loan.description && <p>{loan.description}</p>}
                     </div>
                     <div>
-                      {loan.photo && (
-                        <img
-                          src={`/api/uploads/${loan.photo}`}
-                          alt={loan.title}
-                          className="loan-book-image"
-                        />
-                      )}
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault()
-                          handleReturnBook(loan.loans_id)
+                      <img
+                        src={loan.photo ? `/api/uploads/${loan.photo}` : `https://via.placeholder.com/80x120/162c74/ffffff?text=${encodeURIComponent(loan.title.substring(0, 10))}`}
+                        alt={loan.title}
+                        className="loan-book-image"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://via.placeholder.com/80x120/162c74/ffffff?text=${encodeURIComponent(loan.title.substring(0, 10))}`
                         }}
-                        className="return-button"
-                      >
-                        Return Book
-                      </button>
+                      />
+                      {isOwnProfile && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleReturnBook(loan.loans_id)
+                          }}
+                          className="return-button"
+                        >
+                          Devolver Livro
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -280,23 +335,24 @@ const UserProfile: React.FC = () => {
 
         {activeTab === 'favorite' && (
           <section className="profile-section">
-            <h2>My Favorite Book</h2>
+            <h2>Meu Livro Favorito</h2>
             {!favoriteBook ? (
-              <p>You haven't set a favorite book yet.</p>
+              <p>Você ainda não definiu um livro favorito.</p>
             ) : (
               <div className="favorite-book-card">
-                {favoriteBook.photo && (
-                  <img
-                    src={`/api/uploads/${favoriteBook.photo}`}
-                    alt={favoriteBook.title}
-                    className="favorite-book-image"
-                  />
-                )}
+                <img
+                  src={favoriteBook.photo ? `/api/uploads/${favoriteBook.photo}` : `https://via.placeholder.com/120x180/162c74/ffffff?text=${encodeURIComponent(favoriteBook.title.substring(0, 15))}`}
+                  alt={favoriteBook.title}
+                  className="favorite-book-image"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://via.placeholder.com/120x180/162c74/ffffff?text=${encodeURIComponent(favoriteBook.title.substring(0, 15))}`
+                  }}
+                />
                 <div>
                   <h3>{favoriteBook.title}</h3>
-                  <p><strong>Author:</strong> {favoriteBook.author_name || 'Unknown'}</p>
+                  <p><strong>Autor:</strong> {favoriteBook.author_name || 'Desconhecido'}</p>
                   {favoriteBook.description && (
-                    <p><strong>Description:</strong> {favoriteBook.description}</p>
+                    <p><strong>Descrição:</strong> {favoriteBook.description}</p>
                   )}
                 </div>
               </div>

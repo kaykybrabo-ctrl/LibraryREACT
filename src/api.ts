@@ -19,13 +19,21 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor to handle auth errors
-api.interceptors.response.use(
-  (response) => response,
+axios.interceptors.request.use(
+  (config) => {
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+axios.interceptors.response.use(
+  (response) => {
+    return response
+  },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
       window.location.href = '/login'
     }
     return Promise.reject(error)

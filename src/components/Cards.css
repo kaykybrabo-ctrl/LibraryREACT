@@ -130,6 +130,15 @@
   background: #047857;
 }
 
+.card-actions .btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.card-actions .btn-warning:hover {
+  background: #d97706;
+}
+
 .card.editing {
   border-color: #162c74;
   box-shadow: 0 0 0 2px rgba(22, 44, 116, 0.1);
@@ -157,6 +166,7 @@
   flex-direction: column;
   overflow: hidden;
   padding: 0;
+  position: relative;
 }
 
 .book-card .card-image-container {
@@ -200,9 +210,139 @@
   border-top: 1px solid #f3f4f6;
 }
 
+.book-card.rented {
+  border: 2px solid #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.book-card.rented .card-image {
+  filter: brightness(0.9);
+}
+
+
+.book-card.rented::after {
+  content: 'ALUGADO';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #f59e0b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7em;
+  font-weight: bold;
+  z-index: 10;
+}
+
+.netflix-card {
+  background: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.netflix-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.netflix-card .card-image-container {
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  position: relative;
+}
+
+.netflix-card .card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.netflix-card:hover .card-image {
+  transform: scale(1.1);
+}
+
+.netflix-card .card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  padding: 15px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.netflix-card:hover .card-overlay {
+  transform: translateY(0);
+}
+
+.netflix-card .card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: white;
+  line-height: 1.2;
+}
+
+.netflix-card .card-subtitle {
+  font-size: 12px;
+  color: #ccc;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.netflix-card .card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+}
+
+.netflix-card .card-actions button {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.netflix-card .card-actions button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.author-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid #cbd5e1;
+  position: relative;
+  overflow: hidden;
+}
+
+.author-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #162c74, #3b82f6);
+}
+
 .author-card .author-avatar {
-  width: 50px;
-  height: 50px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: #162c74;
   color: white;
@@ -210,9 +350,49 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 1.2em;
-  float: right;
-  margin-left: 15px;
+  font-size: 1.8em;
+  margin: 0 auto 15px auto;
+  box-shadow: 0 4px 12px rgba(22, 44, 116, 0.3);
+  border: 3px solid white;
+}
+
+.author-card .card-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.author-card .card-title {
+  color: #162c74;
+  margin-bottom: 8px;
+  font-size: 1.3em;
+}
+
+.author-card .card-id {
+  background: linear-gradient(135deg, #162c74, #3b82f6);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 600;
+}
+
+.author-card .card-content {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.author-card .card-field {
+  margin-bottom: 0;
+}
+
+.author-card .card-field label {
+  display: none;
+}
+
+.author-card .card-field-value {
+  font-size: 1.1em;
+  color: #475569;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {

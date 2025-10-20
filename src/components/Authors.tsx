@@ -128,6 +128,18 @@ const Authors: React.FC = () => {
         <div className="cards-grid">
           {authors.map(author => (
             <div key={author.author_id} className={`card author-card ${editingAuthor === author.author_id ? 'editing' : ''}`}>
+              <div className="author-avatar">
+                <img 
+                  src={author.photo ? `/api/uploads/${author.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(author.name_author)}&size=80&background=162c74&color=fff&bold=true`} 
+                  alt={author.name_author}
+                  style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
+                  onClick={() => navigate(`/authors/${author.author_id}`)}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(author.name_author)}&size=80&background=162c74&color=fff&bold=true`
+                  }}
+                />
+              </div>
+
               <div className="card-header">
                 <h3 className="card-title">
                   {editingAuthor === author.author_id ? (
@@ -135,38 +147,25 @@ const Authors: React.FC = () => {
                       type="text"
                       value={editData.name}
                       onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                      style={{ fontSize: '1.2em', fontWeight: '600' }}
+                      style={{ fontSize: '1.3em', fontWeight: '600', textAlign: 'center' }}
                     />
                   ) : (
-                    author.name_author
+                    <span onClick={() => navigate(`/authors/${author.author_id}`)} style={{ cursor: 'pointer' }}>
+                      {author.name_author}
+                    </span>
                   )}
                 </h3>
                 <span className="card-id">#{author.author_id}</span>
               </div>
 
-              <div className="author-avatar">
-                {author.name_author.charAt(0).toUpperCase()}
-              </div>
-
               <div className="card-content">
                 <div className="card-field">
-                  <label>Nome do Autor:</label>
-                  <div className="card-field-value">{author.name_author}</div>
-                </div>
-                
-                {author.photo && (
-                  <div className="card-field">
-                    <label>Foto:</label>
-                    <img 
-                      src={`/api/uploads/${author.photo}`} 
-                      alt={author.name_author}
-                      style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
+                  <div className="card-field-value">
+                    <span onClick={() => navigate(`/authors/${author.author_id}`)} style={{ cursor: 'pointer' }}>
+                      Autor
+                    </span>
                   </div>
-                )}
+                </div>
               </div>
 
               <div className="card-actions">

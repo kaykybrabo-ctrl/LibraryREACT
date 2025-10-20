@@ -9,13 +9,9 @@ export async function getProfile(req: Request, res: Response) {
 
     const username = (req.query.username as string) || sessionUser.username;
 
-    if (sessionUser.role !== 'admin' && sessionUser.username !== username) {
-        return res.status(403).json({ error: 'You can only view your own profile' });
-    }
-
     try {
         const results: any[] = await executeQuery(
-            'SELECT id, username, role, photo AS profile_image, description FROM users WHERE username = ? LIMIT 1',
+            'SELECT id, username, role, profile_image, description FROM users WHERE username = ? LIMIT 1',
             [username]
         );
 
@@ -23,14 +19,17 @@ export async function getProfile(req: Request, res: Response) {
 
         const user = results[0];
 
+        console.log(`getProfile for ${username}: profile_image = ${user.profile_image}`);
+        
         res.json({
             id: user.id,
             username: user.username,
             role: user.role,
-            profile_image: user.profile_image || 'default-user.png',
+            profile_image: user.profile_image || null,
             description: user.description || ''
         });
     } catch (error) {
+        console.error('getProfile error:', error);
         res.status(500).json({ error: 'Database error' });
     }
 }

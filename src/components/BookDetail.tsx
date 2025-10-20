@@ -133,33 +133,33 @@ const BookDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout title="Book Details">
-        <div className="loading">Loading book details...</div>
+      <Layout title="Detalhes do Livro">
+        <div className="loading">Carregando detalhes do livro...</div>
       </Layout>
     )
   }
 
   if (!book) {
     return (
-      <Layout title="Book Details">
-        <div className="error-message">Book not found</div>
-        <button onClick={() => navigate('/books')}>Back to Books</button>
+      <Layout title="Detalhes do Livro">
+        <div className="error-message">Livro não encontrado</div>
+        <button onClick={() => navigate('/books')}>Voltar aos Livros</button>
       </Layout>
     )
   }
 
   return (
-    <Layout title={`Book: ${book.title}`}>
+    <Layout title={`Livro: ${book.title}`}>
       {error && <div className="error-message">{error}</div>}
       
       <section className="profile-section">
         <button onClick={() => navigate('/books')} className="back-button">
-          ← Back to Books
+          ← Voltar aos Livros
         </button>
         
         <h2>{book.title}</h2>
-        <p><strong>Author:</strong> {book.author_name || 'Unknown'}</p>
-        <p><strong>Description:</strong> {book.description || 'No description available'}</p>
+        <p><strong>Autor:</strong> {book.author_name || 'Desconhecido'}</p>
+        <p><strong>Descrição:</strong> {book.description || 'Nenhuma descrição disponível'}</p>
         
         {book.photo && (
           <img 
@@ -171,7 +171,7 @@ const BookDetail: React.FC = () => {
 
         {isAdmin && (
           <div className="image-upload">
-            <h3>Update Book Image</h3>
+            <h3>Atualizar Imagem do Livro</h3>
             <form onSubmit={handleImageUpload}>
               <input
                 type="file"
@@ -179,7 +179,7 @@ const BookDetail: React.FC = () => {
                 onChange={(e) => setImageFile(e.target.files?.[0] || null)}
               />
               <button type="submit" disabled={!imageFile || uploading}>
-                {uploading ? 'Uploading...' : 'Upload Image'}
+                {uploading ? 'Enviando...' : 'Enviar Imagem'}
               </button>
             </form>
           </div>
@@ -187,21 +187,21 @@ const BookDetail: React.FC = () => {
       </section>
 
       <section className="form-section">
-        <h3>Book Actions</h3>
+        <h3>Ações do Livro</h3>
         <div className="book-actions">
-          <button onClick={handleRentBook}>Rent Book</button>
-          <button onClick={handleFavoriteBook}>Add to Favorites</button>
+          <button onClick={handleRentBook}>Alugar Livro</button>
+          <button onClick={handleFavoriteBook}>Adicionar aos Favoritos</button>
         </div>
       </section>
 
       <section className="form-section">
-        <h3>Write a Review</h3>
+        <h3>Escrever uma Avaliação</h3>
         {!currentUser ? (
-          <p>Please log in to write a review.</p>
+          <p>Faça login para escrever uma avaliação.</p>
         ) : (
           <form onSubmit={handleSubmitReview}>
             <Box sx={{ mb: 2 }}>
-              <Typography component="legend" sx={{ mb: 1 }}>Rating:</Typography>
+              <Typography component="legend" sx={{ mb: 1 }}>Avaliação:</Typography>
               <Rating
                 name="book-rating"
                 value={newReview.rating}
@@ -213,7 +213,7 @@ const BookDetail: React.FC = () => {
               />
             </Box>
 
-            <label htmlFor="comment">Comment:</label>
+            <label htmlFor="comment">Comentário:</label>
             <textarea
               id="comment"
               value={newReview.comment}
@@ -222,21 +222,33 @@ const BookDetail: React.FC = () => {
               className="review-textarea"
             />
 
-            <button type="submit">Submit Review</button>
+            <button type="submit">Enviar Avaliação</button>
           </form>
         )}
       </section>
 
       <section className="form-section">
-        <h3>Reviews</h3>
+        <h3>Avaliações</h3>
         {reviews.length === 0 ? (
-          <p>No reviews yet.</p>
+          <p>Nenhuma avaliação ainda.</p>
         ) : (
           <div>
             {reviews.map(review => (
               <div key={review.review_id} className="review-card">
                 <div className="review-header">
-                  <strong>{review.username}</strong>
+                  <strong 
+                    onClick={() => navigate(`/profile/${review.username}`)}
+                    style={{ 
+                      cursor: 'pointer', 
+                      color: '#162c74', 
+                      textDecoration: 'underline',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    👤 {review.username}
+                  </strong>
                   <span>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
                 </div>
                 <p>{review.comment}</p>

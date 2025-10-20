@@ -35,16 +35,25 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage });
-
 app.use(express.json());
-app.use(cors({ origin: true, credentials: true }));
-app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: false, cookie: { secure: false } }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }
+}));
+
+app.use('/api/uploads', express.static(path.join(__dirname, '../FRONTEND/uploads')));
 
 app.use(express.static(path.join(__dirname, '../FRONTEND/react-dist')));
 
 app.use('/dist', express.static(path.join(__dirname, '../FRONTEND/dist')));
 app.use('/interface/assets', express.static(path.join(__dirname, '../FRONTEND/dist/interface/assets')));
-app.use('/api/uploads', express.static(path.join(__dirname, '../FRONTEND/uploads')));
 app.use('/interface', express.static(path.join(__dirname, '../FRONTEND/interface'), { index: false }));
 app.use('/legacy', express.static(path.join(__dirname, '../FRONTEND'), { index: false }));
 
@@ -140,6 +149,97 @@ app.get('/users/favorite', async (req, res) => {
         }
     } catch (error) {
         res.json(null);
+    }
+});
+
+app.get('/api/users', async (_, res) => {
+    console.log('GET /api/users called');
+    try {
+        const result = await executeQuery(`
+            SELECT id as user_id, username, role 
+            FROM users 
+            ORDER BY username
+        `);
+        console.log('Users query result:', result);
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+app.post('/api/setup-profile-columns', async (_, res) => {
+    try {
+        try {
+            await executeQuery(`ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) NULL`);
+        } catch (e) {
+        }
+        
+        try {
+            await executeQuery(`ALTER TABLE users ADD COLUMN description TEXT NULL`);
+        } catch (e) {
+        }
+        
+        res.json({ message: 'Profile columns setup completed' });
+    } catch (error) {
+        console.error('Error setting up profile columns:', error);
+        res.status(500).json({ error: 'Failed to setup profile columns' });
+    }
+});
+
+app.get('/api/map-existing-photos', async (_, res) => {
+    try {
+        const uploadsDir = path.join(__dirname, '../FRONTEND/uploads');
+        const files = fs.readdirSync(uploadsDir);
+        
+        await executeQuery('UPDATE users SET profile_image = NULL WHERE profile_image NOT LIKE "%-%"');
+        const photoMap: { [key: string]: string } = {
+            'kayky': '1756472615955-Life in Silence.jpeg',
+            'kaue': '1756472663784-stor.jpeg', 
+            'barbara': '1756472640346-Fragments of Everyday Life.jpg'
+        };
+        
+        for (const [username, filename] of Object.entries(photoMap)) {
+            if (files.includes(filename)) {
+                await executeQuery(
+                    'UPDATE users SET profile_image = ? WHERE username = ?',
+                    [filename, username]
+                );
+            }
+        }
+        
+        res.json({ message: 'Photos mapped successfully', photoMap, filesInDir: files.length });
+    } catch (error) {
+        console.error('Error mapping photos:', error);
+        res.status(500).json({ error: 'Failed to map photos' });
+    }
+});
+
+app.get('/api/test-profile', async (req, res) => {
+    const username = req.query.username as string;
+    if (!username) return res.status(400).json({ error: 'Username required' });
+    
+    try {
+        const results: any[] = await executeQuery(
+            'SELECT id, username, role, profile_image, description FROM users WHERE username = ? LIMIT 1',
+            [username]
+        );
+
+        if (!results.length) return res.status(404).json({ error: 'User not found' });
+
+        const user = results[0];
+        console.log(`test-profile for ${username}: profile_image = ${user.profile_image}`);
+        
+        res.json({
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            profile_image: user.profile_image || null,
+            description: user.description || ''
+        });
+    } catch (error) {
+        console.error('test-profile error:', error);
+        res.status(500).json({ error: 'Database error' });
     }
 });
 

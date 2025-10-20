@@ -6,6 +6,7 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Books from './components/Books'
 import Authors from './components/Authors'
+import Users from './components/Users'
 import BookDetail from './components/BookDetail'
 import AuthorDetail from './components/AuthorDetail'
 import UserProfile from './components/UserProfile'
@@ -33,6 +34,11 @@ function App() {
               <Authors />
             </ProtectedRoute>
           } />
+          <Route path="/users" element={
+            <ProtectedRoute>
+              <Users />
+            </ProtectedRoute>
+          } />
           <Route path="/books/:id" element={
             <ProtectedRoute>
               <BookDetail />
@@ -44,6 +50,11 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile/:username" element={
             <ProtectedRoute>
               <UserProfile />
             </ProtectedRoute>

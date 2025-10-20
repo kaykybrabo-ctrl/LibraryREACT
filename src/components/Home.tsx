@@ -114,12 +114,12 @@ const Home: React.FC = () => {
         ) : (
           <div className="cards">
             {[
-              { title: 'Life in Silence', author_name: 'Guilherme Biondo', description: 'Uma narrativa profunda sobre a busca pela paz interior em meio ao caos urbano.', photoUrl: '/api/uploads/Life%20in%20Silence.jpeg?v=1' },
-              { title: 'Fragments of Everyday Life', author_name: 'Guilherme Biondo', description: 'Pequenos momentos que compõem a grandeza da existência humana.', photoUrl: '/api/uploads/Fragments%20of%20Everyday%20Life.jpg?v=1' },
-              { title: 'Stories of the Wind', author_name: 'Manoel Leite', description: 'Contos místicos que navegam entre realidade e fantasia.', photoUrl: '/api/uploads/stor.jpeg?v=1' },
-              { title: 'Between Noise and Calm', author_name: 'Manoel Leite', description: 'Uma jornada filosófica sobre encontrar equilíbrio na vida moderna.', photoUrl: '/api/uploads/Between%20Noise%20and%20Calm.jpg?v=1' },
-              { title: 'The Horizon and the Sea', author_name: 'Guilherme Biondo', description: 'Romance épico que explora os limites do amor e da aventura.', photoUrl: '/api/uploads/The%20Horizon%20and%20the%20Sea.jpg?v=1' },
-              { title: 'Winds of Change', author_name: 'Guilherme Biondo', description: 'Drama histórico sobre transformações sociais e pessoais.', photoUrl: '/api/uploads/Winds%20of%20Change.jpg?v=1' },
+              { title: 'Life in Silence', author_name: 'Guilherme Biondo', description: 'Uma narrativa profunda sobre a busca pela paz interior em meio ao caos urbano.', photoUrl: '/api/uploads/1756472615955-Life%20in%20Silence.jpeg' },
+              { title: 'Fragments of Everyday Life', author_name: 'Guilherme Biondo', description: 'Pequenos momentos que compõem a grandeza da existência humana.', photoUrl: '/api/uploads/1756472640346-Fragments%20of%20Everyday%20Life.jpg' },
+              { title: 'Stories of the Wind', author_name: 'Manoel Leite', description: 'Contos místicos que navegam entre realidade e fantasia.', photoUrl: '/api/uploads/1756472663784-stor.jpeg' },
+              { title: 'Between Noise and Calm', author_name: 'Manoel Leite', description: 'Uma jornada filosófica sobre encontrar equilíbrio na vida moderna.', photoUrl: '/api/uploads/1756472688957-Between%20Noise%20and%20Calm.jpg' },
+              { title: 'The Horizon and the Sea', author_name: 'Guilherme Biondo', description: 'Romance épico que explora os limites do amor e da aventura.', photoUrl: '/api/uploads/1756472705438-The%20Horizon%20and%20the%20Sea.jpg' },
+              { title: 'Winds of Change', author_name: 'Guilherme Biondo', description: 'Drama histórico sobre transformações sociais e pessoais.', photoUrl: '/api/uploads/1756472911017-Winds%20of%20Change.jpg' },
             ].map(book => (
               <div key={`featured-${book.title}`} className="card">
                 <div className="thumb">

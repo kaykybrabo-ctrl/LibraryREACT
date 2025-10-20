@@ -92,28 +92,28 @@ const AuthorDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout title="Author Details">
-        <div className="loading">Loading author details...</div>
+      <Layout title="Detalhes do Autor">
+        <div className="loading">Carregando detalhes do autor...</div>
       </Layout>
     )
   }
 
   if (!author) {
     return (
-      <Layout title="Author Details">
-        <div className="error-message">Author not found</div>
-        <button onClick={() => navigate('/authors')}>Back to Authors</button>
+      <Layout title="Detalhes do Autor">
+        <div className="error-message">Autor não encontrado</div>
+        <button onClick={() => navigate('/authors')}>Voltar aos Autores</button>
       </Layout>
     )
   }
 
   return (
-    <Layout title={`Author: ${author.name_author}`}>
+    <Layout title={`Autor: ${author.name_author}`}>
       {error && <div className="error-message">{error}</div>}
 
       <section className="profile-section">
         <button onClick={() => navigate('/authors')} className="back-button">
-          ← Back to Authors
+          ← Voltar aos Autores
         </button>
 
         <h2>{author.name_author}</h2>
@@ -128,19 +128,19 @@ const AuthorDetail: React.FC = () => {
           )}
 
           <div className="biography-section">
-            <h3>Biography</h3>
+            <h3>Biografia</h3>
             {editingBio ? (
               <div>
                 <textarea
                   value={biography}
                   onChange={(e) => setBiography(e.target.value)}
-                  placeholder="Enter author biography..."
+                  placeholder="Digite a biografia do autor..."
                   rows={6}
                   className="biography-textarea"
                 />
                 <div>
                   <button onClick={handleUpdateBiography} disabled={uploading}>
-                    {uploading ? 'Saving...' : 'Save Biography'}
+                    {uploading ? 'Salvando...' : 'Salvar Biografia'}
                   </button>
                   <button
                     onClick={() => {
@@ -149,18 +149,18 @@ const AuthorDetail: React.FC = () => {
                     }}
                     className="cancel-button"
                   >
-                    Cancel
+                    Cancelar
                   </button>
                 </div>
               </div>
             ) : (
               <div>
                 <p className="biography-text">
-                  {author.biography || 'No biography available yet.'}
+                  {author.biography || 'Nenhuma biografia disponível ainda.'}
                 </p>
                 {isAdmin && (
                   <button onClick={() => setEditingBio(true)}>
-                    Edit Biography
+                    Editar Biografia
                   </button>
                 )}
               </div>
@@ -169,7 +169,7 @@ const AuthorDetail: React.FC = () => {
 
           {isAdmin && (
             <div className="image-upload image-upload-section">
-              <h3>Update Author Photo</h3>
+              <h3>Atualizar Foto do Autor</h3>
               <form onSubmit={handleImageUpload}>
                 <input
                   type="file"
@@ -180,14 +180,14 @@ const AuthorDetail: React.FC = () => {
                       setImageFile(file)
                       setError('')
                     } else {
-                      setError('Please select a valid image file (JPG, PNG, GIF, WebP)')
+                      setError('Selecione um arquivo de imagem válido (JPG, PNG, GIF, WebP)')
                       e.target.value = ''
                     }
                   }}
                   className="file-input"
                 />
                 <button type="submit" disabled={!imageFile || uploading}>
-                  {uploading ? 'Uploading...' : 'Upload Photo'}
+                  {uploading ? 'Enviando...' : 'Enviar Foto'}
                 </button>
               </form>
             </div>
@@ -197,16 +197,16 @@ const AuthorDetail: React.FC = () => {
       </section>
 
       <section className="book-list">
-        <h3>Books by {author.name_author}</h3>
+        <h3>Livros de {author.name_author}</h3>
         {books.length === 0 ? (
-          <p>No books found for this author.</p>
+          <p>Nenhum livro encontrado para este autor.</p>
         ) : (
           <table>
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Title</th>
-                <th>Actions</th>
+                <th>Título</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -216,7 +216,7 @@ const AuthorDetail: React.FC = () => {
                   <td>{book.title}</td>
                   <td>
                     <button onClick={() => navigate(`/books/${book.book_id}`)}>
-                      View Book
+                      Ver Livro
                     </button>
                   </td>
                 </tr>

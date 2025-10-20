@@ -7,9 +7,10 @@ import { Book, Author } from '../types'
 import './Cards.css'
 
 const Books: React.FC = () => {
-  const { isAdmin } = useAuth()
+  const { isAdmin, user } = useAuth()
   const [books, setBooks] = useState<Book[]>([])
   const [authors, setAuthors] = useState<Author[]>([])
+  const [rentedBooks, setRentedBooks] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -24,7 +25,10 @@ const Books: React.FC = () => {
   useEffect(() => {
     fetchAuthors()
     fetchBooks()
-  }, [currentPage, searchQuery])
+    if (!isAdmin && user?.username) {
+      fetchRentedBooks()
+    }
+  }, [currentPage, searchQuery, user])
 
   const fetchBooks = async () => {
     try {
@@ -50,6 +54,19 @@ const Books: React.FC = () => {
       setAuthors(response.data)
     } catch (err) {
       setError('Failed to fetch authors')
+    }
+  }
+
+  const fetchRentedBooks = async () => {
+    if (!user?.username) return
+    
+    try {
+      const response = await axios.get(`/api/loans?username=${user.username}`, {
+        withCredentials: true
+      })
+      const rentedBookIds = response.data.map((loan: any) => loan.book_id)
+      setRentedBooks(rentedBookIds)
+    } catch (err) {
     }
   }
 
@@ -107,6 +124,44 @@ const Books: React.FC = () => {
       fetchBooks()
     } catch (err) {
       setError('Failed to delete book')
+    }
+  }
+
+  const handleRentBook = async (bookId: number) => {
+    try {
+      await axios.post(`/api/rent/${bookId}`)
+      alert('Livro alugado com sucesso!')
+      setError('')
+      setRentedBooks(prev => [...prev, bookId])
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Falha ao alugar livro. Você pode não estar logado ou o livro já está alugado.'
+      setError(errorMsg)
+      alert(`Erro: ${errorMsg}`)
+    }
+  }
+
+  const handleReturnBook = async (bookId: number) => {
+    if (!user?.username) return
+    
+    try {
+      const loansResponse = await axios.get(`/api/loans?username=${user.username}`, {
+        withCredentials: true
+      })
+      const loan = loansResponse.data.find((l: any) => l.book_id === bookId)
+      
+      if (loan) {
+        await axios.post(`/api/return/${loan.loans_id}`, {}, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        })
+        alert('Livro devolvido com sucesso!')
+        setError('')
+        setRentedBooks(prev => prev.filter(id => id !== bookId))
+      }
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Falha ao devolver livro.'
+      setError(errorMsg)
+      alert(`Erro: ${errorMsg}`)
     }
   }
 
@@ -184,13 +239,16 @@ const Books: React.FC = () => {
         <section className="book-list">
           <h2>Livros ({books.length})</h2>
           <div className="cards-grid">
-            {books.map(book => (
-              <div key={book.book_id} className={`card book-card ${editingBook === book.book_id ? 'editing' : ''}`}>
+            {books.map(book => {
+              const isRented = rentedBooks.includes(book.book_id)
+              return (
+              <div key={book.book_id} className={`card book-card ${editingBook === book.book_id ? 'editing' : ''} ${isRented ? 'rented' : ''}`}>
                 <div className="card-image-container">
                   <img 
                     src={book.photo ? `/api/uploads/${book.photo}` : 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=400&h=600&fit=crop'} 
                     alt={book.title}
                     className="card-image"
+                    onClick={() => navigate(`/books/${book.book_id}`)}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=400&h=600&fit=crop'
                     }}
@@ -208,7 +266,9 @@ const Books: React.FC = () => {
                           style={{ fontSize: '1.2em', fontWeight: '600' }}
                         />
                       ) : (
-                        book.title
+                        <span onClick={() => navigate(`/books/${book.book_id}`)} style={{ cursor: 'pointer' }}>
+                          {book.title}
+                        </span>
                       )}
                     </h3>
                     <span className="card-id">#{book.book_id}</span>
@@ -230,7 +290,12 @@ const Books: React.FC = () => {
                             ))}
                           </select>
                         ) : (
-                          getAuthorName(book.author_id)
+                          <span 
+                            onClick={() => navigate(`/authors/${book.author_id}`)} 
+                            style={{ cursor: 'pointer', color: '#162c74', textDecoration: 'underline' }}
+                          >
+                            {getAuthorName(book.author_id)}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -256,11 +321,28 @@ const Books: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <button className="btn-primary" onClick={() => navigate(`/books/${book.book_id}`)}>Ver Detalhes</button>
+                        <button className="btn-primary" onClick={() => navigate(`/books/${book.book_id}`)}>
+                          👁️ Ver
+                        </button>
+                        {!isAdmin && (
+                          isRented ? (
+                            <button className="btn-warning" onClick={() => handleReturnBook(book.book_id)}>
+                              ↩️ Devolver
+                            </button>
+                          ) : (
+                            <button className="btn-success" onClick={() => handleRentBook(book.book_id)}>
+                              📚 Alugar
+                            </button>
+                          )
+                        )}
                         {isAdmin && (
                           <>
-                            <button className="btn-secondary" onClick={() => handleEditBook(book)}>Editar</button>
-                            <button className="btn-danger" onClick={() => handleDeleteBook(book.book_id)}>Excluir</button>
+                            <button className="btn-secondary" onClick={() => handleEditBook(book)}>
+                              ✏️ Editar
+                            </button>
+                            <button className="btn-danger" onClick={() => handleDeleteBook(book.book_id)}>
+                              🗑️ Excluir
+                            </button>
                           </>
                         )}
                       </>
@@ -268,7 +350,8 @@ const Books: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
 
           {totalPages > 1 && (

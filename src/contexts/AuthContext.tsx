@@ -67,7 +67,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (username: string, password: string): Promise<boolean> => {
     try {
       await axios.post('/api/register', { username, password })
-      return true
+      
+      const loginSuccess = await login(username, password)
+      return loginSuccess
     } catch (error) {
       return false
     }
