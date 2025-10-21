@@ -18,8 +18,6 @@ export async function getProfile(req: Request, res: Response) {
         if (!results.length) return res.status(404).json({ error: 'User not found' });
 
         const user = results[0];
-
-        console.log(`getProfile for ${username}: profile_image = ${user.profile_image}`);
         
         res.json({
             id: user.id,

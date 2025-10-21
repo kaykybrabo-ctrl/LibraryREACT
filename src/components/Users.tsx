@@ -24,9 +24,7 @@ const Users: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log('Fetching users...')
       const response = await axios.get('/api/users')
-      console.log('Users response:', response.data)
       
       const usersWithProfiles = await Promise.all(
         response.data.map(async (user: User) => {

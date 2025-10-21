@@ -29,6 +29,7 @@ const UserProfile: React.FC = () => {
   const [uploading, setUploading] = useState(false)
   const [description, setDescription] = useState('')
   const [editingDescription, setEditingDescription] = useState(false)
+  const [imageKey, setImageKey] = useState(0)
 
   const targetUsername = urlUsername || user?.username
   const isOwnProfile = !urlUsername || urlUsername === user?.username
@@ -104,6 +105,7 @@ const UserProfile: React.FC = () => {
         ...prev,
         ...response.data
       }))
+      setImageKey(prev => prev + 1)
       setImageFile(null)
       setError('')
       alert('Profile image updated successfully!')
@@ -232,7 +234,8 @@ const UserProfile: React.FC = () => {
             <p><strong>Função:</strong> {profile?.role === 'admin' ? 'Administrador' : 'Usuário'}</p>
 
             <img
-              src={getImageUrl(profile?.profile_image, 'profile')}
+              key={imageKey}
+              src={getImageUrl(profile?.profile_image, 'profile', imageKey > 0)}
               alt="Perfil"
               className="profile-image"
               onError={(e) => {

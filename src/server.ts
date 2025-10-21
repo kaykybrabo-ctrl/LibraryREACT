@@ -43,7 +43,7 @@ async function readBooks(req: Request, res: Response) {
       params.push(`%${search}%`, `%${search}%`);
     }
     
-    query += ` ORDER BY b.book_id DESC LIMIT ${limit} OFFSET ${offset}`;
+    query += ` ORDER BY b.book_id ASC LIMIT ${limit} OFFSET ${offset}`;
     
     const books = await executeQuery(query, params);
     res.json(books);
@@ -173,14 +173,12 @@ app.get('/users/favorite', async (req, res) => {
 });
 
 app.get('/api/users', async (_, res) => {
-    console.log('GET /api/users called');
     try {
         const result = await executeQuery(`
             SELECT id as user_id, username, role 
             FROM users 
             ORDER BY username
         `);
-        console.log('Users query result:', result);
         res.json(result);
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -248,7 +246,6 @@ app.get('/api/test-profile', async (req, res) => {
         if (!results.length) return res.status(404).json({ error: 'User not found' });
 
         const user = results[0];
-        console.log(`test-profile for ${username}: profile_image = ${user.profile_image}`);
         
         res.json({
             id: user.id,
@@ -420,7 +417,7 @@ app.get('/api/authors/:id/books', async (req: Request, res: Response) => {
             FROM books b 
             LEFT JOIN authors a ON b.author_id = a.author_id 
             WHERE b.author_id = ?
-            ORDER BY b.book_id DESC
+            ORDER BY b.book_id ASC
         `, [authorId]);
         res.json(books);
     } catch (error) {

@@ -1,25 +1,10 @@
 import { Response, Request } from 'express';
 import { executeQuery } from '../DB/connection';
-import fs from 'fs';
-import path from 'path';
 
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
 }
 
-function findActualFilename(originalName: string): string | null {
-    if (!originalName) return null;
-    
-    const uploadsDir = path.join(__dirname, '../../FRONTEND/uploads');
-    
-    try {
-        const files = fs.readdirSync(uploadsDir);
-        const foundFile = files.find(file => file.endsWith(originalName));
-        return foundFile || null;
-    } catch (error) {
-        return null;
-    }
-}
 
 export async function updateProfile(req: MulterRequest, res: Response) {
     const sessionUser = (req.session as any)?.user;
@@ -35,11 +20,11 @@ export async function updateProfile(req: MulterRequest, res: Response) {
     }
 
     try {
-        let imageFilename = req.file?.filename;
-        console.log('Upload file info:', req.file);
-        console.log('Image filename to save:', imageFilename);
-
-        if (!imageFilename) {
+        let imageFilename = null;
+        
+        if (req.file) {
+            imageFilename = (req.file as any).path || req.file.filename;
+        } else {
             const result: any[] = await executeQuery(
                 'SELECT profile_image FROM users WHERE username = ? LIMIT 1',
                 [username]
@@ -59,19 +44,19 @@ export async function updateProfile(req: MulterRequest, res: Response) {
 
         if (updatedProfile.length > 0) {
             const user = updatedProfile[0];
-            const actualFilename = user.profile_image ? findActualFilename(user.profile_image) : null;
             
             res.json({
                 id: user.id,
                 username: user.username,
                 role: user.role,
-                profile_image: actualFilename || null,
+                profile_image: user.profile_image,
                 description: user.description || ''
             });
         } else {
             res.status(404).json({ error: 'User not found' });
         }
     } catch (error) {
+        console.error('Error updating profile:', error);
         res.status(500).json({ error: 'Database error' });
     }
 }

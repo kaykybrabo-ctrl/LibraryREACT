@@ -190,7 +190,7 @@ const BookDetail: React.FC = () => {
       <section className="form-section">
         <h3>Ações do Livro</h3>
         <div className="book-actions">
-          <button onClick={handleRentBook}>Alugar Livro</button>
+          {!isAdmin && <button onClick={handleRentBook}>Alugar Livro</button>}
           <button onClick={handleFavoriteBook}>Adicionar aos Favoritos</button>
         </div>
       </section>

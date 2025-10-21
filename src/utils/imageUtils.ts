@@ -1,4 +1,4 @@
-export const getImageUrl = (photo: string | null | undefined, type: 'book' | 'profile' | 'author' = 'book'): string => {
+export const getImageUrl = (photo: string | null | undefined, type: 'book' | 'profile' | 'author' = 'book', forceRefresh: boolean = false): string => {
   if (!photo) {
     const defaultImages = {
       book: '/api/uploads/default-book.svg',
@@ -8,15 +8,22 @@ export const getImageUrl = (photo: string | null | undefined, type: 'book' | 'pr
     return defaultImages[type]
   }
 
-
+  let url = ''
+  
   if (photo.startsWith('http')) {
-    return photo
+    url = photo
+  } else if (photo.includes('pedbook/')) {
+    url = `https://res.cloudinary.com/ddfgsoh5g/image/upload/${photo}`
+  } else {
+    url = `/api/uploads/${photo}`
   }
-
-  if (photo.includes('pedbook/')) {
-    return `https://res.cloudinary.com/ddfgsoh5g/image/upload/${photo}`
+  
+  if (forceRefresh) {
+    const separator = url.includes('?') ? '&' : '?'
+    url += `${separator}t=${Date.now()}`
   }
-  return `/api/uploads/${photo}`
+  
+  return url
 }
 
 export const getFallbackImageUrl = (type: 'book' | 'profile' | 'author' = 'book'): string => {
