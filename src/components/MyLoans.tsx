@@ -41,7 +41,6 @@ const MyLoans: React.FC = () => {
       setLoans(data)
     } catch (err) {
       setError('Failed to load your loans')
-      console.error('Error fetching loans:', err)
     } finally {
       setLoading(false)
     }
@@ -64,7 +63,6 @@ const MyLoans: React.FC = () => {
       fetchMyLoans()
     } catch (err) {
       setError('Failed to renew loan')
-      console.error('Error renewing loan:', err)
     }
   }
 

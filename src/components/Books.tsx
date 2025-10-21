@@ -16,7 +16,8 @@ const Books: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
-  const [newBook, setNewBook] = useState({ title: '', author_id: '' })
+  const [newBook, setNewBook] = useState({ title: '', author_id: '', author_name: '' })
+  const [useNewAuthor, setUseNewAuthor] = useState(false)
   const [editingBook, setEditingBook] = useState<number | null>(null)
   const [editData, setEditData] = useState({ title: '', author_id: '' })
   const [error, setError] = useState('')
@@ -83,14 +84,32 @@ const Books: React.FC = () => {
 
   const handleCreateBook = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newBook.title.trim() || !newBook.author_id) return
+    
+    if (!newBook.title.trim()) return
+    
+    if (useNewAuthor && !newBook.author_name.trim()) return
+    if (!useNewAuthor && !newBook.author_id) return
 
     try {
-      await axios.post('/api/books', {
-        title: newBook.title.trim(),
-        author_id: Number(newBook.author_id)
-      })
-      setNewBook({ title: '', author_id: '' })
+      const payload: any = { title: newBook.title.trim() }
+      
+      if (useNewAuthor) {
+        payload.author_name = newBook.author_name.trim()
+      } else {
+        payload.author_id = Number(newBook.author_id)
+      }
+
+      const response = await axios.post('/api/books', payload)
+      
+      if (response.data.author_created) {
+        alert('Livro criado com sucesso! Novo autor foi criado automaticamente.')
+        fetchAuthors()
+      } else {
+        alert('Livro criado com sucesso!')
+      }
+      
+      setNewBook({ title: '', author_id: '', author_name: '' })
+      setUseNewAuthor(false)
       fetchBooks()
     } catch (err) {
       setError('Failed to create book')
@@ -245,20 +264,57 @@ const Books: React.FC = () => {
         <section className="form-section">
           <h2>Adicionar Livro</h2>
           <form onSubmit={handleCreateBook}>
-            <label htmlFor="author-select">Autor:</label>
-            <select
-              id="author-select"
-              value={newBook.author_id}
-              onChange={(e) => setNewBook({ ...newBook, author_id: e.target.value })}
-              required
-            >
-              <option value="">Selecione um Autor</option>
-              {authors.map(author => (
-                <option key={author.author_id} value={author.author_id}>
-                  {author.name_author}
-                </option>
-              ))}
-            </select>
+            <div style={{ marginBottom: '15px' }}>
+              <label>
+                <input
+                  type="radio"
+                  name="author-type"
+                  checked={!useNewAuthor}
+                  onChange={() => setUseNewAuthor(false)}
+                />
+                Usar autor existente
+              </label>
+              <label style={{ marginLeft: '20px' }}>
+                <input
+                  type="radio"
+                  name="author-type"
+                  checked={useNewAuthor}
+                  onChange={() => setUseNewAuthor(true)}
+                />
+                Criar novo autor
+              </label>
+            </div>
+
+            {!useNewAuthor ? (
+              <>
+                <label htmlFor="author-select">Autor:</label>
+                <select
+                  id="author-select"
+                  value={newBook.author_id}
+                  onChange={(e) => setNewBook({ ...newBook, author_id: e.target.value })}
+                  required={!useNewAuthor}
+                >
+                  <option value="">Selecione um Autor</option>
+                  {authors.map(author => (
+                    <option key={author.author_id} value={author.author_id}>
+                      {author.name_author}
+                    </option>
+                  ))}
+                </select>
+              </>
+            ) : (
+              <>
+                <label htmlFor="author-name">Nome do Novo Autor:</label>
+                <input
+                  type="text"
+                  id="author-name"
+                  value={newBook.author_name}
+                  onChange={(e) => setNewBook({ ...newBook, author_name: e.target.value })}
+                  placeholder="Digite o nome do autor"
+                  required={useNewAuthor}
+                />
+              </>
+            )}
             
             <label htmlFor="book-title">Título:</label>
             <input

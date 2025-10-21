@@ -56,7 +56,6 @@ export async function updateProfile(req: MulterRequest, res: Response) {
             res.status(404).json({ error: 'User not found' });
         }
     } catch (error) {
-        console.error('Error updating profile:', error);
         res.status(500).json({ error: 'Database error' });
     }
 }

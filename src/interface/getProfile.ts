@@ -27,7 +27,6 @@ export async function getProfile(req: Request, res: Response) {
             description: user.description || ''
         });
     } catch (error) {
-        console.error('getProfile error:', error);
         res.status(500).json({ error: 'Database error' });
     }
 }

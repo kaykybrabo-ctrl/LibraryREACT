@@ -48,7 +48,6 @@ async function readBooks(req: Request, res: Response) {
     const books = await executeQuery(query, params);
     res.json(books);
   } catch (error) {
-    console.error('Error fetching books:', error);
     res.status(500).json({ error: 'Failed to fetch books' });
   }
 }
@@ -181,7 +180,6 @@ app.get('/api/users', async (_, res) => {
         `);
         res.json(result);
     } catch (error) {
-        console.error('Error fetching users:', error);
         res.status(500).json({ error: 'Failed to fetch users' });
     }
 });

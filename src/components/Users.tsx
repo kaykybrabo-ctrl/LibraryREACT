@@ -43,7 +43,6 @@ const Users: React.FC = () => {
       setUsers(usersWithProfiles)
       setLoading(false)
     } catch (err) {
-      console.error('Error fetching users:', err)
       setError('Falha ao carregar usuários')
       setLoading(false)
     }
