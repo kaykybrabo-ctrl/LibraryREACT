@@ -1,0 +1,166 @@
+.book-details-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.back-button {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.back-button:hover {
+  background: #4b5563;
+}
+
+.book-details-content {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.book-image-section {
+  flex: 0 0 300px;
+}
+
+.book-detail-image {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.book-info-section {
+  flex: 1;
+}
+
+.book-info-section h1 {
+  font-size: 2.5em;
+  color: #162c74;
+  margin-bottom: 10px;
+}
+
+.book-author {
+  font-size: 1.2em;
+  color: #6b7280;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.book-description {
+  margin-bottom: 30px;
+}
+
+.book-description h3 {
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.book-description p {
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.book-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.book-actions .btn-primary,
+.book-actions .btn-secondary {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.book-actions .btn-primary {
+  background: #162c74;
+  color: white;
+}
+
+.book-actions .btn-primary:hover {
+  background: #1e40af;
+}
+
+.book-actions .btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.book-actions .btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.auth-hint {
+  color: #6b7280;
+  font-style: italic;
+  margin: 0;
+}
+
+.login-message {
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.login-message p {
+  margin: 0 0 15px 0;
+  color: #92400e;
+  font-weight: bold;
+}
+
+.login-message .btn-primary {
+  background: #162c74;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.login-message .btn-secondary {
+  background: #6b7280;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .book-details-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .book-image-section {
+    flex: none;
+    text-align: center;
+  }
+  
+  .book-detail-image {
+    max-width: 250px;
+  }
+  
+  .book-info-section h1 {
+    font-size: 2em;
+  }
+}

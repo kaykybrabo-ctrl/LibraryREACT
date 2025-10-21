@@ -61,7 +61,6 @@ const MyLoans: React.FC = () => {
         throw new Error('Failed to renew loan')
       }
       
-      // Refresh loans list
       fetchMyLoans()
     } catch (err) {
       setError('Failed to renew loan')

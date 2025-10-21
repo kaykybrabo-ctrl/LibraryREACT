@@ -8,6 +8,7 @@ import Books from './components/Books'
 import Authors from './components/Authors'
 import Users from './components/Users'
 import BookDetail from './components/BookDetail'
+import BookDetails from './components/BookDetails'
 import AuthorDetail from './components/AuthorDetail'
 import UserProfile from './components/UserProfile'
 import Loans from './components/Loans'
@@ -24,31 +25,16 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset" element={<ResetPassword />} />
-          <Route path="/books" element={
-            <ProtectedRoute>
-              <Books />
-            </ProtectedRoute>
-          } />
-          <Route path="/authors" element={
-            <ProtectedRoute>
-              <Authors />
-            </ProtectedRoute>
-          } />
+          <Route path="/books" element={<Books />} />
+          <Route path="/authors" element={<Authors />} />
           <Route path="/users" element={
             <ProtectedRoute>
               <Users />
             </ProtectedRoute>
           } />
-          <Route path="/books/:id" element={
-            <ProtectedRoute>
-              <BookDetail />
-            </ProtectedRoute>
-          } />
-          <Route path="/authors/:id" element={
-            <ProtectedRoute>
-              <AuthorDetail />
-            </ProtectedRoute>
-          } />
+          <Route path="/books/:id" element={<BookDetail />} />
+          <Route path="/book/:id" element={<BookDetails />} />
+          <Route path="/authors/:id" element={<AuthorDetail />} />
           <Route path="/profile" element={
             <ProtectedRoute>
               <UserProfile />

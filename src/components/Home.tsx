@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/home.css';
 import styles from './HomeHeader.module.css';
+
+interface Book {
+  book_id: number;
+  title: string;
+  description?: string;
+  photo?: string;
+  author_id: number;
+  author_name?: string;
+}
 
 const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
   const navigate = useNavigate();
-
+  const [books, setBooks] = useState<Book[]>([]);
   useEffect(() => {
     const id = setInterval(() => rotateNext(), 5000);
     return () => clearInterval(id);
@@ -16,8 +26,18 @@ const Home: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/books?limit=20');
-        if (!res.ok) throw new Error('Falha ao carregar destaques');
+        const booksRes = await axios.get('/api/books');
+        const authorsRes = await axios.get('/api/authors');
+        
+        const booksWithAuthors = booksRes.data.slice(0, 6).map((book: any) => {
+          const author = authorsRes.data.find((a: any) => a.author_id === book.author_id);
+          return {
+            ...book,
+            author_name: author?.name_author || 'Autor desconhecido'
+          };
+        });
+        
+        setBooks(booksWithAuthors);
         setLoading(false);
       } catch (e: any) {
         setError(e?.message || 'Erro ao carregar');
@@ -112,27 +132,56 @@ const Home: React.FC = () => {
         ) : error ? (
           <div className="error">{error}</div>
         ) : (
-          <div className="cards">
-            {[
-              { title: 'Life in Silence', author_name: 'Guilherme Biondo', description: 'Uma narrativa profunda sobre a busca pela paz interior em meio ao caos urbano.', photoUrl: '/api/uploads/1756472615955-Life%20in%20Silence.jpeg' },
-              { title: 'Fragments of Everyday Life', author_name: 'Guilherme Biondo', description: 'Pequenos momentos que compõem a grandeza da existência humana.', photoUrl: '/api/uploads/1756472640346-Fragments%20of%20Everyday%20Life.jpg' },
-              { title: 'Stories of the Wind', author_name: 'Manoel Leite', description: 'Contos místicos que navegam entre realidade e fantasia.', photoUrl: '/api/uploads/1756472663784-stor.jpeg' },
-              { title: 'Between Noise and Calm', author_name: 'Manoel Leite', description: 'Uma jornada filosófica sobre encontrar equilíbrio na vida moderna.', photoUrl: '/api/uploads/1756472688957-Between%20Noise%20and%20Calm.jpg' },
-              { title: 'The Horizon and the Sea', author_name: 'Guilherme Biondo', description: 'Romance épico que explora os limites do amor e da aventura.', photoUrl: '/api/uploads/1756472705438-The%20Horizon%20and%20the%20Sea.jpg' },
-              { title: 'Winds of Change', author_name: 'Guilherme Biondo', description: 'Drama histórico sobre transformações sociais e pessoais.', photoUrl: '/api/uploads/1756472911017-Winds%20of%20Change.jpg' },
-            ].map(book => (
-              <div key={`featured-${book.title}`} className="card">
-                <div className="thumb">
-                  <img src={book.photoUrl} alt={book.title} loading="eager" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=1200'; }} />
+          <>
+            <div className="cards">
+              {books.map(book => (
+                <div 
+                  key={`featured-${book.book_id}`} 
+                  className="card" 
+                  onClick={() => navigate(`/book/${book.book_id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="thumb">
+                    <img 
+                      src={book.photo ? `/api/uploads/${book.photo}` : `https://via.placeholder.com/300x450/162c74/ffffff?text=${encodeURIComponent(book.title)}`} 
+                      alt={book.title} 
+                      loading="eager" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
+                      onError={(e) => { 
+                        (e.currentTarget as HTMLImageElement).src = `https://via.placeholder.com/300x450/162c74/ffffff?text=${encodeURIComponent(book.title)}`; 
+                      }} 
+                    />
+                  </div>
+                  <div className="card-body">
+                    <h4 title={book.title}>{book.title}</h4>
+                    <p className="author">{book.author_name}</p>
+                    <p className="desc">{book.description || 'Descrição não disponível'}</p>
+                  </div>
                 </div>
-                <div className="card-body">
-                  <h4 title={book.title}>{book.title}</h4>
-                  <p className="author">{book.author_name}</p>
-                  <p className="desc">{book.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            
+            <div style={{ textAlign: 'center', marginTop: '40px' }}>
+              <button 
+                onClick={() => navigate('/books')}
+                style={{
+                  background: '#162c74',
+                  color: 'white',
+                  padding: '15px 30px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1.1em',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = '#1e40af'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#162c74'}
+              >
+                📚 Ver Todos os Livros
+              </button>
+            </div>
+          </>
         )}
       </section>
 

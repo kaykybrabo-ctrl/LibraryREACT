@@ -100,14 +100,11 @@ const forgotPasswordHandler = async (req: Request, res: Response) => {
     try {
         const userExists: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username.trim().toLowerCase()]);
         
-        // Always return success for security (don't reveal if user exists)
         if (userExists.length > 0) {
-            // In a real app, you would send an actual email here
-            // For demo purposes, we'll return a preview link
             const previewLink = `https://ethereal.email/message/preview/${Date.now()}`;
             res.json({ 
                 message: 'If the account exists, a password reset email has been sent.',
-                preview: previewLink // This would only be for development/testing
+                preview: previewLink
             });
         } else {
             res.json({ 
@@ -579,7 +576,6 @@ app.get('/api/user/role', (req: Request, res: Response) => {
     res.json({ role: user.role, isAdmin: user.role === 'admin' });
 });
 
-// Stats endpoint for dashboard
 app.get('/api/stats', async (_req: Request, res: Response) => {
     try {
         const [booksResult, authorsResult, loansResult, usersResult] = await Promise.all([

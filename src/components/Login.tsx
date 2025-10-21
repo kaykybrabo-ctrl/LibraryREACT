@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import api from '../api'
 import './Login.css'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [preview, setPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -32,33 +30,6 @@ const Login: React.FC = () => {
     }
   }
 
-  const handleForgotPassword = async () => {
-    if (!username.trim()) {
-      setError('Informe seu nome de usuário para receber o link de redefinição')
-      return
-    }
-    setError('')
-    setPreview(null)
-    setLoading(true)
-    try {
-      const res = await api.post('/api/forgot-password', { username: username.trim() })
-      const data = res?.data || {}
-      
-      if (data.preview) {
-        setPreview(data.preview)
-      }
-      
-      if (data.error) {
-        setError('Erro ao enviar email: ' + data.error)
-      } else {
-        alert('Se a conta existir, um e-mail de redefinição foi enviado.')
-      }
-    } catch (e) {
-      alert('Se a conta existir, um e-mail de redefinição foi enviado.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div className="login-container">
@@ -89,17 +60,6 @@ const Login: React.FC = () => {
         <button type="submit" disabled={loading}>
           {loading ? 'Entrando...' : 'Entrar'}
         </button>
-        <button type="button" className="link-button" onClick={handleForgotPassword} disabled={loading} style={{ marginTop: 10 }}>
-          Esqueceu a senha?
-        </button>
-        {preview && (
-          <div className="email-preview">
-            <div className="email-preview-title">Visualize seu e-mail de redefinição (Ethereal):</div>
-            <a className="email-preview-link" href={preview} target="_blank" rel="noopener noreferrer">
-              {preview}
-            </a>
-          </div>
-        )}
       </form>
 
       <p className="auth-link">

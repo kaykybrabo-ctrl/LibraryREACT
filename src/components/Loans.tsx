@@ -58,7 +58,6 @@ const Loans: React.FC = () => {
         throw new Error('Failed to return book')
       }
       
-      // Refresh loans list
       fetchLoans()
     } catch (err) {
       setError('Failed to return book')

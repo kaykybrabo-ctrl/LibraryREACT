@@ -15,8 +15,6 @@ const ResetPassword: React.FC = () => {
     setMessage('')
 
     try {
-      // Here you would typically call your password reset API
-      // For now, we'll simulate the process
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       setMessage('Password reset instructions have been sent to your email.')

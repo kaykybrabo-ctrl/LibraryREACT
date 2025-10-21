@@ -7,7 +7,7 @@ import { Book, Author } from '../types'
 import './Cards.css'
 
 const Books: React.FC = () => {
-  const { isAdmin, user } = useAuth()
+  const { isAdmin, user, isAuthenticated } = useAuth()
   const [books, setBooks] = useState<Book[]>([])
   const [authors, setAuthors] = useState<Author[]>([])
   const [rentedBooks, setRentedBooks] = useState<number[]>([])
@@ -19,6 +19,7 @@ const Books: React.FC = () => {
   const [editingBook, setEditingBook] = useState<number | null>(null)
   const [editData, setEditData] = useState({ title: '', author_id: '' })
   const [error, setError] = useState('')
+  const [showLoginMessage, setShowLoginMessage] = useState(false)
   const limit = 6
   const navigate = useNavigate()
 
@@ -128,13 +129,19 @@ const Books: React.FC = () => {
   }
 
   const handleRentBook = async (bookId: number) => {
+    if (!isAuthenticated) {
+      setShowLoginMessage(true)
+      setTimeout(() => setShowLoginMessage(false), 4000)
+      return
+    }
+    
     try {
       await axios.post(`/api/rent/${bookId}`)
       alert('Livro alugado com sucesso!')
       setError('')
       setRentedBooks(prev => [...prev, bookId])
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Falha ao alugar livro. Você pode não estar logado ou o livro já está alugado.'
+      const errorMsg = err.response?.data?.error || 'Falha ao alugar livro.'
       setError(errorMsg)
       alert(`Erro: ${errorMsg}`)
     }
@@ -186,6 +193,48 @@ const Books: React.FC = () => {
   return (
     <Layout title="Livros">
       {error && <div className="error-message">{error}</div>}
+      
+      {showLoginMessage && (
+        <div style={{
+          background: '#fef3c7',
+          border: '2px solid #f59e0b',
+          borderRadius: '8px',
+          padding: '20px',
+          margin: '20px 0',
+          textAlign: 'center'
+        }}>
+          <p style={{ margin: '0 0 15px 0', color: '#92400e', fontWeight: 'bold' }}>
+            É necessário fazer login para alugar livros
+          </p>
+          <button 
+            onClick={() => navigate('/login')}
+            style={{
+              background: '#162c74',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginRight: '10px'
+            }}
+          >
+            Fazer Login
+          </button>
+          <button 
+            onClick={() => setShowLoginMessage(false)}
+            style={{
+              background: '#6b7280',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Fechar
+          </button>
+        </div>
+      )}
       
       {isAdmin && (
         <section className="form-section">
@@ -248,7 +297,7 @@ const Books: React.FC = () => {
                     src={book.photo ? `/api/uploads/${book.photo}` : 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=400&h=600&fit=crop'} 
                     alt={book.title}
                     className="card-image"
-                    onClick={() => navigate(`/books/${book.book_id}`)}
+                    onClick={() => navigate(`/book/${book.book_id}`)}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=400&h=600&fit=crop'
                     }}
@@ -266,7 +315,7 @@ const Books: React.FC = () => {
                           style={{ fontSize: '1.2em', fontWeight: '600' }}
                         />
                       ) : (
-                        <span onClick={() => navigate(`/books/${book.book_id}`)} style={{ cursor: 'pointer' }}>
+                        <span onClick={() => navigate(`/book/${book.book_id}`)} style={{ cursor: 'pointer' }}>
                           {book.title}
                         </span>
                       )}

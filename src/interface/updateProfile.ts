@@ -14,7 +14,6 @@ function findActualFilename(originalName: string): string | null {
     
     try {
         const files = fs.readdirSync(uploadsDir);
-        // Procura por arquivo que termina com o nome original
         const foundFile = files.find(file => file.endsWith(originalName));
         return foundFile || null;
     } catch (error) {
@@ -60,7 +59,6 @@ export async function updateProfile(req: MulterRequest, res: Response) {
 
         if (updatedProfile.length > 0) {
             const user = updatedProfile[0];
-            // Encontrar o nome real do arquivo com timestamp
             const actualFilename = user.profile_image ? findActualFilename(user.profile_image) : null;
             
             res.json({

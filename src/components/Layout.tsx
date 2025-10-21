@@ -14,9 +14,10 @@ interface UserProfile {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
-  const { logout, user } = useAuth()
+  const { logout, user, isAuthenticated } = useAuth()
   const location = useLocation()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
 
   useEffect(() => {
     if (user?.username) {
@@ -42,37 +43,112 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
       <header>
         <h1>{title}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>
-          <Link to="/profile" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-            <img
-              src={userProfile?.profile_image ? `/api/uploads/${userProfile.profile_image}` : `/api/uploads/default-user.png`}
-              alt="Perfil"
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '2px solid white',
-                cursor: 'pointer'
-              }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = `/api/uploads/default-user.png`
-              }}
-            />
-          </Link>
-          <button 
-            onClick={handleLogout}
-            style={{
-              background: 'white',
-              color: '#162c74',
-              padding: '6px 16px',
-              fontWeight: 'bold',
-              borderRadius: '4px',
-              border: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            Sair
-          </button>
+          {isAuthenticated ? (
+            <div className="user-menu" style={{ position: 'relative' }}>
+              <img
+                src={userProfile?.profile_image ? `/api/uploads/${userProfile.profile_image}` : `/api/uploads/default-user.png`}
+                alt="Perfil"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid white',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setShowDropdown(!showDropdown)}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `/api/uploads/default-user.png`
+                }}
+              />
+              {showDropdown && (
+                <div className="dropdown-menu" style={{
+                  position: 'absolute',
+                  top: '50px',
+                  right: '0',
+                  background: 'white',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  minWidth: '150px',
+                  zIndex: 1000
+                }}>
+                  <Link 
+                    to="/profile" 
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 16px',
+                      textDecoration: 'none',
+                      color: '#374151',
+                      borderBottom: '1px solid #f3f4f6',
+                      fontSize: '14px'
+                    }}
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    <span>👤</span>
+                    <span>Ir ao Perfil</span>
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      handleLogout()
+                      setShowDropdown(false)
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      background: 'none',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      color: '#dc2626',
+                      fontSize: '14px',
+                      fontFamily: 'inherit'
+                    }}
+                  >
+                    <span>🚪</span>
+                    <span>Sair</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link 
+                to="/login"
+                style={{
+                  background: 'white',
+                  color: '#162c74',
+                  padding: '8px 16px',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  borderRadius: '4px',
+                  textDecoration: 'none',
+                  display: 'inline-block'
+                }}
+              >
+                Login
+              </Link>
+              <Link 
+                to="/register"
+                style={{
+                  background: 'transparent',
+                  color: 'white',
+                  padding: '8px 16px',
+                  fontWeight: 'bold',
+                  border: '2px solid white',
+                  borderRadius: '4px',
+                  textDecoration: 'none',
+                  display: 'inline-block'
+                }}
+              >
+                Registrar
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
