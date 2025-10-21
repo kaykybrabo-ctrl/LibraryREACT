@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import './Cards.css'
 
 interface User {
@@ -63,18 +64,17 @@ const Users: React.FC = () => {
       {error && <div className="error-message">{error}</div>}
       
       <section className="user-list">
-        <h2>Usuários ({users.length})</h2>
         <div className="cards-grid">
           {users.map(user => (
             <div key={user.user_id} className="card author-card">
               <div className="author-avatar">
                 <img 
-                  src={user.profile_image ? `/api/uploads/${user.profile_image}` : `/api/uploads/default-user.png`} 
+                  src={getImageUrl(user.profile_image, 'profile')} 
                   alt={user.username}
                   style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
                   onClick={() => navigate(`/profile/${user.username}`)}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `/api/uploads/default-user.png`
+                    (e.target as HTMLImageElement).src = getFallbackImageUrl('profile')
                   }}
                 />
               </div>

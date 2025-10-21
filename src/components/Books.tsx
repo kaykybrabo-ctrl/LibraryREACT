@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Book, Author } from '../types'
 import './Cards.css'
 
@@ -74,6 +75,10 @@ const Books: React.FC = () => {
   const getAuthorName = (authorId: number) => {
     const author = authors.find(a => a.author_id === authorId)
     return author ? author.name_author : ''
+  }
+
+  const getAuthor = (authorId: number) => {
+    return authors.find(a => a.author_id === authorId)
   }
 
   const handleCreateBook = async (e: React.FormEvent) => {
@@ -294,12 +299,12 @@ const Books: React.FC = () => {
               <div key={book.book_id} className={`card book-card ${editingBook === book.book_id ? 'editing' : ''} ${isRented ? 'rented' : ''}`}>
                 <div className="card-image-container">
                   <img 
-                    src={book.photo ? `/api/uploads/${book.photo}` : 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=400&h=600&fit=crop'} 
+                    src={getImageUrl(book.photo, 'book')} 
                     alt={book.title}
                     className="card-image"
                     onClick={() => navigate(`/book/${book.book_id}`)}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=400&h=600&fit=crop'
+                      (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
                     }}
                   />
                 </div>
@@ -339,12 +344,28 @@ const Books: React.FC = () => {
                             ))}
                           </select>
                         ) : (
-                          <span 
+                          <div 
                             onClick={() => navigate(`/authors/${book.author_id}`)} 
-                            style={{ cursor: 'pointer', color: '#162c74', textDecoration: 'underline' }}
+                            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                           >
-                            {getAuthorName(book.author_id)}
-                          </span>
+                            <img 
+                              src={getImageUrl(getAuthor(book.author_id)?.photo, 'author')}
+                              alt={getAuthorName(book.author_id)}
+                              style={{ 
+                                width: '24px', 
+                                height: '24px', 
+                                borderRadius: '50%', 
+                                objectFit: 'cover',
+                                border: '1px solid #ddd'
+                              }}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = getFallbackImageUrl('author')
+                              }}
+                            />
+                            <span style={{ color: '#162c74', textDecoration: 'underline' }}>
+                              {getAuthorName(book.author_id)}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>

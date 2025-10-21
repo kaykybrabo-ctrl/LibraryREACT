@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { User, Loan } from '../types'
 import './UserProfile.css'
 
@@ -99,7 +100,10 @@ const UserProfile: React.FC = () => {
       const response = await axios.post('/api/update-profile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      setProfile(response.data)
+      setProfile(prev => ({
+        ...prev,
+        ...response.data
+      }))
       setImageFile(null)
       setError('')
       alert('Profile image updated successfully!')
@@ -122,7 +126,11 @@ const UserProfile: React.FC = () => {
       const response = await axios.post('/api/update-profile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      setProfile(response.data)
+      setProfile(prev => ({
+        ...prev,
+        ...response.data,
+        profile_image: response.data.profile_image || prev?.profile_image
+      }))
       setEditingDescription(false)
       setError('')
       alert('Description updated successfully!')
@@ -224,17 +232,17 @@ const UserProfile: React.FC = () => {
             <p><strong>Função:</strong> {profile?.role === 'admin' ? 'Administrador' : 'Usuário'}</p>
 
             <img
-              src={profile?.profile_image ? `/api/uploads/${profile.profile_image}` : `/api/uploads/default-user.png`}
+              src={getImageUrl(profile?.profile_image, 'profile')}
               alt="Perfil"
               className="profile-image"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = `/api/uploads/default-user.png`
+                (e.target as HTMLImageElement).src = getFallbackImageUrl('profile')
               }}
             />
 
             <div className="description-section">
               <h3>Descrição</h3>
-              {canEdit && editingDescription ? (
+              {editingDescription ? (
                 <div>
                   <textarea
                     value={description}
@@ -307,11 +315,11 @@ const UserProfile: React.FC = () => {
                     </div>
                     <div>
                       <img
-                        src={loan.photo ? `/api/uploads/${loan.photo}` : `https://via.placeholder.com/80x120/162c74/ffffff?text=${encodeURIComponent(loan.title.substring(0, 10))}`}
+                        src={getImageUrl(loan.photo, 'book')}
                         alt={loan.title}
                         className="loan-book-image"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = `https://via.placeholder.com/80x120/162c74/ffffff?text=${encodeURIComponent(loan.title.substring(0, 10))}`
+                          (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
                         }}
                       />
                       {isOwnProfile && (
@@ -341,11 +349,11 @@ const UserProfile: React.FC = () => {
             ) : (
               <div className="favorite-book-card">
                 <img
-                  src={favoriteBook.photo ? `/api/uploads/${favoriteBook.photo}` : `https://via.placeholder.com/120x180/162c74/ffffff?text=${encodeURIComponent(favoriteBook.title.substring(0, 15))}`}
+                  src={getImageUrl(favoriteBook.photo, 'book')}
                   alt={favoriteBook.title}
                   className="favorite-book-image"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://via.placeholder.com/120x180/162c74/ffffff?text=${encodeURIComponent(favoriteBook.title.substring(0, 15))}`
+                    (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
                   }}
                 />
                 <div>

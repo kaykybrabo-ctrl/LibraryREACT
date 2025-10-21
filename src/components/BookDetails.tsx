@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import './BookDetails.css'
 
 interface Book {
@@ -130,11 +131,11 @@ const BookDetails: React.FC = () => {
         <div className="book-details-content">
           <div className="book-image-section">
             <img
-              src={book.photo ? `/api/uploads/${book.photo}` : `https://via.placeholder.com/300x450/162c74/ffffff?text=${encodeURIComponent(book.title)}`}
+              src={getImageUrl(book.photo, 'book')}
               alt={book.title}
               className="book-detail-image"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = `https://via.placeholder.com/300x450/162c74/ffffff?text=${encodeURIComponent(book.title)}`
+                (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
               }}
             />
           </div>

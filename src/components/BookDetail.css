@@ -13,10 +13,11 @@
 }
 
 .book-image {
-  width: 200px;
-  height: 250px;
+  width: 300px;
+  height: 400px;
   object-fit: cover;
   border-radius: 8px;
+  margin-bottom: 20px;
 }
 
 .book-actions {
@@ -32,6 +33,30 @@
   border-radius: 4px;
   font-family: inherit;
   resize: vertical;
+}
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  font-size: 28px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
+  color: #ddd;
+}
+
+.star:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 3px rgba(22, 44, 116, 0.8));
+}
+
+.star.filled {
+  color: #162c74 !important;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
 }
 
 .review-card {

@@ -1,13 +1,13 @@
-import React, { ReactNode, useState, useEffect } from 'react'
+import React, { useState, useEffect, ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
+import { useAuth } from '../contexts/AuthContext'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 
 interface LayoutProps {
   children: ReactNode
   title: string
 }
-
 interface UserProfile {
   profile_image?: string
   username: string
@@ -46,7 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
           {isAuthenticated ? (
             <div className="user-menu" style={{ position: 'relative' }}>
               <img
-                src={userProfile?.profile_image ? `/api/uploads/${userProfile.profile_image}` : `/api/uploads/default-user.png`}
+                src={getImageUrl(userProfile?.profile_image, 'profile')}
                 alt="Perfil"
                 style={{
                   width: '40px',
@@ -58,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                 }}
                 onClick={() => setShowDropdown(!showDropdown)}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = `/api/uploads/default-user.png`
+                  (e.target as HTMLImageElement).src = getFallbackImageUrl('profile')
                 }}
               />
               {showDropdown && (

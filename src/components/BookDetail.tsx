@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
-import { Rating, Typography, Box } from '@mui/material'
 import { useAuth } from '../contexts/AuthContext'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Book, Review } from '../types'
 import './BookDetail.css'
 
@@ -161,13 +161,14 @@ const BookDetail: React.FC = () => {
         <p><strong>Autor:</strong> {book.author_name || 'Desconhecido'}</p>
         <p><strong>Descrição:</strong> {book.description || 'Nenhuma descrição disponível'}</p>
         
-        {book.photo && (
-          <img 
-            src={`/api/uploads/${book.photo}`} 
-            alt={book.title}
-            className="book-image"
-          />
-        )}
+        <img 
+          src={getImageUrl(book.photo, 'book')} 
+          alt={book.title}
+          className="book-image"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
+          }}
+        />
 
         {isAdmin && (
           <div className="image-upload">
@@ -200,18 +201,31 @@ const BookDetail: React.FC = () => {
           <p>Faça login para escrever uma avaliação.</p>
         ) : (
           <form onSubmit={handleSubmitReview}>
-            <Box sx={{ mb: 2 }}>
-              <Typography component="legend" sx={{ mb: 1 }}>Avaliação:</Typography>
-              <Rating
-                name="book-rating"
-                value={newReview.rating}
-                onChange={(_, newValue) => {
-                  setNewReview({ ...newReview, rating: newValue || 1 })
-                }}
-                max={5}
-                size="large"
-              />
-            </Box>
+            <div style={{ marginBottom: '16px' }}>
+              <label>Avaliação:</label>
+              <div className="star-rating" style={{ marginTop: '8px' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={`star ${star <= newReview.rating ? 'filled' : ''}`}
+                    onClick={() => setNewReview({ ...newReview, rating: star })}
+                    onMouseEnter={() => setNewReview({ ...newReview, rating: star })}
+                    style={{
+                      fontSize: '24px',
+                      cursor: 'pointer',
+                      color: star <= newReview.rating ? '#162c74' : '#ddd',
+                      transition: 'color 0.2s ease',
+                      marginRight: '4px'
+                    }}
+                  >
+                    ★
+                  </span>
+                ))}
+                <span style={{ marginLeft: '10px', color: '#666' }}>
+                  {newReview.rating} de 5 estrelas
+                </span>
+              </div>
+            </div>
 
             <label htmlFor="comment">Comentário:</label>
             <textarea

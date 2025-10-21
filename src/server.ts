@@ -1,13 +1,14 @@
 import express, { Request, Response } from 'express';
-import path from 'path';
-import dotenv from 'dotenv';
-import multer from 'multer';
-import fs from 'fs';
 import session from 'express-session';
 import cors from 'cors';
-
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import dotenv from 'dotenv';
 import { executeQuery } from './DB/connection';
-import { read as readBooks } from './books/read';
+import { updateProfile } from './interface/updateProfile';
+import { profileStorage, bookStorage } from './config/cloudinary';
+import { runSeeders, uploadDefaultImages } from './seeders';
 import { create as createBook } from './books/create';
 import { update as updateBook } from './books/update';
 import { deleteb as deleteBook } from './books/deleteb';
@@ -17,7 +18,6 @@ import { create as createAuthor } from './authors/create';
 import { update as updateAuthor } from './authors/update';
 import { deletea as deleteAuthor } from './authors/deletea';
 import { count as countAuthors } from './authors/count';
-import { updateProfile } from './interface/updateProfile';
 import { getProfile } from './interface/getProfile';
 import { readOneBook } from './interface/booksInterface/readOne';
 import { readOneAuthor } from './interface/authorInterface/readOneAuthor';
@@ -25,16 +25,39 @@ import { updateAuthorImage } from './interface/authorInterface/updateAuthorImage
 
 dotenv.config();
 
+async function readBooks(req: Request, res: Response) {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const search = req.query.search as string;
+    
+    let query = `
+      SELECT b.*, a.name_author 
+      FROM books b 
+      LEFT JOIN authors a ON b.author_id = a.author_id
+    `;
+    let params: any[] = [];
+    
+    if (search) {
+      query += ` WHERE b.title LIKE ? OR a.name_author LIKE ?`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    
+    query += ` ORDER BY b.book_id DESC LIMIT ${limit} OFFSET ${offset}`;
+    
+    const books = await executeQuery(query, params);
+    res.json(books);
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    res.status(500).json({ error: 'Failed to fetch books' });
+  }
+}
+
 const app = express();
 const PORT = Number(process.env.PORT) || 8082;
 
-const storage = multer.diskStorage({
-    destination: path.join(__dirname, '../FRONTEND/uploads'),
-    filename: (_req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    }
-});
-const upload = multer({ storage });
+const upload = multer({ storage: profileStorage });
+const uploadBook = multer({ storage: bookStorage });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
@@ -333,17 +356,12 @@ app.put('/api/books/:id', requireAdmin, updateBook);
 
 app.delete('/books/:id', requireAdmin, deleteBook);
 app.delete('/api/books/:id', requireAdmin, deleteBook);
-app.post('/books/:id/update', requireAdmin, upload.single('book_image'), async (req: Request, res: Response) => {
+app.post('/books/:id/update', requireAdmin, uploadBook.single('book_image'), async (req: Request, res: Response) => {
     const { id } = req.params;
     if (!id || isNaN(Number(id))) return res.status(400).end();
     try {
         if (req.file) {
-            const bookImage = req.file.filename;
-            const old: any = await executeQuery('SELECT photo FROM books WHERE book_id = ?', [id]);
-            if (old.length && old[0].photo) {
-                const oldPath = path.join(__dirname, '../FRONTEND/uploads', old[0].photo);
-                try { await fs.promises.unlink(oldPath); } catch { }
-            }
+            const bookImage = (req.file as any).path;
             await executeQuery('UPDATE books SET photo = ? WHERE book_id = ?', [bookImage, id]);
             return res.json({ photo: bookImage });
         }
@@ -352,17 +370,12 @@ app.post('/books/:id/update', requireAdmin, upload.single('book_image'), async (
         res.status(500).end();
     }
 });
-app.post('/api/books/:id/update', requireAdmin, upload.single('book_image'), async (req: Request, res: Response) => {
+app.post('/api/books/:id/update', requireAdmin, uploadBook.single('book_image'), async (req: Request, res: Response) => {
     const { id } = req.params;
     if (!id || isNaN(Number(id))) return res.status(400).end();
     try {
         if (req.file) {
-            const bookImage = req.file.filename;
-            const old: any = await executeQuery('SELECT photo FROM books WHERE book_id = ?', [id]);
-            if (old.length && old[0].photo) {
-                const oldPath = path.join(__dirname, '../FRONTEND/uploads', old[0].photo);
-                try { await fs.promises.unlink(oldPath); } catch { }
-            }
+            const bookImage = (req.file as any).path;
             await executeQuery('UPDATE books SET photo = ? WHERE book_id = ?', [bookImage, id]);
             return res.json({ photo: bookImage });
         }
@@ -398,6 +411,23 @@ app.delete('/api/authors/:id', requireAdmin, deleteAuthor);
 
 app.post('/authors/:id/update', requireAdmin, upload.single('author_image'), updateAuthorImage);
 app.post('/api/authors/:id/update', requireAdmin, upload.single('author_image'), updateAuthorImage);
+
+app.get('/api/authors/:id/books', async (req: Request, res: Response) => {
+    try {
+        const authorId = req.params.id;
+        const books = await executeQuery(`
+            SELECT b.*, a.name_author 
+            FROM books b 
+            LEFT JOIN authors a ON b.author_id = a.author_id 
+            WHERE b.author_id = ?
+            ORDER BY b.book_id DESC
+        `, [authorId]);
+        res.json(books);
+    } catch (error) {
+        console.error('Error fetching author books:', error);
+        res.status(500).json({ error: 'Failed to fetch author books' });
+    }
+});
 
 const rentHandler = async (req: Request, res: Response) => {
     const sessionUser = (req.session as any)?.user;
@@ -528,16 +558,40 @@ app.get('/api/reviews', getReviewsHandler);
 
 const reviewsHandler = async (req: Request, res: Response) => {
     const { book_id, user_id, rating, comment } = req.body;
-    if (!book_id || !user_id || !rating) return res.status(400).end();
+    if (!book_id || !user_id || !rating) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
     try {
         const bookCheck: any = await executeQuery('SELECT book_id FROM books WHERE book_id = ?', [book_id]);
-        if (!bookCheck.length) return res.status(404).end();
+        if (!bookCheck.length) {
+            return res.status(404).json({ error: 'Book not found' });
+        }
         const userCheck: any = await executeQuery('SELECT id FROM users WHERE id = ?', [user_id]);
-        if (!userCheck.length) return res.status(404).end();
-        await executeQuery('INSERT INTO reviews (book_id, user_id, rating, comment) VALUES (?, ?, ?, ?)', [book_id, user_id, rating, comment || '']);
-        res.status(201).end();
-    } catch {
-        res.status(500).end();
+        if (!userCheck.length) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        const existingReview: any = await executeQuery(
+            'SELECT review_id FROM reviews WHERE user_id = ? AND book_id = ?', 
+            [user_id, book_id]
+        );
+        
+        if (existingReview.length > 0) {
+            await executeQuery(
+                'UPDATE reviews SET rating = ?, comment = ?, review_date = CURRENT_TIMESTAMP WHERE user_id = ? AND book_id = ?',
+                [rating, comment || '', user_id, book_id]
+            );
+            res.status(200).json({ message: 'Review updated successfully' });
+        } else {
+            await executeQuery(
+                'INSERT INTO reviews (book_id, user_id, rating, comment) VALUES (?, ?, ?, ?)', 
+                [book_id, user_id, rating, comment || '']
+            );
+            res.status(201).json({ message: 'Review created successfully' });
+        }
+    } catch (error) {
+        console.error('Error creating/updating review:', error);
+        res.status(500).json({ error: 'Database error' });
     }
 };
 
@@ -605,5 +659,21 @@ app.get('*', (req, res) => {
     }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-});
+async function startServer() {
+  try {
+    console.log('🚀 Iniciando servidor PedBook...')
+    
+    await runSeeders()
+    await uploadDefaultImages()
+    
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✅ Servidor rodando na porta ${PORT}`)
+      console.log(`🌐 Acesse: http://localhost:${PORT}`)
+    })
+  } catch (error) {
+    console.error('❌ Erro ao iniciar servidor:', error)
+    process.exit(1)
+  }
+}
+
+startServer()

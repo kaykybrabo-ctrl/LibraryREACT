@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import '../styles/home.css';
-import styles from './HomeHeader.module.css';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import axios from 'axios'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
+import './Home.css'
+import '../styles/home.css'
+import styles from './HomeHeader.module.css'
 
 interface Book {
   book_id: number;
@@ -143,12 +145,12 @@ const Home: React.FC = () => {
                 >
                   <div className="thumb">
                     <img 
-                      src={book.photo ? `/api/uploads/${book.photo}` : `https://via.placeholder.com/300x450/162c74/ffffff?text=${encodeURIComponent(book.title)}`} 
+                      src={getImageUrl(book.photo, 'book')} 
                       alt={book.title} 
                       loading="eager" 
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
                       onError={(e) => { 
-                        (e.currentTarget as HTMLImageElement).src = `https://via.placeholder.com/300x450/162c74/ffffff?text=${encodeURIComponent(book.title)}`; 
+                        (e.currentTarget as HTMLImageElement).src = getFallbackImageUrl('book'); 
                       }} 
                     />
                   </div>

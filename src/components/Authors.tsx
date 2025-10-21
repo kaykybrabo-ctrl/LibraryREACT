@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
+import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Author } from '../types'
 import './Cards.css'
 
@@ -130,12 +131,12 @@ const Authors: React.FC = () => {
             <div key={author.author_id} className={`card author-card ${editingAuthor === author.author_id ? 'editing' : ''}`}>
               <div className="author-avatar">
                 <img 
-                  src={author.photo ? `/api/uploads/${author.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(author.name_author)}&size=80&background=162c74&color=fff&bold=true`} 
+                  src={getImageUrl(author.photo, 'author')} 
                   alt={author.name_author}
                   style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
                   onClick={() => navigate(`/authors/${author.author_id}`)}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(author.name_author)}&size=80&background=162c74&color=fff&bold=true`
+                    (e.target as HTMLImageElement).src = getFallbackImageUrl('author')
                   }}
                 />
               </div>
