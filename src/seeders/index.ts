@@ -45,7 +45,9 @@ async function createTables() {
       role ENUM('user', 'admin') DEFAULT 'user',
       profile_image VARCHAR(255),
       description TEXT,
-      user_id INT
+      user_id INT,
+      favorite_book_id INT,
+      FOREIGN KEY (favorite_book_id) REFERENCES books(book_id)
     )
   `)
 
@@ -123,61 +125,72 @@ async function createAdminUser() {
 
   if (existingUser.length > 0) {
     console.log('Usuário admin já existe')
-    return
+  } else {
+    const hashedPassword = await bcrypt.hash('123', 10)
+
+    await executeQuery(`
+      INSERT INTO users (username, password, role, description, profile_image) 
+      VALUES (?, ?, 'admin', 'Administrador do sistema PedBook', 'default-user')
+    `, ['kayky', hashedPassword])
+
+    console.log('   Usuário administrador criado com sucesso!')
+    console.log('   Usuário: kayky')
+    console.log('   Senha: 123')
+    console.log('   Role: admin')
   }
 
-  const hashedPassword = await bcrypt.hash('123', 10)
+  await createAuthorsAndBooks()
+}
+
+async function createAuthorsAndBooks() {
+  console.log('Criando autores e livros com templates...')
+
+  console.log('Limpando dados antigos...')
+  await executeQuery('DELETE FROM reviews')
+  await executeQuery('DELETE FROM loans')
+  await executeQuery('DELETE FROM books')
+  await executeQuery('DELETE FROM authors')
+  console.log('Dados antigos removidos!')
 
   await executeQuery(`
-    INSERT INTO users (username, password, role, description, profile_image) 
-    VALUES (?, ?, 'admin', 'Administrador do sistema PedBook', 'default-user')
-  `, ['kayky', hashedPassword])
+    INSERT INTO authors (author_id, name_author, description, photo) VALUES
+    (1, 'Guilherme Biondo', 'Guilherme Biondo é um escritor que começou a escrever desde jovem, movido pela curiosidade e paixão por contar histórias. Seus livros falam sobre pessoas, sentimentos e tudo que faz parte do cotidiano, mas com uma perspectiva única e sincera.', 'author-guilherme-biondo'),
+    (2, 'Manoel Leite', 'Manoel Leite é um autor e observador atento da vida cotidiana. Suas histórias surgem de experiências simples, mas cheias de significado. Com um estilo de escrita direto e humano, Manoel busca tocar o leitor com temas sobre memória, afeto e identidade.', 'author-manoel-leite')
+  `)
 
-  console.log('   Usuário administrador criado com sucesso!')
-  console.log('   Usuário: kayky')
-  console.log('   Senha: 123')
-  console.log('   Role: admin')
+  const books = [
+    { id: 1, author_id: 1, title: 'Life in Silence', description: 'Uma história tocante sobre superar lutas pessoais através do silêncio e introspecção.', photo: 'book-life-in-silence' },
+    { id: 2, author_id: 1, title: 'Fragments of Everyday Life', description: 'Contos curtos capturando a beleza e complexidade dos momentos cotidianos.', photo: 'book-fragments-of-everyday-life' },
+    { id: 3, author_id: 2, title: 'Stories of the Wind', description: 'Contos inspirados pelos ventos sempre mutáveis e os mistérios que eles carregam.', photo: 'book-stories-of-the-wind' },
+    { id: 4, author_id: 2, title: 'Between Noise and Calm', description: 'Uma narrativa explorando o equilíbrio entre o caos e a paz.', photo: 'book-between-noise-and-calm' },
+    { id: 5, author_id: 1, title: 'The Horizon and the Sea', description: 'Uma jornada evocativa de descoberta ao longo do horizonte infinito.', photo: 'book-the-horizon-and-the-sea' },
+    { id: 6, author_id: 1, title: 'Winds of Change', description: 'Histórias sobre transformação e os ventos que nos guiam.', photo: 'book-winds-of-change' },
+    { id: 7, author_id: 2, title: 'Paths of the Soul', description: 'Uma exploração poética dos caminhos internos que todos percorremos.', photo: 'book-paths-of-the-soul' },
+    { id: 8, author_id: 2, title: 'Under the Grey Sky', description: 'Um conto dramático ambientado contra um fundo de céus incertos.', photo: 'book-under-the-grey-sky' },
+    { id: 9, author_id: 1, title: 'Notes of a Silence', description: 'Reflexões sobre momentos de silêncio e seus significados poderosos.', photo: 'book-notes-of-a-silence' },
+    { id: 10, author_id: 2, title: 'The Last Letter', description: 'Uma história comovente girando em torno de uma despedida final.', photo: 'book-the-last-letter' },
+    { id: 11, author_id: 1, title: 'Between Words', description: 'Explorando o que existe além da linguagem falada e do texto escrito.', photo: 'book-between-words' },
+    { id: 12, author_id: 2, title: 'Colors of the City', description: 'Um retrato vívido da vida urbana através de suas cores vibrantes.', photo: 'book-colors-of-the-city' },
+    { id: 13, author_id: 1, title: 'The Weight of the Rain', description: 'Uma história metafórica sobre fardos e alívio trazidos pela chuva.', photo: 'book-the-weight-of-the-rain' },
+    { id: 14, author_id: 2, title: 'Blue Night', description: 'Uma jornada misteriosa através da escuridão e luz da noite.', photo: 'book-blue-night' },
+    { id: 15, author_id: 1, title: 'Faces of Memory', description: 'Histórias que capturam a natureza fugaz das memórias.', photo: 'book-faces-of-memory' },
+    { id: 16, author_id: 2, title: 'Origin Tales', description: 'Explorando as raízes e começos de nossa existência.', photo: 'book-origin-tales' },
+    { id: 17, author_id: 1, title: 'Fragments of Hope', description: 'Pequenos vislumbres de esperança em tempos desafiadores.', photo: 'book-fragments-of-hope' },
+    { id: 18, author_id: 2, title: 'Trails and Scars', description: 'As marcas deixadas pelas jornadas e lutas da vida.', photo: 'book-trails-and-scars' },
+    { id: 19, author_id: 1, title: 'From the Other Side of the Street', description: 'Uma mudança de perspectiva para ver o mundo de um novo ângulo.', photo: 'book-from-the-other-side-of-the-street' },
+    { id: 20, author_id: 2, title: 'Interrupted Seasons', description: 'Histórias sobre mudanças inesperadas e pausas na vida.', photo: 'book-interrupted-seasons' }
+  ]
+
+  for (const book of books) {
+    await executeQuery(`
+      INSERT INTO books (book_id, author_id, title, description, photo) 
+      VALUES (?, ?, ?, ?, ?)
+    `, [book.id, book.author_id, book.title, book.description, book.photo])
+  }
+
+  console.log('2 autores e 20 livros criados usando suas imagens específicas do Cloudinary!')
 }
 
 export async function uploadDefaultImages() {
-  console.log('Fazendo upload das imagens padrão para Cloudinary...')
-
-  const cloudinary = require('../config/cloudinary').default
-
-  try {
-    const defaultUserImage = await cloudinary.uploader.upload(
-      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjMTYyYzc0Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjUgNzVjMC0xMy44IDExLjItMjUgMjUtMjVzMjUgMTEuMiAyNSAyNXYxMEgyNXYtMTB6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=',
-      {
-        folder: 'pedbook/profiles',
-        public_id: 'default-user',
-        overwrite: true
-      }
-    )
-
-    const defaultBookImage = await cloudinary.uploader.upload(
-      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDEyMCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTgwIiBmaWxsPSIjMTYyYzc0Ii8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxNjAiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjEiLz4KPHN2ZyB4PSI0NSIgeT0iNzAiIHdpZHRoPSIzMCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC44Ij4KPHA+8J+TmjwvcD4KPC9zdmc+Cjx0ZXh0IHg9IjYwIiB5PSIxNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TGl2cm88L3RleHQ+Cjwvc3ZnPg==',
-      {
-        folder: 'pedbook/books',
-        public_id: 'default-book',
-        overwrite: true
-      }
-    )
-
-    const defaultAuthorImage = await cloudinary.uploader.upload(
-      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjMzc0MTUxIi8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjUgNzVjMC0xMy44IDExLjItMjUgMjUtMjVzMjUgMTEuMiAyNSAyNXYxMEgyNXYtMTB6IiBmaWxsPSJ3aGl0ZSIvPgo8dGV4dCB4PSI1MCIgeT0iOTIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC44IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5BdXRvcjwvdGV4dD4KPC9zdmc+',
-      {
-        folder: 'pedbook/profiles',
-        public_id: 'default-author',
-        overwrite: true
-      }
-    )
-    console.log('Imagens padrão enviadas para Cloudinary!')
-    console.log('Imagem padrão do usuário:', defaultUserImage.secure_url)
-    console.log('Imagem padrão do livro:', defaultBookImage.secure_url)
-    console.log('Imagem padrão do autor:', defaultAuthorImage.secure_url)
-
-  } catch (error) {
-    console.error('Erro ao fazer upload das imagens padrão:', error)
-    throw error
-  }
+  console.log('Usando imagens que já estão no Cloudinary - não criando nenhuma imagem nova!')
 }
