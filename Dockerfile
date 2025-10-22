@@ -5,13 +5,14 @@ COPY package*.json ./
 RUN npm install
 
 COPY src/ ./src/
-COPY tsconfig.json ./
+COPY tsconfig*.json ./
+COPY vite.config.ts ./
+COPY index.html ./
 COPY .env ./
 
-COPY FRONTEND/react-dist/ ./FRONTEND/react-dist/
 COPY FRONTEND/uploads/ ./FRONTEND/uploads/
 
-COPY tsconfig.backend.json ./
+RUN npx vite build
 RUN npx tsc --build tsconfig.backend.json
 
 EXPOSE 8080

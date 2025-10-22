@@ -1,11 +1,6 @@
 export const getImageUrl = (photo: string | null | undefined, type: 'book' | 'profile' | 'author' = 'book', forceRefresh: boolean = false): string => {
   if (!photo) {
-    const defaultImages = {
-      book: '/api/uploads/default-book.svg',
-      profile: '/api/uploads/default-user.png',
-      author: '/api/uploads/default-author.png'
-    }
-    return defaultImages[type]
+    return getFallbackImageUrl(type)
   }
 
   let url = ''
@@ -14,6 +9,9 @@ export const getImageUrl = (photo: string | null | undefined, type: 'book' | 'pr
     url = photo
   } else if (photo.includes('pedbook/')) {
     url = `https://res.cloudinary.com/ddfgsoh5g/image/upload/${photo}`
+  } else if (photo.startsWith('book-') || photo.startsWith('author-') || photo.startsWith('default-')) {
+    const folder = type === 'book' ? 'pedbook/books' : 'pedbook/profiles'
+    url = `https://res.cloudinary.com/ddfgsoh5g/image/upload/${folder}/${photo}`
   } else {
     url = `/api/uploads/${photo}`
   }
@@ -28,9 +26,9 @@ export const getImageUrl = (photo: string | null | undefined, type: 'book' | 'pr
 
 export const getFallbackImageUrl = (type: 'book' | 'profile' | 'author' = 'book'): string => {
   const defaultImages = {
-    book: '/api/uploads/default-book.svg',
-    profile: '/api/uploads/default-user.png',
-    author: '/api/uploads/default-author.png'
+    book: 'https://res.cloudinary.com/ddfgsoh5g/image/upload/pedbook/books/default-book',
+    profile: 'https://res.cloudinary.com/ddfgsoh5g/image/upload/pedbook/profiles/default-user',
+    author: 'https://res.cloudinary.com/ddfgsoh5g/image/upload/pedbook/profiles/default-author'
   }
   return defaultImages[type]
 }

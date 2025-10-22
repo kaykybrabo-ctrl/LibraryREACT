@@ -5,6 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 import { executeQuery } from './DB/connection';
 import { updateProfile } from './interface/updateProfile';
 import { profileStorage, bookStorage } from './config/cloudinary';
@@ -87,7 +88,8 @@ const loginHandler = async (req: Request, res: Response) => {
         const results: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
         if (!results.length) return res.status(401).end();
         const user = results[0];
-        if (password !== user.password) return res.status(401).end();
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) return res.status(401).end();
         (req.session as any).user = { id: user.id, username: user.username, role: user.role };
         res.json({ role: user.role, username: user.username, id: user.id });
     } catch (error) {
