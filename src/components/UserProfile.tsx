@@ -108,9 +108,9 @@ const UserProfile: React.FC = () => {
       setImageKey(prev => prev + 1)
       setImageFile(null)
       setError('')
-      alert('Profile image updated successfully!')
+      alert('Imagem do perfil atualizada com sucesso!')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to upload profile image')
+      setError(err.response?.data?.error || 'Falha ao enviar imagem do perfil')
     } finally {
       setUploading(false)
     }
@@ -135,9 +135,9 @@ const UserProfile: React.FC = () => {
       }))
       setEditingDescription(false)
       setError('')
-      alert('Description updated successfully!')
+      alert('Descrição atualizada com sucesso!')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update description')
+      setError(err.response?.data?.error || 'Falha ao atualizar descrição')
     } finally {
       setUploading(false)
     }
@@ -153,12 +153,12 @@ const UserProfile: React.FC = () => {
       })
       await fetchLoans()
       
-      alert('Book returned successfully!')
+      alert('Livro devolvido com sucesso!')
       setError('')
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Failed to return book'
+      const errorMsg = err.response?.data?.error || 'Falha ao devolver livro'
       setError(errorMsg)
-      alert(`Error: ${errorMsg}`)
+      alert(`Erro: ${errorMsg}`)
     }
   }
 

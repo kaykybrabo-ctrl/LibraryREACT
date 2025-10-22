@@ -36,7 +36,7 @@ const Authors: React.FC = () => {
       setTotalPages(Math.ceil(countRes.data.total / limit))
       setLoading(false)
     } catch (err) {
-      setError('Failed to fetch authors')
+      setError('Falha ao carregar autores')
       setLoading(false)
     }
   }
@@ -52,7 +52,7 @@ const Authors: React.FC = () => {
       setNewAuthor({ name: '' })
       fetchAuthors()
     } catch (err) {
-      setError('Failed to create author')
+      setError('Falha ao criar autor')
     }
   }
 
@@ -71,7 +71,7 @@ const Authors: React.FC = () => {
       setEditingAuthor(null)
       fetchAuthors()
     } catch (err) {
-      setError('Failed to update author')
+      setError('Falha ao atualizar autor')
     }
   }
 
@@ -87,7 +87,7 @@ const Authors: React.FC = () => {
       await axios.delete(`/api/authors/${authorId}`)
       fetchAuthors()
     } catch (err) {
-      setError('Failed to delete author')
+      setError('Falha ao excluir autor')
     }
   }
 

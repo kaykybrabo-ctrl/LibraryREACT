@@ -43,7 +43,7 @@ const BookDetail: React.FC = () => {
       setBook(response.data)
       setLoading(false)
     } catch (err) {
-      setError('Failed to fetch book details')
+      setError('Falha ao carregar detalhes do livro')
       setLoading(false)
     }
   }
@@ -74,7 +74,7 @@ const BookDetail: React.FC = () => {
       fetchBook()
       setImageFile(null)
     } catch (err) {
-      setError('Failed to upload image')
+      setError('Falha ao enviar imagem')
     } finally {
       setUploading(false)
     }
@@ -83,24 +83,24 @@ const BookDetail: React.FC = () => {
   const handleRentBook = async () => {
     try {
       await axios.post(`/api/rent/${id}`)
-      alert('Book rented successfully!')
+      alert('Livro alugado com sucesso!')
       setError('')
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Failed to rent book. You may not be logged in or book is already rented.'
+      const errorMsg = err.response?.data?.error || 'Falha ao alugar livro. Você pode não estar logado ou o livro já está alugado.'
       setError(errorMsg)
-      alert(`Error: ${errorMsg}`)
+      alert(`Erro: ${errorMsg}`)
     }
   }
 
   const handleFavoriteBook = async () => {
     try {
       await axios.post(`/api/favorite/${id}`)
-      alert('Book added to favorites!')
+      alert('Livro adicionado aos favoritos!')
       setError('')
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Failed to add book to favorites'
+      const errorMsg = err.response?.data?.error || 'Falha ao adicionar livro aos favoritos'
       setError(errorMsg)
-      alert(`Error: ${errorMsg}`)
+      alert(`Erro: ${errorMsg}`)
     }
   }
 
@@ -108,7 +108,7 @@ const BookDetail: React.FC = () => {
     e.preventDefault()
 
     if (!currentUser) {
-      setError('Please log in to submit a review')
+      setError('Faça login para enviar uma avaliação')
       return
     }
 
@@ -122,12 +122,12 @@ const BookDetail: React.FC = () => {
       
       setNewReview({ rating: 5, comment: '' })
       fetchReviews()
-      alert('Review submitted successfully!')
+      alert('Avaliação enviada com sucesso!')
       setError('')
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Failed to submit review'
+      const errorMsg = err.response?.data?.error || 'Falha ao enviar avaliação'
       setError(errorMsg)
-      alert(`Error: ${errorMsg}`)
+      alert(`Erro: ${errorMsg}`)
     }
   }
 

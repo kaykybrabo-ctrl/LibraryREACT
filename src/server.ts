@@ -48,7 +48,7 @@ async function readBooks(req: Request, res: Response) {
     const books = await executeQuery(query, params);
     res.json(books);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch books' });
+    res.status(500).json({ error: 'Falha ao carregar livros' });
   }
 }
 
@@ -91,7 +91,7 @@ const loginHandler = async (req: Request, res: Response) => {
         (req.session as any).user = { id: user.id, username: user.username, role: user.role };
         res.json({ role: user.role, username: user.username, id: user.id });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Erro interno do servidor' });
     }
 };
 
@@ -115,33 +115,6 @@ const registerHandler = async (req: Request, res: Response) => {
 app.post('/register', registerHandler);
 app.post('/api/register', registerHandler);
 
-const forgotPasswordHandler = async (req: Request, res: Response) => {
-    const { username } = req.body;
-    if (typeof username !== 'string') return res.status(400).end();
-    
-    try {
-        const userExists: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username.trim().toLowerCase()]);
-        
-        if (userExists.length > 0) {
-            const previewLink = `https://ethereal.email/message/preview/${Date.now()}`;
-            res.json({ 
-                message: 'If the account exists, a password reset email has been sent.',
-                preview: previewLink
-            });
-        } else {
-            res.json({ 
-                message: 'If the account exists, a password reset email has been sent.'
-            });
-        }
-    } catch (error) {
-        res.json({ 
-            message: 'If the account exists, a password reset email has been sent.'
-        });
-    }
-};
-
-app.post('/forgot-password', forgotPasswordHandler);
-app.post('/api/forgot-password', forgotPasswordHandler);
 
 app.post('/update-profile', upload.single('profile_image'), updateProfile);
 app.post('/api/update-profile', upload.single('profile_image'), updateProfile);
@@ -150,7 +123,7 @@ app.get('/api/get-profile', getProfile);
 
 app.get('/users/favorite', async (req, res) => {
     const username = req.query.username as string;
-    if (!username) return res.status(400).json({ error: 'Username required' });
+    if (!username) return res.status(400).json({ error: 'Nome de usuário obrigatório' });
     
     try {
         const result: any[] = await executeQuery(`
@@ -180,7 +153,7 @@ app.get('/api/users', async (_, res) => {
         `);
         res.json(result);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch users' });
+        res.status(500).json({ error: 'Falha ao carregar usuários' });
     }
 });
 
@@ -196,10 +169,10 @@ app.post('/api/setup-profile-columns', async (_, res) => {
         } catch (e) {
         }
         
-        res.json({ message: 'Profile columns setup completed' });
+        res.json({ message: 'Configuração das colunas de perfil concluída' });
     } catch (error) {
         console.error('Error setting up profile columns:', error);
-        res.status(500).json({ error: 'Failed to setup profile columns' });
+        res.status(500).json({ error: 'Falha ao configurar colunas de perfil' });
     }
 });
 
@@ -224,16 +197,16 @@ app.get('/api/map-existing-photos', async (_, res) => {
             }
         }
         
-        res.json({ message: 'Photos mapped successfully', photoMap, filesInDir: files.length });
+        res.json({ message: 'Fotos mapeadas com sucesso', photoMap, filesInDir: files.length });
     } catch (error) {
         console.error('Error mapping photos:', error);
-        res.status(500).json({ error: 'Failed to map photos' });
+        res.status(500).json({ error: 'Falha ao mapear fotos' });
     }
 });
 
 app.get('/api/test-profile', async (req, res) => {
     const username = req.query.username as string;
-    if (!username) return res.status(400).json({ error: 'Username required' });
+    if (!username) return res.status(400).json({ error: 'Nome de usuário obrigatório' });
     
     try {
         const results: any[] = await executeQuery(
@@ -241,7 +214,7 @@ app.get('/api/test-profile', async (req, res) => {
             [username]
         );
 
-        if (!results.length) return res.status(404).json({ error: 'User not found' });
+        if (!results.length) return res.status(404).json({ error: 'Usuário não encontrado' });
 
         const user = results[0];
         
@@ -254,13 +227,13 @@ app.get('/api/test-profile', async (req, res) => {
         });
     } catch (error) {
         console.error('test-profile error:', error);
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro no banco de dados' });
     }
 });
 
 app.get('/api/users/favorite', async (req, res) => {
     const username = req.query.username as string;
-    if (!username) return res.status(400).json({ error: 'Username required' });
+    if (!username) return res.status(400).json({ error: 'Nome de usuário obrigatório' });
     
     try {
         const userResult: any[] = await executeQuery(`
@@ -290,7 +263,7 @@ app.get('/api/users/favorite', async (req, res) => {
             res.json(null);
         }
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro no banco de dados' });
     }
 });
 
@@ -420,28 +393,28 @@ app.get('/api/authors/:id/books', async (req: Request, res: Response) => {
         res.json(books);
     } catch (error) {
         console.error('Error fetching author books:', error);
-        res.status(500).json({ error: 'Failed to fetch author books' });
+        res.status(500).json({ error: 'Falha ao carregar livros do autor' });
     }
 });
 
 const rentHandler = async (req: Request, res: Response) => {
     const sessionUser = (req.session as any)?.user;
     if (!sessionUser) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Não autenticado' });
     }
     
     const bookId = Number(req.params.id);
-    if (isNaN(bookId)) return res.status(400).json({ error: 'Invalid book ID' });
+    if (isNaN(bookId)) return res.status(400).json({ error: 'ID do livro inválido' });
     
     try {
         const userId = sessionUser.id;
         const alreadyLoaned: any = await executeQuery('SELECT * FROM loans WHERE user_id = ? AND book_id = ?', [userId, bookId]);
-        if (alreadyLoaned.length) return res.status(409).json({ error: 'Book already rented by you' });
+        if (alreadyLoaned.length) return res.status(409).json({ error: 'Livro já alugado por você' });
         
         await executeQuery('INSERT INTO loans (user_id, book_id, loan_date) VALUES (?, ?, NOW())', [userId, bookId]);
-        res.status(201).json({ message: 'Book rented successfully' });
+        res.status(201).json({ message: 'Livro alugado com sucesso' });
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
 
@@ -451,17 +424,17 @@ app.post('/api/rent/:id', rentHandler);
 const favoriteHandler = async (req: Request, res: Response) => {
     const sessionUser = (req.session as any)?.user;
     if (!sessionUser) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Não autenticado' });
     }
     
     const bookId = Number(req.params.id);
-    if (isNaN(bookId)) return res.status(400).json({ error: 'Invalid book ID' });
+    if (isNaN(bookId)) return res.status(400).json({ error: 'ID do livro inválido' });
     
     try {
         await executeQuery('UPDATE users SET favorite_book_id = ? WHERE username = ?', [bookId, sessionUser.username]);
-        res.status(200).json({ message: 'Book added to favorites' });
+        res.status(200).json({ message: 'Livro adicionado aos favoritos' });
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
 
@@ -515,18 +488,18 @@ app.get('/api/loans', loansHandler);
 
 const returnHandler = async (req: Request, res: Response) => {
     const loanId = Number(req.params.loanId);
-    if (isNaN(loanId)) return res.status(400).json({ error: 'Invalid loan ID' });
+    if (isNaN(loanId)) return res.status(400).json({ error: 'ID do empréstimo inválido' });
     
     try {
         const result: any = await executeQuery('DELETE FROM loans WHERE loans_id = ?', [loanId]);
         
         if (!result.affectedRows) {
-            return res.status(404).json({ error: 'Loan not found' });
+            return res.status(404).json({ error: 'Empréstimo não encontrado' });
         }
         
-        res.status(200).json({ message: 'Book returned successfully' });
+        res.status(200).json({ message: 'Livro devolvido com sucesso' });
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
 
@@ -544,7 +517,7 @@ const getReviewsHandler = async (_req: Request, res: Response) => {
         `);
         res.json(reviews);
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
 
@@ -554,16 +527,16 @@ app.get('/api/reviews', getReviewsHandler);
 const reviewsHandler = async (req: Request, res: Response) => {
     const { book_id, user_id, rating, comment } = req.body;
     if (!book_id || !user_id || !rating) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ error: 'Campos obrigatórios ausentes' });
     }
     try {
         const bookCheck: any = await executeQuery('SELECT book_id FROM books WHERE book_id = ?', [book_id]);
         if (!bookCheck.length) {
-            return res.status(404).json({ error: 'Book not found' });
+            return res.status(404).json({ error: 'Livro não encontrado' });
         }
         const userCheck: any = await executeQuery('SELECT id FROM users WHERE id = ?', [user_id]);
         if (!userCheck.length) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'Usuário não encontrado' });
         }
         
         const existingReview: any = await executeQuery(
@@ -576,17 +549,17 @@ const reviewsHandler = async (req: Request, res: Response) => {
                 'UPDATE reviews SET rating = ?, comment = ?, review_date = CURRENT_TIMESTAMP WHERE user_id = ? AND book_id = ?',
                 [rating, comment || '', user_id, book_id]
             );
-            res.status(200).json({ message: 'Review updated successfully' });
+            res.status(200).json({ message: 'Avaliação atualizada com sucesso' });
         } else {
             await executeQuery(
                 'INSERT INTO reviews (book_id, user_id, rating, comment) VALUES (?, ?, ?, ?)', 
                 [book_id, user_id, rating, comment || '']
             );
-            res.status(201).json({ message: 'Review created successfully' });
+            res.status(201).json({ message: 'Avaliação criada com sucesso' });
         }
     } catch (error) {
         console.error('Error creating/updating review:', error);
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
 
@@ -596,7 +569,7 @@ app.post('/api/reviews', reviewsHandler);
 app.get('/user/me', (req: Request, res: Response) => {
     const user = (req.session as any)?.user;
     if (!user) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Não autenticado' });
     }
     res.json({ id: user.id, username: user.username, role: user.role });
 });
@@ -604,7 +577,7 @@ app.get('/user/me', (req: Request, res: Response) => {
 app.get('/api/user/me', (req: Request, res: Response) => {
     const user = (req.session as any)?.user;
     if (!user) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Não autenticado' });
     }
     res.json({ id: user.id, username: user.username, role: user.role });
 });
@@ -612,7 +585,7 @@ app.get('/api/user/me', (req: Request, res: Response) => {
 app.get('/user/role', (req: Request, res: Response) => {
     const user = (req.session as any)?.user;
     if (!user) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Não autenticado' });
     }
     res.json({ role: user.role, isAdmin: user.role === 'admin' });
 });
@@ -620,7 +593,7 @@ app.get('/user/role', (req: Request, res: Response) => {
 app.get('/api/user/role', (req: Request, res: Response) => {
     const user = (req.session as any)?.user;
     if (!user) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Não autenticado' });
     }
     res.json({ role: user.role, isAdmin: user.role === 'admin' });
 });
@@ -642,7 +615,7 @@ app.get('/api/stats', async (_req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('Error fetching stats:', error);
-        res.status(500).json({ error: 'Failed to fetch statistics' });
+        res.status(500).json({ error: 'Falha ao carregar estatísticas' });
     }
 });
 
@@ -650,7 +623,7 @@ app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
         res.sendFile(path.join(__dirname, '../FRONTEND/react-dist/index.html'));
     } else {
-        res.status(404).json({ error: 'API endpoint not found' });
+        res.status(404).json({ error: 'Endpoint da API não encontrado' });
     }
 });
 

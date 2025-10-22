@@ -31,14 +31,14 @@ const Loans: React.FC = () => {
       })
       
       if (!response.ok) {
-        throw new Error('Failed to fetch loans')
+        throw new Error('Falha ao carregar empréstimos')
       }
       
       const data = await response.json()
       setLoans(data)
     } catch (err) {
-      setError('Failed to load loans')
-      console.error('Error fetching loans:', err)
+      setError('Falha ao carregar empréstimos')
+      console.error('Erro ao carregar empréstimos:', err)
     } finally {
       setLoading(false)
     }
@@ -55,13 +55,13 @@ const Loans: React.FC = () => {
       })
       
       if (!response.ok) {
-        throw new Error('Failed to return book')
+        throw new Error('Falha ao devolver livro')
       }
       
       fetchLoans()
     } catch (err) {
-      setError('Failed to return book')
-      console.error('Error returning book:', err)
+      setError('Falha ao devolver livro')
+      console.error('Erro ao devolver livro:', err)
     }
   }
 
@@ -87,7 +87,7 @@ const Loans: React.FC = () => {
   if (loading) {
     return (
       <div className="loans-container">
-        <div className="loading">Loading loans...</div>
+        <div className="loading">Carregando empréstimos...</div>
       </div>
     )
   }
@@ -95,8 +95,8 @@ const Loans: React.FC = () => {
   return (
     <div className="loans-container">
       <div className="loans-header">
-        <h1>Library Loans Management</h1>
-        <p>Manage all book loans in the system</p>
+        <h1>Gerenciamento de Empréstimos</h1>
+        <p>Gerencie todos os empréstimos de livros do sistema</p>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -106,25 +106,25 @@ const Loans: React.FC = () => {
           className={filter === 'all' ? 'filter-btn active' : 'filter-btn'}
           onClick={() => setFilter('all')}
         >
-          All Loans ({loans.length})
+          Todos os Empréstimos ({loans.length})
         </button>
         <button 
           className={filter === 'active' ? 'filter-btn active' : 'filter-btn'}
           onClick={() => setFilter('active')}
         >
-          Active ({loans.filter(l => l.status === 'active').length})
+          Ativos ({loans.filter(l => l.status === 'active').length})
         </button>
         <button 
           className={filter === 'overdue' ? 'filter-btn active' : 'filter-btn'}
           onClick={() => setFilter('overdue')}
         >
-          Overdue ({loans.filter(l => l.status === 'overdue').length})
+          Atrasados ({loans.filter(l => l.status === 'overdue').length})
         </button>
         <button 
           className={filter === 'returned' ? 'filter-btn active' : 'filter-btn'}
           onClick={() => setFilter('returned')}
         >
-          Returned ({loans.filter(l => l.status === 'returned').length})
+          Devolvidos ({loans.filter(l => l.status === 'returned').length})
         </button>
       </div>
 
@@ -132,8 +132,8 @@ const Loans: React.FC = () => {
         {filteredLoans.length === 0 ? (
           <div className="no-loans">
             <div className="no-loans-icon">📚</div>
-            <h3>No loans found</h3>
-            <p>No loans match the current filter criteria.</p>
+            <h3>Nenhum empréstimo encontrado</h3>
+            <p>Nenhum empréstimo corresponde aos critérios de filtro atuais.</p>
           </div>
         ) : (
           filteredLoans.map((loan) => (
@@ -141,7 +141,7 @@ const Loans: React.FC = () => {
               <div className="loan-card-header">
                 <div className="loan-info">
                   <h3>{loan.title}</h3>
-                  <p className="loan-user">Borrowed by: {loan.username}</p>
+                  <p className="loan-user">Emprestado por: {loan.username}</p>
                 </div>
                 {getStatusBadge(loan.status)}
               </div>
@@ -155,14 +155,14 @@ const Loans: React.FC = () => {
               <div className="loan-details">
                 <div className="loan-dates">
                   <div className="date-item">
-                    <span className="date-label">Loan Date:</span>
+                    <span className="date-label">Data do Empréstimo:</span>
                     <span className="date-value">
                       {new Date(loan.loan_date).toLocaleDateString()}
                     </span>
                   </div>
                   {loan.return_date && (
                     <div className="date-item">
-                      <span className="date-label">Return Date:</span>
+                      <span className="date-label">Data de Devolução:</span>
                       <span className="date-value">
                         {new Date(loan.return_date).toLocaleDateString()}
                       </span>
@@ -181,11 +181,11 @@ const Loans: React.FC = () => {
                     className="return-btn"
                     onClick={() => handleReturnBook(loan.loans_id)}
                   >
-                    Mark as Returned
+                    Marcar como Devolvido
                   </button>
                 )}
                 <button className="details-btn">
-                  View Details
+                  Ver Detalhes
                 </button>
               </div>
             </div>

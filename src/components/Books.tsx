@@ -46,7 +46,7 @@ const Books: React.FC = () => {
       setTotalPages(Math.ceil(countRes.data.total / limit))
       setLoading(false)
     } catch (err) {
-      setError('Failed to fetch books')
+      setError('Falha ao carregar livros')
       setLoading(false)
     }
   }
@@ -56,7 +56,7 @@ const Books: React.FC = () => {
       const response = await axios.get('/api/authors?limit=9999&offset=0')
       setAuthors(response.data)
     } catch (err) {
-      setError('Failed to fetch authors')
+      setError('Falha ao carregar autores')
     }
   }
 
@@ -112,7 +112,7 @@ const Books: React.FC = () => {
       setUseNewAuthor(false)
       fetchBooks()
     } catch (err) {
-      setError('Failed to create book')
+      setError('Falha ao criar livro')
     }
   }
 
@@ -132,7 +132,7 @@ const Books: React.FC = () => {
       setEditingBook(null)
       fetchBooks()
     } catch (err) {
-      setError('Failed to update book')
+      setError('Falha ao atualizar livro')
     }
   }
 
@@ -148,7 +148,7 @@ const Books: React.FC = () => {
       await axios.delete(`/api/books/${bookId}`)
       fetchBooks()
     } catch (err) {
-      setError('Failed to delete book')
+      setError('Falha ao excluir livro')
     }
   }
 
