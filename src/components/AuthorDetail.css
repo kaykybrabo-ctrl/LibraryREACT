@@ -20,6 +20,28 @@
   margin-bottom: 20px;
 }
 
+.author-image-container {
+  display: flex;
+  justify-content: flex-start;
+  margin: 20px 0;
+  padding: 0;
+}
+
+.author-image-enhanced {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.author-image-enhanced:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
 .biography-textarea {
   width: 100%;
   margin-bottom: 10px;

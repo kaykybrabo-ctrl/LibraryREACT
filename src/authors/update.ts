@@ -9,7 +9,6 @@ export async function update(req: Request, res: Response) {
         return res.sendStatus(400);
     }
 
-    // Permitir atualização apenas da description
     if (!name_author && description === undefined) {
         return res.status(400).json({ error: 'At least name_author or description must be provided' });
     }

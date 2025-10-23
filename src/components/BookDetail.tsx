@@ -161,14 +161,16 @@ const BookDetail: React.FC = () => {
         <p><strong>Autor:</strong> {book.author_name || 'Desconhecido'}</p>
         <p><strong>Descrição:</strong> {book.description || 'Nenhuma descrição disponível'}</p>
         
-        <img 
-          src={getImageUrl(book.photo, 'book')} 
-          alt={book.title}
-          className="book-image"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
-          }}
-        />
+        <div className="book-image-container">
+          <img 
+            src={getImageUrl(book.photo, 'book')} 
+            alt={book.title}
+            className="book-image-enhanced"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
+            }}
+          />
+        </div>
 
         {isAdmin && (
           <div className="image-upload">
@@ -250,25 +252,33 @@ const BookDetail: React.FC = () => {
             {reviews.map(review => (
               <div key={review.review_id} className="review-card">
                 <div className="review-header">
-                  <strong 
-                    onClick={() => navigate(`/profile/${review.username}`)}
-                    style={{ 
-                      cursor: 'pointer', 
-                      color: '#162c74', 
-                      textDecoration: 'underline',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    👤 {review.username}
-                  </strong>
-                  <span>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <strong 
+                      onClick={() => navigate(`/profile/${review.username}`)}
+                      style={{ 
+                        cursor: 'pointer', 
+                        color: '#162c74', 
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      👤 {review.username || 'Usuário'}
+                    </strong>
+                    <span style={{ color: '#ffa500', fontSize: '18px' }}>
+                      {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                    </span>
+                  </div>
+                  <small className="review-date">
+                    {review.created_at ? 
+                      new Date(review.created_at).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit', 
+                        year: 'numeric'
+                      }) : 
+                      'Data não disponível'
+                    }
+                  </small>
                 </div>
-                <p>{review.comment}</p>
-                <small className="review-date">
-                  {new Date(review.review_date).toLocaleDateString()}
-                </small>
+                <p style={{ margin: '10px 0', lineHeight: '1.5' }}>{review.comment}</p>
               </div>
             ))}
           </div>

@@ -33,7 +33,6 @@ const AuthorDetail: React.FC = () => {
     try {
       const response = await axios.get(`/api/authors/${id}`)
       
-      // Biografias hardcodadas para garantir que funcione
       const biografias = {
         1: "Guilherme Biondo é um escritor que começou a escrever desde jovem, movido pela curiosidade e paixão por contar histórias. Seus livros falam sobre pessoas, sentimentos e tudo que faz parte do cotidiano, mas com uma perspectiva única e sincera.",
         2: "Manoel Leite é um autor e observador atento da vida cotidiana. Suas histórias surgem de experiências simples, mas cheias de significado. Com um estilo de escrita direto e humano, Manoel busca tocar o leitor com temas sobre memória, afeto e identidade."
@@ -136,15 +135,17 @@ const AuthorDetail: React.FC = () => {
 
         <h2>{author.name_author}</h2>
 
-        <img
-          key={imageKey}
-          src={getImageUrl(author.photo, 'author', imageKey > 0)}
-          alt={author.name_author}
-          className="author-image"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = getFallbackImageUrl('author')
-          }}
-        />
+        <div className="author-image-container">
+          <img
+            key={imageKey}
+            src={getImageUrl(author.photo, 'author', imageKey > 0)}
+            alt={author.name_author}
+            className="author-image-enhanced"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = getFallbackImageUrl('author')
+            }}
+          />
+        </div>
 
         {isAdmin && (
           <div className="image-upload" style={{ marginTop: '20px' }}>

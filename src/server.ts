@@ -375,7 +375,6 @@ app.get('/authors/:id', (req: Request, res: Response) => {
 });
 app.get('/api/authors/:id', readOneAuthor);
 
-// Endpoint de debug para testar encoding
 app.get('/api/debug/authors/:id', async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     try {
@@ -544,7 +543,9 @@ app.post('/api/return/:loanId', returnHandler);
 const getReviewsHandler = async (_req: Request, res: Response) => {
     try {
         const reviews = await executeQuery(`
-            SELECT * FROM reviews
+            SELECT r.*, u.username 
+            FROM reviews r 
+            LEFT JOIN users u ON r.user_id = u.id
         `);
         res.json(reviews || []);
     } catch (error) {
