@@ -81,7 +81,6 @@
   border-color: #fff;
 }
 
-/* Card hover effects */
 .homeCard {
   padding: 2rem;
   border: 1px solid #e0e0e0;
@@ -95,7 +94,6 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive design */
 @media (max-width: 640px) {
   .title {
     font-size: 16px;
@@ -132,13 +130,11 @@
   }
 }
 
-/* Main Content */
 .homeMain {
   min-height: calc(100vh - 60px);
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* Carousel Section */
 .carouselSection {
   position: relative;
   height: 500px;
@@ -273,7 +269,6 @@
   background: rgba(255,255,255,0.8);
 }
 
-/* Stats Section */
 .statsSection {
   padding: 40px 20px;
   max-width: 1200px;
@@ -320,7 +315,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Featured Section */
 .featuredSection {
   padding: 40px 20px;
   max-width: 1200px;
@@ -428,7 +422,6 @@
   background: #1a2f7a;
 }
 
-/* Actions Section */
 .actionsSection {
   padding: 40px 20px 60px;
   max-width: 1200px;
@@ -475,7 +468,6 @@
   font-size: 0.95rem;
 }
 
-/* Additional Responsive Design */
 @media (max-width: 768px) {
   .heroTitle {
     font-size: 2.5rem;
@@ -527,7 +519,6 @@
     padding: 12px 15px;
   }
   
-  /* Carousel responsive */
   .carouselSection {
     height: 350px;
   }

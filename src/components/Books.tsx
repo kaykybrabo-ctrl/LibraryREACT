@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import api from '../api'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
@@ -160,11 +161,14 @@ const Books: React.FC = () => {
     }
     
     try {
-      await axios.post(`/api/rent/${bookId}`)
+      await api.post(`/rent/${bookId}`)
       alert('Livro alugado com sucesso!')
       setError('')
       setRentedBooks(prev => [...prev, bookId])
     } catch (err: any) {
+      if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
+        return;
+      }
       const errorMsg = err.response?.data?.error || 'Falha ao alugar livro.'
       setError(errorMsg)
       alert(`Erro: ${errorMsg}`)

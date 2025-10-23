@@ -23,6 +23,13 @@ import { getProfile } from './interface/getProfile';
 import { readOneBook } from './interface/booksInterface/readOne';
 import { readOneAuthor } from './interface/authorInterface/readOneAuthor';
 import { updateAuthorImage } from './interface/authorInterface/updateAuthorImage';
+import { 
+  getProtectedImages, 
+  isProtectedImage, 
+  safeDeleteImage, 
+  listAllImages, 
+  createImageBackupList 
+} from './utils/cloudinaryProtection';
 
 dotenv.config();
 
@@ -649,6 +656,74 @@ app.get('/api/stats', async (_req: Request, res: Response) => {
     } catch (error) {
         console.error('Error fetching stats:', error);
         res.status(500).json({ error: 'Falha ao carregar estatísticas' });
+    }
+});
+
+// Endpoints de proteção de imagens (apenas para admins)
+app.get('/api/protected-images', requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const protectedImages = getProtectedImages();
+        res.json({ 
+            count: protectedImages.length,
+            images: protectedImages 
+        });
+    } catch (error) {
+        console.error('Erro ao listar imagens protegidas:', error);
+        res.status(500).json({ error: 'Falha ao listar imagens protegidas' });
+    }
+});
+
+app.get('/api/cloudinary-images', requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const images = await listAllImages();
+        res.json({ 
+            count: images.length,
+            images: images.map(img => ({
+                public_id: img.public_id,
+                format: img.format,
+                bytes: img.bytes,
+                url: img.secure_url,
+                protected: isProtectedImage(img.public_id)
+            }))
+        });
+    } catch (error) {
+        console.error('Erro ao listar imagens do Cloudinary:', error);
+        res.status(500).json({ error: 'Falha ao listar imagens do Cloudinary' });
+    }
+});
+
+app.post('/api/safe-delete-image', requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const { publicId } = req.body;
+        
+        if (!publicId) {
+            return res.status(400).json({ error: 'Public ID é obrigatório' });
+        }
+        
+        const result = await safeDeleteImage(publicId);
+        
+        if (result.success) {
+            res.json({ message: result.message });
+        } else {
+            res.status(400).json({ error: result.message });
+        }
+    } catch (error) {
+        console.error('Erro ao deletar imagem:', error);
+        res.status(500).json({ error: 'Falha ao deletar imagem' });
+    }
+});
+
+app.get('/api/image-backup', requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const backup = await createImageBackupList();
+        res.json({ 
+            backup,
+            count: Object.keys(backup).length,
+            generated_at: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Erro ao criar backup de imagens:', error);
+        res.status(500).json({ error: 'Falha ao criar backup de imagens' });
     }
 });
 

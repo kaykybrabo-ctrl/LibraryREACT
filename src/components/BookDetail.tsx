@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import api from '../api'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
@@ -82,11 +83,14 @@ const BookDetail: React.FC = () => {
 
   const handleRentBook = async () => {
     try {
-      await axios.post(`/api/rent/${id}`)
+      await api.post(`/rent/${id}`)
       alert('Livro alugado com sucesso!')
       setError('')
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Falha ao alugar livro. Você pode não estar logado ou o livro já está alugado.'
+      if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
+        return;
+      }
+      const errorMsg = err.response?.data?.error || 'Falha ao alugar livro.'
       setError(errorMsg)
       alert(`Erro: ${errorMsg}`)
     }
@@ -94,10 +98,13 @@ const BookDetail: React.FC = () => {
 
   const handleFavoriteBook = async () => {
     try {
-      await axios.post(`/api/favorite/${id}`)
+      await api.post(`/favorite/${id}`)
       alert('Livro adicionado aos favoritos!')
       setError('')
     } catch (err: any) {
+      if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
+        return;
+      }
       const errorMsg = err.response?.data?.error || 'Falha ao adicionar livro aos favoritos'
       setError(errorMsg)
       alert(`Erro: ${errorMsg}`)
@@ -113,7 +120,7 @@ const BookDetail: React.FC = () => {
     }
 
     try {
-      await axios.post('/api/reviews', {
+      await api.post('/reviews', {
         book_id: Number(id),
         user_id: currentUser.id,
         rating: newReview.rating,
@@ -215,7 +222,7 @@ const BookDetail: React.FC = () => {
                     style={{
                       fontSize: '24px',
                       cursor: 'pointer',
-                      color: star <= newReview.rating ? '#162c74' : '#ddd',
+                      color: star <= newReview.rating ? '#0b5cab' : '#ddd',
                       transition: 'color 0.2s ease',
                       marginRight: '4px'
                     }}
@@ -263,7 +270,7 @@ const BookDetail: React.FC = () => {
                     >
                       👤 {review.username || 'Usuário'}
                     </strong>
-                    <span style={{ color: '#ffa500', fontSize: '18px' }}>
+                    <span style={{ color: '#0b5cab', fontSize: '18px' }}>
                       {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                     </span>
                   </div>

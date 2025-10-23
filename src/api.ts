@@ -1,7 +1,35 @@
 import axios from 'axios'
 
+let showLoginModalGlobal: ((message?: string) => void) | null = null;
+
+export const setShowLoginModal = (showModal: (message?: string) => void) => {
+  showLoginModalGlobal = showModal;
+};
+
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+console.error = (...args) => {
+  const message = args.join(' ');
+  if (message.includes('401') || 
+      message.includes('Unauthorized') ||
+      message.includes('AuthModalError') ||
+      message.includes('SilentAuthError')) {
+    return;
+  }
+  originalConsoleError.apply(console, args);
+};
+
+console.warn = (...args) => {
+  const message = args.join(' ');
+  if (message.includes('401') || message.includes('Unauthorized')) {
+    return;
+  }
+  originalConsoleWarn.apply(console, args);
+};
+
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:3001/api',
+  baseURL: '/api',
   timeout: 10000,
 })
 
@@ -18,11 +46,43 @@ api.interceptors.request.use(
   }
 )
 
-axios.interceptors.request.use(
-  (config) => {
-    return config
+api.interceptors.response.use(
+  (response) => {
+    return response
   },
   (error) => {
+    if (error.response?.status === 401) {
+      const url = error.config?.url || '';
+      
+      if (url.includes('get-profile') || url.includes('user/me')) {
+        const silentError = new Error('User not authenticated');
+        silentError.name = 'SilentAuthError';
+        error.config.suppressLog = true;
+        return Promise.reject(silentError);
+      }
+      
+      let message = 'Para realizar esta ação, você precisa estar logado no sistema.';
+      
+      if (url.includes('favorite')) {
+        message = 'Para favoritar livros, você precisa estar logado no sistema.';
+      } else if (url.includes('rent')) {
+        message = 'Para alugar livros, você precisa estar logado no sistema.';
+      } else if (url.includes('review')) {
+        message = 'Para avaliar livros, você precisa estar logado no sistema.';
+      }
+      
+      if (showLoginModalGlobal) {
+        showLoginModalGlobal(message);
+        error.config.suppressLog = true;
+        const silentError = new Error('Authentication required - modal shown');
+        silentError.name = 'AuthModalError';
+        return Promise.reject(silentError);
+      } else {
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+    }
     return Promise.reject(error)
   }
 )
@@ -33,11 +93,9 @@ axios.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      if (!error.config?.url?.includes('get-profile')) {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login'
+      if (!error.config?.url?.includes('get-profile') && !error.config?.url?.includes('user/me')) {
+        if (showLoginModalGlobal) {
+          showLoginModalGlobal('Para realizar esta ação, você precisa estar logado no sistema.');
         }
       }
     }
