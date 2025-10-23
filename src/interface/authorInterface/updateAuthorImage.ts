@@ -16,7 +16,7 @@ export async function updateAuthorImage(req: Request, res: Response) {
         }
 
         const updatedAuthor: any[] = await executeQuery(
-            'SELECT author_id, name_author, photo, biography FROM authors WHERE author_id = ? LIMIT 1',
+            'SELECT author_id, name_author, photo, description FROM authors WHERE author_id = ? LIMIT 1',
             [id]
         );
 
@@ -25,7 +25,7 @@ export async function updateAuthorImage(req: Request, res: Response) {
                 author_id: updatedAuthor[0].author_id,
                 name_author: updatedAuthor[0].name_author,
                 photo: updatedAuthor[0].photo,
-                biography: updatedAuthor[0].biography
+                description: updatedAuthor[0].description
             });
         } else {
             res.status(404).json({ error: 'Author not found' });

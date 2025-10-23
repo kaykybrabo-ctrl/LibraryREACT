@@ -9,7 +9,7 @@ import bcrypt from 'bcrypt';
 import { executeQuery } from './DB/connection';
 import { updateProfile } from './interface/updateProfile';
 import { profileStorage, bookStorage } from './config/cloudinary';
-import { runSeeders, uploadDefaultImages } from './seeders';
+import { runSeeders } from './seeders';
 import { create as createBook } from './books/create';
 import { update as updateBook } from './books/update';
 import { deleteb as deleteBook } from './books/deleteb';
@@ -82,17 +82,20 @@ app.use('/legacy', express.static(path.join(__dirname, '../FRONTEND'), { index: 
 
 const loginHandler = async (req: Request, res: Response) => {
     let { username, password } = req.body;
-    if (typeof username !== 'string' || typeof password !== 'string') return res.status(400).end();
+    if (typeof username !== 'string' || typeof password !== 'string') {
+        return res.status(400).json({ error: 'Campos obrigatórios ausentes' });
+    }
     username = username.trim().toLowerCase();
     try {
         const results: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
-        if (!results.length) return res.status(401).end();
+        if (!results.length) return res.status(401).json({ error: 'Credenciais inválidas' });
         const user = results[0];
         const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) return res.status(401).end();
+        if (!isValidPassword) return res.status(401).json({ error: 'Credenciais inválidas' });
         (req.session as any).user = { id: user.id, username: user.username, role: user.role };
         res.json({ role: user.role, username: user.username, id: user.id });
     } catch (error) {
+        console.error('Erro no login:', error);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 };
@@ -102,15 +105,20 @@ app.post('/api/login', loginHandler);
 
 const registerHandler = async (req: Request, res: Response) => {
     let { username, password } = req.body;
-    if (typeof username !== 'string' || typeof password !== 'string') return res.status(400).end();
+    if (typeof username !== 'string' || typeof password !== 'string') {
+        return res.status(400).json({ error: 'Campos obrigatórios ausentes' });
+    }
     username = username.trim().toLowerCase();
     try {
         const exists: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
-        if (exists.length) return res.status(409).end();
-        await executeQuery('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [username, password, 'user']);
-        res.status(201).end();
-    } catch {
-        res.status(500).end();
+        if (exists.length) return res.status(409).json({ error: 'Usuário já existe' });
+        
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await executeQuery('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [username, hashedPassword, 'user']);
+        res.status(201).json({ message: 'Usuário criado com sucesso' });
+    } catch (error) {
+        console.error('Erro no registro:', error);
+        res.status(500).json({ error: 'Erro interno do servidor' });
     }
 };
 
@@ -367,6 +375,31 @@ app.get('/authors/:id', (req: Request, res: Response) => {
 });
 app.get('/api/authors/:id', readOneAuthor);
 
+// Endpoint de debug para testar encoding
+app.get('/api/debug/authors/:id', async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    try {
+        const results: any[] = await executeQuery(
+            'SELECT author_id, name_author, description, photo FROM authors WHERE author_id = ? LIMIT 1',
+            [id]
+        );
+        if (!results.length) return res.status(404).json({ error: 'Author not found' });
+        
+        const author = results[0];
+        res.json({
+            ...author,
+            debug: {
+                descriptionLength: author.description?.length || 0,
+                descriptionType: typeof author.description,
+                hasDescription: !!author.description,
+                firstChars: author.description?.substring(0, 50) || 'N/A'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error', details: error });
+    }
+});
+
 app.get('/authors', readAuthors);
 app.get('/api/authors', readAuthors);
 
@@ -511,14 +544,11 @@ app.post('/api/return/:loanId', returnHandler);
 const getReviewsHandler = async (_req: Request, res: Response) => {
     try {
         const reviews = await executeQuery(`
-            SELECT r.*, u.username, b.title as bookTitle 
-            FROM reviews r
-            JOIN users u ON r.user_id = u.id
-            JOIN books b ON r.book_id = b.book_id
-            ORDER BY r.review_date DESC
+            SELECT * FROM reviews
         `);
-        res.json(reviews);
+        res.json(reviews || []);
     } catch (error) {
+        console.error('Error fetching reviews:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -548,7 +578,7 @@ const reviewsHandler = async (req: Request, res: Response) => {
         
         if (existingReview.length > 0) {
             await executeQuery(
-                'UPDATE reviews SET rating = ?, comment = ?, review_date = CURRENT_TIMESTAMP WHERE user_id = ? AND book_id = ?',
+                'UPDATE reviews SET rating = ?, comment = ? WHERE user_id = ? AND book_id = ?',
                 [rating, comment || '', user_id, book_id]
             );
             res.status(200).json({ message: 'Avaliação atualizada com sucesso' });
@@ -631,17 +661,16 @@ app.get('*', (req, res) => {
 
 async function startServer() {
   try {
-    console.log('🚀 Iniciando servidor PedBook...')
+    console.log('Iniciando servidor PedBook...')
     
     await runSeeders()
-    await uploadDefaultImages()
     
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`✅ Servidor rodando na porta ${PORT}`)
-      console.log(`🌐 Acesse: http://localhost:${PORT}`)
+      console.log(`Servidor rodando na porta ${PORT}`)
+      console.log(`Acesse: http://localhost:${PORT}`)
     })
   } catch (error) {
-    console.error('❌ Erro ao iniciar servidor:', error)
+    console.error('Erro ao iniciar servidor:', error)
     process.exit(1)
   }
 }

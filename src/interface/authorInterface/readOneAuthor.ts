@@ -7,7 +7,7 @@ export async function readOneAuthor(req: Request, res: Response) {
 
     try {
         const results: any[] = await executeQuery(
-            'SELECT author_id, name_author, biography, photo FROM authors WHERE author_id = ? LIMIT 1',
+            'SELECT author_id, name_author, description, photo FROM authors WHERE author_id = ? LIMIT 1',
             [id]
         );
 

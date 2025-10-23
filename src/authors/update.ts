@@ -3,14 +3,15 @@ import { executeQuery } from '../DB/connection';
 
 export async function update(req: Request, res: Response) {
     const id = Number(req.params.id);
-    let { name_author, biography } = req.body;
+    let { name_author, description } = req.body;
 
     if (isNaN(id) || id <= 0) {
         return res.sendStatus(400);
     }
 
-    if (!name_author && biography === undefined) {
-        return res.status(400).json({ error: 'At least name_author or biography must be provided' });
+    // Permitir atualização apenas da description
+    if (!name_author && description === undefined) {
+        return res.status(400).json({ error: 'At least name_author or description must be provided' });
     }
 
     try {
@@ -24,9 +25,9 @@ export async function update(req: Request, res: Response) {
             params.push(name_author);
         }
 
-        if (biography !== undefined) {
-            updates.push(' biography = ?');
-            params.push(biography);
+        if (description !== undefined) {
+            updates.push(' description = ?');
+            params.push(description);
         }
 
         query += updates.join(',');

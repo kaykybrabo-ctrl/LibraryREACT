@@ -27,7 +27,7 @@
 
 .home-header a:focus-visible,.home-header button:focus-visible{outline:2px solid rgba(255,255,255,.6);outline-offset:2px}
 
-.hero{position:relative}
+.hero{position:relative;padding-top:60px}
 .hero-gradient{display:block; position:absolute; inset:0; background:linear-gradient(180deg, rgba(25,118,210,.12), transparent 30%, rgba(25,118,210,.08)); z-index:0}
 
 .carousel{position:relative;height:54vh;min-height:360px;overflow:hidden}

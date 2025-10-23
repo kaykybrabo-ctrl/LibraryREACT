@@ -28,7 +28,7 @@ export async function create(req: Request, res: Response) {
                 finalAuthorId = existingAuthor[0].author_id;
             } else {
                 const result: any = await executeQuery(
-                    'INSERT INTO authors (name_author, biography) VALUES (?, ?)',
+                    'INSERT INTO authors (name_author, description) VALUES (?, ?)',
                     [author_name.trim(), `Biografia de ${author_name.trim()}`]
                 );
                 finalAuthorId = result.insertId;

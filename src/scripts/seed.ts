@@ -1,11 +1,10 @@
-import { runSeeders, uploadDefaultImages } from '../seeders'
+import { runSeeders } from '../seeders'
 
 async function main() {
   console.log('Executando seeders...')
   
   try {
     await runSeeders()
-    await uploadDefaultImages()
     console.log('Seeders executados com sucesso!')
     process.exit(0)
   } catch (error) {

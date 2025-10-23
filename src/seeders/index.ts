@@ -143,14 +143,13 @@ async function createAdminUser() {
 }
 
 async function createAuthorsAndBooks() {
-  console.log('Criando autores e livros com templates...')
+  console.log('Criando autores e livros...')
 
-  console.log('Limpando dados antigos...')
+  await executeQuery('UPDATE users SET favorite_book_id = NULL WHERE favorite_book_id IS NOT NULL')
   await executeQuery('DELETE FROM reviews')
   await executeQuery('DELETE FROM loans')
   await executeQuery('DELETE FROM books')
   await executeQuery('DELETE FROM authors')
-  console.log('Dados antigos removidos!')
 
   await executeQuery(`
     INSERT INTO authors (author_id, name_author, description, photo) VALUES
@@ -188,9 +187,6 @@ async function createAuthorsAndBooks() {
     `, [book.id, book.author_id, book.title, book.description, book.photo])
   }
 
-  console.log('2 autores e 20 livros criados usando suas imagens específicas do Cloudinary!')
+  console.log('2 autores e 20 livros criados!')
 }
 
-export async function uploadDefaultImages() {
-  console.log('Usando imagens que já estão no Cloudinary - não criando nenhuma imagem nova!')
-}

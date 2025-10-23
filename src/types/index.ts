@@ -11,7 +11,7 @@ export interface Author {
   author_id: number
   name_author: string
   photo?: string
-  biography?: string
+  description?: string
 }
 
 export interface User {
@@ -38,5 +38,5 @@ export interface Review {
   rating: number
   comment: string
   username: string
-  review_date: string
+  created_at: string
 }
