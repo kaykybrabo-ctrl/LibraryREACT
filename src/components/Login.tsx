@@ -64,7 +64,23 @@ const Login: React.FC = () => {
           disabled={loading}
         />
 
-        <button type="submit" disabled={loading}>
+        <button 
+          type="submit" 
+          className="login-button" 
+          disabled={loading}
+          style={{
+            backgroundColor: '#162c74',
+            color: 'white',
+            border: 'none',
+            padding: '12px 25px',
+            cursor: 'pointer',
+            borderRadius: '4px',
+            fontWeight: '500',
+            width: '100%',
+            fontSize: '16px',
+            marginTop: '15px'
+          }}
+        >
           {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </form>

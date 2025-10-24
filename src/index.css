@@ -229,6 +229,50 @@ nav a.active {
     margin-bottom: 30px;
 }
 
+.login-container button[type="submit"] {
+    background-color: #162c74 !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 25px !important;
+    cursor: pointer !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+    width: 100%;
+    font-size: 16px;
+}
+
+.login-container button[type="submit"]:hover {
+    background-color: #1a3080 !important;
+}
+
+.login-container button[type="submit"]:disabled {
+    background-color: #ccc !important;
+    cursor: not-allowed !important;
+}
+
+.register-container button[type="submit"] {
+    background-color: #162c74 !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 25px !important;
+    cursor: pointer !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+    width: 100%;
+    font-size: 16px;
+}
+
+.register-container button[type="submit"]:hover {
+    background-color: #1a3080 !important;
+}
+
+.register-container button[type="submit"]:disabled {
+    background-color: #ccc !important;
+    cursor: not-allowed !important;
+}
+
 .error-message {
     color: #d32f2f;
     background-color: #ffebee;
@@ -402,8 +446,13 @@ nav a.active {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.auth-link-login {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .auth-link-register {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: transparent;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 

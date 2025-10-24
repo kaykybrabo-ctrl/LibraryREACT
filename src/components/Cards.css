@@ -483,16 +483,6 @@
   font-family: inherit;
 }
 
-.auth-link-login {
-  background: white;
-  color: #162c74;
-  padding: 8px 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 4px;
-  text-decoration: none;
-  display: inline-block;
-}
 
 .auth-link-register {
   background: transparent;
