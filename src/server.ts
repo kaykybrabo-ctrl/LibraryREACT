@@ -659,7 +659,6 @@ app.get('/api/stats', async (_req: Request, res: Response) => {
     }
 });
 
-// Endpoints de proteção de imagens (apenas para admins)
 app.get('/api/protected-images', requireAdmin, async (req: Request, res: Response) => {
     try {
         const protectedImages = getProtectedImages();

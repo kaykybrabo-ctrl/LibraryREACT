@@ -27,7 +27,6 @@ console.warn = (...args) => {
   }
   originalConsoleWarn.apply(console, args);
 };
-
 const api = axios.create({
   baseURL: '/api',
   timeout: 10000,
@@ -53,6 +52,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const url = error.config?.url || '';
+      
+      if (url.includes('/login') || url.includes('/register')) {
+        return Promise.reject(error);
+      }
       
       if (url.includes('get-profile') || url.includes('user/me')) {
         const silentError = new Error('User not authenticated');
@@ -93,6 +96,12 @@ axios.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
+      const url = error.config?.url || '';
+      
+      if (url.includes('/login') || url.includes('/register')) {
+        return Promise.reject(error);
+      }
+      
       if (!error.config?.url?.includes('get-profile') && !error.config?.url?.includes('user/me')) {
         if (showLoginModalGlobal) {
           showLoginModalGlobal('Para realizar esta ação, você precisa estar logado no sistema.');

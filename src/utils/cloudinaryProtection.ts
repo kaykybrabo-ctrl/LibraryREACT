@@ -1,11 +1,9 @@
 import cloudinary from '../config/cloudinary'
 
-// Lista de imagens protegidas que nunca devem ser deletadas
 const PROTECTED_IMAGES = [
   'pedbook/books/default-book',
   'pedbook/profiles/default-user', 
   'pedbook/profiles/default-author',
-  // Imagens dos livros dos seeders (protegidas)
   'pedbook/books/book-life-in-silence',
   'pedbook/books/book-fragments-of-everyday-life',
   'pedbook/books/book-stories-of-the-wind',
@@ -26,28 +24,19 @@ const PROTECTED_IMAGES = [
   'pedbook/books/book-trails-and-scars',
   'pedbook/books/book-from-the-other-side-of-the-street',
   'pedbook/books/book-interrupted-seasons',
-  // Imagens dos autores dos seeders (protegidas)
   'pedbook/profiles/author-guilherme-biondo',
   'pedbook/profiles/author-manoel-leite',
-  // Imagens do carousel (protegidas)
   'pedbook/carousel/carousel-1',
   'pedbook/carousel/carousel-2',
   'pedbook/carousel/carousel-3'
 ]
 
-/**
- * Verifica se uma imagem está protegida contra exclusão
- */
 export function isProtectedImage(publicId: string): boolean {
   return PROTECTED_IMAGES.includes(publicId)
 }
 
-/**
- * Deleta uma imagem do Cloudinary com verificação de proteção
- */
 export async function safeDeleteImage(publicId: string): Promise<{ success: boolean; message: string }> {
   try {
-    // Verificar se a imagem está protegida
     if (isProtectedImage(publicId)) {
       return {
         success: false,
@@ -55,20 +44,17 @@ export async function safeDeleteImage(publicId: string): Promise<{ success: bool
       }
     }
 
-    // Verificar se a imagem existe
     try {
       await cloudinary.api.resource(publicId)
     } catch (error: any) {
       if (error.http_code === 404) {
         return {
-          success: true,
-          message: `Imagem não encontrada (já deletada): ${publicId}`
+          success: false,
+          message: `Imagem não encontrada: ${publicId}`
         }
       }
       throw error
     }
-
-    // Deletar a imagem
     const result = await cloudinary.uploader.destroy(publicId)
     
     if (result.result === 'ok') {
@@ -90,25 +76,16 @@ export async function safeDeleteImage(publicId: string): Promise<{ success: bool
   }
 }
 
-/**
- * Lista todas as imagens protegidas
- */
 export function getProtectedImages(): string[] {
   return [...PROTECTED_IMAGES]
 }
 
-/**
- * Adiciona uma imagem à lista de proteção (para imagens importantes do usuário)
- */
 export function addProtectedImage(publicId: string): void {
   if (!PROTECTED_IMAGES.includes(publicId)) {
     PROTECTED_IMAGES.push(publicId)
   }
 }
 
-/**
- * Remove uma imagem da lista de proteção (apenas para imagens não-essenciais)
- */
 export function removeProtectedImage(publicId: string): boolean {
   const index = PROTECTED_IMAGES.indexOf(publicId)
   if (index > -1 && !isEssentialImage(publicId)) {
@@ -118,9 +95,6 @@ export function removeProtectedImage(publicId: string): boolean {
   return false
 }
 
-/**
- * Verifica se uma imagem é essencial (nunca pode ser removida da proteção)
- */
 function isEssentialImage(publicId: string): boolean {
   const essentialImages = [
     'pedbook/books/default-book',
@@ -130,9 +104,6 @@ function isEssentialImage(publicId: string): boolean {
   return essentialImages.includes(publicId)
 }
 
-/**
- * Backup de segurança - lista todas as imagens no Cloudinary
- */
 export async function listAllImages(): Promise<any[]> {
   try {
     const result = await cloudinary.api.resources({
@@ -147,9 +118,6 @@ export async function listAllImages(): Promise<any[]> {
   }
 }
 
-/**
- * Cria backup das URLs das imagens protegidas
- */
 export async function createImageBackupList(): Promise<{ [key: string]: string }> {
   const backupList: { [key: string]: string } = {}
   

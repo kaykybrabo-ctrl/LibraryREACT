@@ -59,7 +59,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData))
       
       return true
-    } catch (error) {
+    } catch (error: any) {
+      console.log('Login error:', error.response?.status, error.response?.data)
       return false
     }
   }

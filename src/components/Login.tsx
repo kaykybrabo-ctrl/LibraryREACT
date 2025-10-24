@@ -21,10 +21,17 @@ const Login: React.FC = () => {
       if (success) {
         navigate('/books')
       } else {
-        setError('Usuário ou senha inválidos')
+        setError('Usuário ou senha inválidos. Verifique suas credenciais e tente novamente.')
       }
-    } catch (err) {
-      setError('Falha no login. Tente novamente.')
+    } catch (err: any) {
+      console.log('Login component error:', err)
+      if (err.response?.status === 401) {
+        setError('Usuário ou senha inválidos.')
+      } else if (err.response?.status === 500) {
+        setError('Erro interno do servidor. Tente novamente mais tarde.')
+      } else {
+        setError('Falha no login. Verifique sua conexão e tente novamente.')
+      }
     } finally {
       setLoading(false)
     }
