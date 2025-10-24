@@ -68,7 +68,7 @@ const Users: React.FC = () => {
                 <img 
                   src={getImageUrl(user.profile_image, 'profile')} 
                   alt={user.username}
-                  style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
+                  className="user-avatar-large"
                   onClick={() => navigate(`/profile/${user.username}`)}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = getFallbackImageUrl('profile')
@@ -78,7 +78,7 @@ const Users: React.FC = () => {
 
               <div className="card-header">
                 <h3 className="card-title">
-                  <span onClick={() => navigate(`/profile/${user.username}`)} style={{ cursor: 'pointer' }}>
+                  <span onClick={() => navigate(`/profile/${user.username}`)} className="clickable-username">
                     {user.username}
                   </span>
                 </h3>

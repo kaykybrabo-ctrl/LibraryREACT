@@ -105,25 +105,10 @@ const Authors: React.FC = () => {
 
   return (
     <Layout title="Autores">
-      <div style={{ marginBottom: '20px' }}>
+      <div className="back-button-container">
         <button 
           onClick={() => navigate('/')}
-          style={{
-            background: '#162c74',
-            color: 'white',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1e3a8a'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#162c74'}
+          className="back-button"
         >
           ← Voltar para Início
         </button>
@@ -157,7 +142,7 @@ const Authors: React.FC = () => {
                 <img 
                   src={getImageUrl(author.photo, 'author')} 
                   alt={author.name_author}
-                  style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
+                  className="author-card-avatar"
                   onClick={() => navigate(`/authors/${author.author_id}`)}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = getFallbackImageUrl('author')
@@ -172,10 +157,10 @@ const Authors: React.FC = () => {
                       type="text"
                       value={editData.name}
                       onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                      style={{ fontSize: '1.3em', fontWeight: '600', textAlign: 'center' }}
+                      className="author-edit-input"
                     />
                   ) : (
-                    <span onClick={() => navigate(`/authors/${author.author_id}`)} style={{ cursor: 'pointer' }}>
+                    <span onClick={() => navigate(`/authors/${author.author_id}`)} className="clickable-title">
                       {author.name_author}
                     </span>
                   )}
@@ -186,7 +171,7 @@ const Authors: React.FC = () => {
               <div className="card-content">
                 <div className="card-field">
                   <div className="card-field-value">
-                    <span onClick={() => navigate(`/authors/${author.author_id}`)} style={{ cursor: 'pointer' }}>
+                    <span onClick={() => navigate(`/authors/${author.author_id}`)} className="clickable-title">
                       Autor
                     </span>
                   </div>

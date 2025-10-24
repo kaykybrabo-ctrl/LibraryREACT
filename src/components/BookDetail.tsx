@@ -210,27 +210,21 @@ const BookDetail: React.FC = () => {
           <p>Faça login para escrever uma avaliação.</p>
         ) : (
           <form onSubmit={handleSubmitReview}>
-            <div style={{ marginBottom: '16px' }}>
+            <div className="review-form-container">
               <label>Avaliação:</label>
-              <div className="star-rating" style={{ marginTop: '8px' }}>
+              <div className="star-rating star-rating-container">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
                     className={`star ${star <= newReview.rating ? 'filled' : ''}`}
                     onClick={() => setNewReview({ ...newReview, rating: star })}
                     onMouseEnter={() => setNewReview({ ...newReview, rating: star })}
-                    style={{
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      color: star <= newReview.rating ? '#0b5cab' : '#ddd',
-                      transition: 'color 0.2s ease',
-                      marginRight: '4px'
-                    }}
+                    style={{ marginRight: '4px' }}
                   >
                     ★
                   </span>
                 ))}
-                <span style={{ marginLeft: '10px', color: '#666' }}>
+                <span className="star-rating-text">
                   {newReview.rating} de 5 estrelas
                 </span>
               </div>
@@ -259,18 +253,14 @@ const BookDetail: React.FC = () => {
             {reviews.map(review => (
               <div key={review.review_id} className="review-card">
                 <div className="review-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="review-user-info">
                     <strong 
                       onClick={() => navigate(`/profile/${review.username}`)}
-                      style={{ 
-                        cursor: 'pointer', 
-                        color: '#162c74', 
-                        textDecoration: 'underline'
-                      }}
+                      className="review-username"
                     >
                       👤 {review.username || 'Usuário'}
                     </strong>
-                    <span style={{ color: '#0b5cab', fontSize: '18px' }}>
+                    <span className="review-stars">
                       {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                     </span>
                   </div>
@@ -285,7 +275,7 @@ const BookDetail: React.FC = () => {
                     }
                   </small>
                 </div>
-                <p style={{ margin: '10px 0', lineHeight: '1.5' }}>{review.comment}</p>
+                <p className="review-comment">{review.comment}</p>
               </div>
             ))}
           </div>

@@ -148,20 +148,19 @@ const AuthorDetail: React.FC = () => {
         </div>
 
         {isAdmin && (
-          <div className="image-upload" style={{ marginTop: '20px' }}>
+          <div className="image-upload image-upload-section">
             <h3>Atualizar Imagem do Autor</h3>
             <form onSubmit={handleImageUpload}>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                style={{ marginBottom: '10px' }}
+                className="file-input"
               />
               <button 
                 type="submit" 
                 disabled={!imageFile || uploading}
-                className="btn-primary"
-                style={{ display: 'block' }}
+                className="btn-primary upload-button"
               >
                 {uploading ? 'Enviando...' : 'Enviar Imagem'}
               </button>
@@ -170,13 +169,12 @@ const AuthorDetail: React.FC = () => {
         )}
 
         <div className="biography-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="biography-header">
             <h3>Biografia</h3>
             {isAdmin && !editingDescription && (
               <button 
                 onClick={() => setEditingDescription(true)}
-                className="btn-secondary"
-                style={{ fontSize: '14px', padding: '5px 10px' }}
+                className="btn-secondary edit-biography-button"
               >
                 ✏️ Editar
               </button>
@@ -190,17 +188,9 @@ const AuthorDetail: React.FC = () => {
                 onChange={(e) => setDescriptionText(e.target.value)}
                 placeholder="Digite a biografia do autor..."
                 rows={6}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  resize: 'vertical'
-                }}
+                className="biography-textarea"
               />
-              <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+              <div className="biography-actions">
                 <button 
                   onClick={handleUpdateBiography} 
                   disabled={updating}
@@ -218,7 +208,7 @@ const AuthorDetail: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div style={{ lineHeight: '1.6', color: '#555' }}>
+            <div className="biography-text">
               <p>
                 {author?.author_id === 1 ? 
                   "Guilherme Biondo é um escritor que começou a escrever desde jovem, movido pela curiosidade e paixão por contar histórias. Seus livros falam sobre pessoas, sentimentos e tudo que faz parte do cotidiano, mas com uma perspectiva única e sincera." :

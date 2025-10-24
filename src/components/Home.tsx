@@ -53,7 +53,7 @@ const Home: React.FC = () => {
     <div className="home-root">
       <div className={styles.homeHeader}>
         <div className={styles.container}>
-          <div className={styles.brand} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ cursor: 'pointer' }}>
+          <div className={styles.brand} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <span className={styles.logo}>📚</span>
             <h1 className={styles.title}>PedBook</h1>
           </div>
@@ -69,7 +69,7 @@ const Home: React.FC = () => {
         <div className="hero-gradient" />
         <div className="carousel">
           <div className="slide active" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600')" }}>
-            <div className="overlay" style={{ paddingLeft: '60px' }}>
+            <div className="overlay carousel-overlay">
               <h2>Explore livros incríveis</h2>
               <p>Descubra autores, leia sinopses e gerencie seus favoritos.</p>
               <div className="cta-row">
@@ -79,7 +79,7 @@ const Home: React.FC = () => {
             </div>
           </div>
           <div className="slide" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1600')" }}>
-            <div className="overlay" style={{ paddingLeft: '60px' }}>
+            <div className="overlay carousel-overlay">
               <h2>Descubra novos livros</h2>
               <p>Explore nosso acervo e encontre sua próxima leitura.</p>
               <div className="cta-row">
@@ -89,7 +89,7 @@ const Home: React.FC = () => {
             </div>
           </div>
           <div className="slide" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=1600')" }}>
-            <div className="overlay" style={{ paddingLeft: '60px' }}>
+            <div className="overlay carousel-overlay">
               <h2>Leituras para todos</h2>
               <p>Ficção, romance, crônicas e muito mais.</p>
               <div className="cta-row">
@@ -139,16 +139,14 @@ const Home: React.FC = () => {
               {books.map(book => (
                 <div 
                   key={`featured-${book.book_id}`} 
-                  className="card" 
+                  className="card clickable-title" 
                   onClick={() => navigate(`/book/${book.book_id}`)}
-                  style={{ cursor: 'pointer' }}
                 >
                   <div className="thumb">
                     <img 
                       src={getImageUrl(book.photo, 'book')} 
                       alt={book.title} 
- 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
+                      className="home-book-image"
                       onError={(e) => { 
                         (e.currentTarget as HTMLImageElement).src = getFallbackImageUrl('book'); 
                       }} 
@@ -163,22 +161,10 @@ const Home: React.FC = () => {
               ))}
             </div>
             
-            <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <div className="view-all-container">
               <button 
                 onClick={() => navigate('/books')}
-                style={{
-                  background: '#162c74',
-                  color: 'white',
-                  padding: '15px 30px',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1.1em',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.3s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = '#1e40af'}
-                onMouseOut={(e) => e.currentTarget.style.background = '#162c74'}
+                className="view-all-button"
               >
                 📚 Ver Todos os Livros e Autores
               </button>

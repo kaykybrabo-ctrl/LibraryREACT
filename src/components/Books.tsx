@@ -220,25 +220,10 @@ const Books: React.FC = () => {
 
   return (
     <Layout title="Livros">
-      <div style={{ marginBottom: '20px' }}>
+      <div className="back-button-container">
         <button 
           onClick={() => navigate('/')}
-          style={{
-            background: '#162c74',
-            color: 'white',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1e3a8a'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#162c74'}
+          className="back-button"
         >
           ← Voltar para Início
         </button>
@@ -247,41 +232,19 @@ const Books: React.FC = () => {
       {error && <div className="error-message">{error}</div>}
       
       {showLoginMessage && (
-        <div style={{
-          background: '#fef3c7',
-          border: '2px solid #f59e0b',
-          borderRadius: '8px',
-          padding: '20px',
-          margin: '20px 0',
-          textAlign: 'center'
-        }}>
-          <p style={{ margin: '0 0 15px 0', color: '#92400e', fontWeight: 'bold' }}>
+        <div className="login-message">
+          <p className="login-message-text">
             É necessário fazer login para alugar livros
           </p>
           <button 
             onClick={() => navigate('/login')}
-            style={{
-              background: '#162c74',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginRight: '10px'
-            }}
+            className="login-message-button"
           >
             Fazer Login
           </button>
           <button 
             onClick={() => setShowLoginMessage(false)}
-            style={{
-              background: '#6b7280',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            className="close-message-button"
           >
             Fechar
           </button>
@@ -292,7 +255,7 @@ const Books: React.FC = () => {
         <section className="form-section">
           <h2>Adicionar Livro</h2>
           <form onSubmit={handleCreateBook}>
-            <div style={{ marginBottom: '15px' }}>
+            <div className="radio-container">
               <label>
                 <input
                   type="radio"
@@ -302,7 +265,7 @@ const Books: React.FC = () => {
                 />
                 Usar autor existente
               </label>
-              <label style={{ marginLeft: '20px' }}>
+              <label className="radio-label">
                 <input
                   type="radio"
                   name="author-type"
@@ -401,10 +364,10 @@ const Books: React.FC = () => {
                           type="text"
                           value={editData.title}
                           onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                          style={{ fontSize: '1.2em', fontWeight: '600' }}
+                          className="inline-edit-input"
                         />
                       ) : (
-                        <span onClick={() => navigate(`/book/${book.book_id}`)} style={{ cursor: 'pointer' }}>
+                        <span onClick={() => navigate(`/book/${book.book_id}`)} className="clickable-title">
                           {book.title}
                         </span>
                       )}
@@ -430,23 +393,17 @@ const Books: React.FC = () => {
                         ) : (
                           <div 
                             onClick={() => navigate(`/authors/${book.author_id}`)} 
-                            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            className="author-info"
                           >
                             <img 
                               src={getImageUrl(getAuthor(book.author_id)?.photo, 'author')}
                               alt={getAuthorName(book.author_id)}
-                              style={{ 
-                                width: '24px', 
-                                height: '24px', 
-                                borderRadius: '50%', 
-                                objectFit: 'cover',
-                                border: '1px solid #ddd'
-                              }}
+                              className="author-avatar-small"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = getFallbackImageUrl('author')
                               }}
                             />
-                            <span style={{ color: '#162c74', textDecoration: 'underline' }}>
+                            <span className="author-link">
                               {getAuthorName(book.author_id)}
                             </span>
                           </div>

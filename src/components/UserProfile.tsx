@@ -175,20 +175,10 @@ const UserProfile: React.FC = () => {
       {error && <div className="error-message">{error}</div>}
 
       {showBackButton && (
-        <div style={{ marginBottom: '20px' }}>
+        <div className="back-button-container">
           <button 
             onClick={() => navigate('/users')}
-            style={{
-              background: '#6b7280',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
+            className="back-to-users-button"
           >
             ← Voltar aos Usuários
           </button>
