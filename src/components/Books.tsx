@@ -338,7 +338,7 @@ const Books: React.FC = () => {
         <div className="no-results">Nenhum resultado encontrado para sua busca.</div>
       ) : (
         <section className="book-list">
-          <h2>Livros ({books.length})</h2>
+          <h2>Livros</h2>
           <div className="cards-grid">
             {books.map(book => {
               const isRented = rentedBooks.includes(book.book_id)

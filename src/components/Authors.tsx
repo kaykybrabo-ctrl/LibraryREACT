@@ -134,7 +134,7 @@ const Authors: React.FC = () => {
       )}
 
       <section className="author-list">
-        <h2>Autores ({authors.length})</h2>
+        <h2>Autores</h2>
         <div className="cards-grid">
           {authors.map(author => (
             <div key={author.author_id} className={`card author-card ${editingAuthor === author.author_id ? 'editing' : ''}`}>

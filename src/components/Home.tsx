@@ -208,7 +208,7 @@ const Home: React.FC = () => {
           </div>
           <div>
             <h4>Sobre</h4>
-            <p>Plataforma de biblioteca digital desenvolvida com NestJS + React.</p>
+            <p>Plataforma de biblioteca digital desenvolvida com Node.js + React.</p>
           </div>
           <div>
             <h4>Links</h4>
