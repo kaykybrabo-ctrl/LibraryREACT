@@ -220,6 +220,30 @@ const Books: React.FC = () => {
 
   return (
     <Layout title="Livros">
+      <div style={{ marginBottom: '20px' }}>
+        <button 
+          onClick={() => navigate('/')}
+          style={{
+            background: '#162c74',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1e3a8a'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#162c74'}
+        >
+          ← Voltar para Início
+        </button>
+      </div>
+      
       {error && <div className="error-message">{error}</div>}
       
       {showLoginMessage && (

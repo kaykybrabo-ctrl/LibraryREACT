@@ -54,7 +54,7 @@ const Home: React.FC = () => {
       <div className={styles.homeHeader}>
         <div className={styles.container}>
           <div className={styles.brand} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ cursor: 'pointer' }}>
-            <span className={styles.logo} aria-hidden>📚</span>
+            <span className={styles.logo}>📚</span>
             <h1 className={styles.title}>PedBook</h1>
           </div>
           <nav className={styles.homeNav}>
@@ -98,9 +98,9 @@ const Home: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="carousel-controls" aria-label="Controles do carrossel">
-            <button className="prev" aria-label="Anterior" onClick={rotatePrev}>‹</button>
-            <button className="next" aria-label="Próximo" onClick={rotateNext}>›</button>
+          <div className="carousel-controls">
+            <button className="prev" onClick={rotatePrev}>‹</button>
+            <button className="next" onClick={rotateNext}>›</button>
           </div>
         </div>
       </section>
@@ -147,7 +147,7 @@ const Home: React.FC = () => {
                     <img 
                       src={getImageUrl(book.photo, 'book')} 
                       alt={book.title} 
-                      loading="eager" 
+ 
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
                       onError={(e) => { 
                         (e.currentTarget as HTMLImageElement).src = getFallbackImageUrl('book'); 
@@ -180,7 +180,7 @@ const Home: React.FC = () => {
                 onMouseOver={(e) => e.currentTarget.style.background = '#1e40af'}
                 onMouseOut={(e) => e.currentTarget.style.background = '#162c74'}
               >
-                📚 Ver Todos os Livros
+                📚 Ver Todos os Livros e Autores
               </button>
             </div>
           </>
@@ -234,7 +234,7 @@ const Home: React.FC = () => {
             </ul>
           </div>
         </div>
-        <p className="copyright">© {new Date().getFullYear()} PedBook · Todos os direitos reservados</p>
+        <p className="copyright">© {new Date().getFullYear()} PedBook - Todos os direitos reservados</p>
       </footer>
     </div>
   );

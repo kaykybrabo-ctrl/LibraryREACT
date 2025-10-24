@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactNode } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
@@ -16,6 +16,7 @@ interface UserProfile {
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const { logout, user, isAuthenticated } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
 
@@ -41,7 +42,13 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   return (
     <>
       <header>
-        <h1>{title}</h1>
+        <h1 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer', userSelect: 'none' }}
+          title="Voltar para o início"
+        >
+          {title}
+        </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>
           {isAuthenticated ? (
             <div className="user-menu" style={{ position: 'relative' }}>
