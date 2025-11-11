@@ -110,6 +110,18 @@ const loginHandler = async (req: Request, res: Response) => {
 app.post('/login', loginHandler);
 app.post('/api/login', loginHandler);
 
+app.get('/api/auth/me', (req: Request, res: Response) => {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser) {
+        return res.status(401).json({ error: 'Não autenticado' });
+    }
+    res.json({
+        id: sessionUser.id,
+        username: sessionUser.username,
+        role: sessionUser.role
+    });
+});
+
 const registerHandler = async (req: Request, res: Response) => {
     let { username, password } = req.body;
     if (typeof username !== 'string' || typeof password !== 'string') {
@@ -131,7 +143,6 @@ const registerHandler = async (req: Request, res: Response) => {
 
 app.post('/register', registerHandler);
 app.post('/api/register', registerHandler);
-
 
 app.post('/update-profile', upload.single('profile_image'), updateProfile);
 app.post('/api/update-profile', upload.single('profile_image'), updateProfile);
@@ -336,8 +347,8 @@ app.get('/api/books', readBooks);
 app.post('/books', requireAdmin, createBook);
 app.post('/api/books', requireAdmin, createBook);
 
-app.put('/books/:id', requireAdmin, updateBook);
-app.put('/api/books/:id', requireAdmin, updateBook);
+app.put('/books/:id', requireAdmin, uploadBook.single('photo'), updateBook);
+app.put('/api/books/:id', requireAdmin, uploadBook.single('photo'), updateBook);
 
 app.delete('/books/:id', requireAdmin, deleteBook);
 app.delete('/api/books/:id', requireAdmin, deleteBook);

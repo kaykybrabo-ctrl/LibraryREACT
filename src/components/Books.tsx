@@ -6,6 +6,7 @@ import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Book, Author } from '../types'
+import EditModal from './EditModal'
 import './Cards.css'
 
 const Books: React.FC = () => {
@@ -23,6 +24,9 @@ const Books: React.FC = () => {
   const [editData, setEditData] = useState({ title: '', author_id: '' })
   const [error, setError] = useState('')
   const [showLoginMessage, setShowLoginMessage] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null)
+  const [editLoading, setEditLoading] = useState(false)
   const limit = 6
   const navigate = useNavigate()
 
@@ -118,8 +122,46 @@ const Books: React.FC = () => {
   }
 
   const handleEditBook = (book: Book) => {
-    setEditingBook(book.book_id)
-    setEditData({ title: book.title, author_id: book.author_id.toString() })
+    setSelectedBook(book)
+    setShowEditModal(true)
+  }
+
+  const handleSaveBook = async (data: any) => {
+    setEditLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('title', data.title)
+      
+      if (data.description !== undefined) {
+        formData.append('description', data.description || '')
+      }
+      
+      if (data.new_author_name && data.new_author_name.trim()) {
+        formData.append('new_author_name', data.new_author_name.trim())
+      } else if (data.author_id) {
+        formData.append('author_id', data.author_id.toString())
+      }
+      
+      if (data.imageFile) {
+        formData.append('photo', data.imageFile)
+      }
+
+      await axios.put(`/api/books/${selectedBook?.book_id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      fetchBooks()
+      setShowEditModal(false)
+      setSelectedBook(null)
+      alert('Livro atualizado com sucesso!')
+      setError('')
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Falha ao atualizar livro'
+      setError(errorMsg)
+      alert(`Erro: ${errorMsg}`)
+    } finally {
+      setEditLoading(false)
+    }
   }
 
   const handleSaveEdit = async () => {
@@ -339,6 +381,11 @@ const Books: React.FC = () => {
       ) : (
         <section className="book-list">
           <h2>Livros</h2>
+          {searchQuery && books.length > 0 && (
+            <div className="search-results-info">
+              <p>Encontrados {books.length} livro(s) para "{searchQuery}"</p>
+            </div>
+          )}
           <div className="cards-grid">
             {books.map(book => {
               const isRented = rentedBooks.includes(book.book_id)
@@ -480,6 +527,20 @@ const Books: React.FC = () => {
           )}
         </section>
       )}
+
+      <EditModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedBook(null)
+        }}
+        onSave={handleSaveBook}
+        title="Editar Livro"
+        type="book"
+        initialData={selectedBook}
+        authors={authors}
+        loading={editLoading}
+      />
     </Layout>
   )
 }

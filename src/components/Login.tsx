@@ -40,6 +40,11 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
+      <div className="back-to-home">
+        <Link to="/" className="back-to-home-btn">
+          ← Voltar para a página inicial
+        </Link>
+      </div>
       <h1>PedBook</h1>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>

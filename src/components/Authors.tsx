@@ -5,6 +5,7 @@ import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Author } from '../types'
+import EditModal from './EditModal'
 import './Cards.css'
 
 const Authors: React.FC = () => {
@@ -17,12 +18,28 @@ const Authors: React.FC = () => {
   const [editingAuthor, setEditingAuthor] = useState<number | null>(null)
   const [editData, setEditData] = useState({ name: '' })
   const [error, setError] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filteredAuthors, setFilteredAuthors] = useState<Author[]>([])
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
+  const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null)
   const limit = 5
   const navigate = useNavigate()
 
   useEffect(() => {
     fetchAuthors()
   }, [currentPage])
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredAuthors(authors)
+    } else {
+      const filtered = authors.filter(author => 
+        author.name_author.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setFilteredAuthors(filtered)
+    }
+  }, [authors, searchTerm])
 
   const fetchAuthors = async () => {
     try {
@@ -33,6 +50,7 @@ const Authors: React.FC = () => {
       ])
       
       setAuthors(authorsRes.data)
+      setFilteredAuthors(authorsRes.data)
       setTotalPages(Math.ceil(countRes.data.total / limit))
       setLoading(false)
     } catch (err) {
@@ -57,8 +75,40 @@ const Authors: React.FC = () => {
   }
 
   const handleEditAuthor = (author: Author) => {
-    setEditingAuthor(author.author_id)
-    setEditData({ name: author.name_author })
+    setSelectedAuthor(author)
+    setShowEditModal(true)
+  }
+
+  const handleSaveAuthor = async (data: any) => {
+    setEditLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('name_author', data.name_author)
+      
+      if (data.description) {
+        formData.append('description', data.description)
+      }
+      
+      if (data.imageFile) {
+        formData.append('photo', data.imageFile)
+      }
+
+      await axios.put(`/api/authors/${selectedAuthor?.author_id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      fetchAuthors()
+      setShowEditModal(false)
+      setSelectedAuthor(null)
+      alert('Autor atualizado com sucesso!')
+      setError('')
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Falha ao atualizar autor'
+      setError(errorMsg)
+      alert(`Erro: ${errorMsg}`)
+    } finally {
+      setEditLoading(false)
+    }
   }
 
   const handleSaveEdit = async () => {
@@ -133,10 +183,32 @@ const Authors: React.FC = () => {
         </section>
       )}
 
-      <section className="author-list">
-        <h2>Autores</h2>
+      <section className="search-section">
+        <h2>Buscar Autores</h2>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nome do autor"
+          />
+          <button type="button" onClick={() => setSearchTerm('')}>Limpar</button>
+        </form>
+      </section>
+
+      {searchTerm && filteredAuthors.length === 0 ? (
+        <div className="no-results">Nenhum resultado encontrado para sua busca.</div>
+      ) : (
+        <section className="author-list">
+          <h2>Autores</h2>
+          {searchTerm && filteredAuthors.length > 0 && (
+            <div className="search-results-info">
+              <p>Encontrados {filteredAuthors.length} autor(es) para "{searchTerm}"</p>
+            </div>
+          )}
+        
         <div className="cards-grid">
-          {authors.map(author => (
+          {filteredAuthors.map(author => (
             <div key={author.author_id} className={`card author-card ${editingAuthor === author.author_id ? 'editing' : ''}`}>
               <div className="author-avatar">
                 <img 
@@ -189,7 +261,7 @@ const Authors: React.FC = () => {
                     <button className="btn-primary" onClick={() => navigate(`/authors/${author.author_id}`)}>Ver Detalhes</button>
                     {isAdmin && (
                       <>
-                        <button className="btn-secondary" onClick={() => handleEditAuthor(author)}>Editar</button>
+                        <button className="btn-secondary" onClick={() => handleEditAuthor(author)}>EDITAR</button>
                         <button className="btn-danger" onClick={() => handleDeleteAuthor(author.author_id)}>Excluir</button>
                       </>
                     )}
@@ -214,6 +286,20 @@ const Authors: React.FC = () => {
           </div>
         )}
       </section>
+    )}
+
+      <EditModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedAuthor(null)
+        }}
+        onSave={handleSaveAuthor}
+        title="Editar Autor"
+        type="author"
+        initialData={selectedAuthor}
+        loading={editLoading}
+      />
     </Layout>
   )
 }

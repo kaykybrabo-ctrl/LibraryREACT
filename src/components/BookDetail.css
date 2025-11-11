@@ -109,3 +109,114 @@
   font-size: 0.85em;
   font-style: italic;
 }
+
+/* Novos estilos para o container unificado */
+.unified-book-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  margin: 20px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.book-actions-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.reviews-section {
+  margin-top: 20px;
+}
+
+.review-form-section {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 1px solid #dee2e6;
+}
+
+.review-form-section h4 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.2em;
+}
+
+.review-form-container {
+  margin-bottom: 20px;
+}
+
+.star-rating-container {
+  margin-top: 10px;
+}
+
+.star-rating-text {
+  margin-left: 15px;
+  color: #666;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.login-prompt {
+  margin-bottom: 30px;
+}
+
+.reviews-list {
+  margin-top: 20px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-weight: 500;
+  color: #333;
+}
+
+.author-link:hover {
+  color: #0056b3 !important;
+}
+
+.review-username:hover {
+  color: #0056b3 !important;
+  text-decoration: underline;
+}
+
+.review-user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.review-stars {
+  color: #ffc107;
+  font-size: 1.1em;
+}

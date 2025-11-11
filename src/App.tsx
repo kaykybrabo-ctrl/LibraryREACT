@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { AuthModalProvider, useAuthModal } from './contexts/AuthModalContext'
+import { ProfileProvider } from './contexts/ProfileContext'
 import { setShowLoginModal } from './api'
 import { useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -74,11 +75,13 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AuthModalProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthModalProvider>
+      <ProfileProvider>
+        <AuthModalProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthModalProvider>
+      </ProfileProvider>
     </AuthProvider>
   )
 }

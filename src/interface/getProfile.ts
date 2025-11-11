@@ -6,7 +6,7 @@ export async function getProfile(req: Request, res: Response) {
     const username = req.query.username as string;
 
     if (!username && !sessionUser) {
-        return res.status(401).json({ error: 'Username required or login needed' });
+        return res.status(401).json({ error: 'Nome de usuário obrigatório ou login necessário' });
     }
 
     const targetUsername = username || sessionUser.username;
@@ -17,7 +17,7 @@ export async function getProfile(req: Request, res: Response) {
             [targetUsername]
         );
 
-        if (!results.length) return res.status(404).json({ error: 'User not found' });
+        if (!results.length) return res.status(404).json({ error: 'Usuário não encontrado' });
 
         const user = results[0];
         
@@ -29,6 +29,6 @@ export async function getProfile(req: Request, res: Response) {
             description: user.description || ''
         });
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Erro ao carregar perfil' });
     }
 }

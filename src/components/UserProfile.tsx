@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
+import { useProfile } from '../contexts/ProfileContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { User, Loan } from '../types'
+import EditModal from './EditModal'
 import './UserProfile.css'
 
 interface FavoriteBook {
@@ -17,6 +19,7 @@ interface FavoriteBook {
 
 const UserProfile: React.FC = () => {
   const { user, isAdmin } = useAuth()
+  const { updateProfileImage, refreshProfile } = useProfile()
   const { username: urlUsername } = useParams<{ username: string }>()
   const navigate = useNavigate()
   const [profile, setProfile] = useState<User | null>(null)
@@ -24,12 +27,14 @@ const UserProfile: React.FC = () => {
   const [favoriteBook, setFavoriteBook] = useState<FavoriteBook | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'profile' | 'loans' | 'favorite'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'loans'>('profile')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [description, setDescription] = useState('')
   const [editingDescription, setEditingDescription] = useState(false)
   const [imageKey, setImageKey] = useState(0)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
 
   const targetUsername = urlUsername || user?.username
   const isOwnProfile = !urlUsername || urlUsername === user?.username
@@ -108,11 +113,58 @@ const UserProfile: React.FC = () => {
       setImageKey(prev => prev + 1)
       setImageFile(null)
       setError('')
+      
+      if (isOwnProfile && response.data.profile_image) {
+        updateProfileImage(response.data.profile_image)
+        await refreshProfile()
+      }
+      
       alert('Imagem do perfil atualizada com sucesso!')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Falha ao enviar imagem do perfil')
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleEditProfile = async (data: any) => {
+    setEditLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('description', data.description || '')
+      
+      if (data.imageFile) {
+        formData.append('profile_image', data.imageFile)
+      }
+      
+      if (user?.username) {
+        formData.append('username', user.username)
+      }
+
+      const response = await axios.post('/api/update-profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      setProfile(prev => ({
+        ...prev,
+        ...response.data
+      }))
+      
+      setImageKey(prev => prev + 1)
+      
+      if (response.data.profile_image) {
+        updateProfileImage(response.data.profile_image)
+        await refreshProfile()
+      }
+      
+      alert('Perfil atualizado com sucesso!')
+      setError('')
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Falha ao atualizar perfil'
+      setError(errorMsg)
+      alert(`Erro: ${errorMsg}`)
+    } finally {
+      setEditLoading(false)
     }
   }
 
@@ -208,12 +260,6 @@ const UserProfile: React.FC = () => {
             Aluguéis
           </button>
         )}
-        <button
-          className={`tab ${activeTab === 'favorite' ? 'active' : ''}`}
-          onClick={() => setActiveTab('favorite')}
-        >
-          Livro Favorito
-        </button>
       </div>
 
       <div className="tab-content">
@@ -235,55 +281,51 @@ const UserProfile: React.FC = () => {
 
             <div className="description-section">
               <h3>Descrição</h3>
-              {editingDescription ? (
-                <div>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Conte-nos sobre você..."
-                    rows={4}
-                    className="description-textarea"
-                  />
-                  <div>
-                    <button onClick={handleUpdateDescription} disabled={uploading}>
-                      {uploading ? 'Salvando...' : 'Salvar Descrição'}
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setEditingDescription(false)
-                        setDescription(profile?.description || '')
-                      }}
-                      className="cancel-button"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
+              <div>
+                <p>{profile?.description || 'Nenhuma descrição adicionada ainda.'}</p>
+              </div>
+            </div>
+
+            {/* Seção do Livro Favorito */}
+            <div className="favorite-book-section">
+              <h3>Livro Favorito</h3>
+              {!favoriteBook ? (
+                <p>{isOwnProfile ? 'Você ainda não definiu um livro favorito.' : `${targetUsername} ainda não definiu um livro favorito.`}</p>
               ) : (
-                <div>
-                  <p>{profile?.description || 'Nenhuma descrição adicionada ainda.'}</p>
-                  {canEdit && (
-                    <button onClick={() => setEditingDescription(true)}>
-                      Editar Descrição
-                    </button>
-                  )}
+                <div className="favorite-book-card">
+                  <img
+                    src={getImageUrl(favoriteBook.photo, 'book')}
+                    alt={favoriteBook.title}
+                    className="favorite-book-image"
+                    onClick={() => navigate(`/book/${favoriteBook.book_id}`)}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
+                    }}
+                  />
+                  <div className="favorite-book-info">
+                    <h4 
+                      className="favorite-book-title"
+                      onClick={() => navigate(`/book/${favoriteBook.book_id}`)}
+                    >
+                      {favoriteBook.title}
+                    </h4>
+                    <p><strong>Autor:</strong> {favoriteBook.author_name || 'Desconhecido'}</p>
+                    {favoriteBook.description && (
+                      <p className="favorite-book-description">{favoriteBook.description}</p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
             {canEdit && (
-              <div className="image-upload">
-                <h3>Atualizar Foto do Perfil</h3>
-                <form onSubmit={handleImageUpload}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                  />
-                  <button type="submit" disabled={!imageFile || uploading}>
-                    {uploading ? 'Enviando...' : 'Enviar Imagem'}
-                  </button>
-                </form>
+              <div className="profile-actions">
+                <button 
+                  className="btn-primary"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  EDITAR PERFIL
+                </button>
               </div>
             )}
           </section>
@@ -334,33 +376,21 @@ const UserProfile: React.FC = () => {
           </section>
         )}
 
-        {activeTab === 'favorite' && (
-          <section className="profile-section">
-            <h2>Meu Livro Favorito</h2>
-            {!favoriteBook ? (
-              <p>Você ainda não definiu um livro favorito.</p>
-            ) : (
-              <div className="favorite-book-card">
-                <img
-                  src={getImageUrl(favoriteBook.photo, 'book')}
-                  alt={favoriteBook.title}
-                  className="favorite-book-image"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
-                  }}
-                />
-                <div>
-                  <h3>{favoriteBook.title}</h3>
-                  <p><strong>Autor:</strong> {favoriteBook.author_name || 'Desconhecido'}</p>
-                  {favoriteBook.description && (
-                    <p><strong>Descrição:</strong> {favoriteBook.description}</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </section>
-        )}
       </div>
+
+      <EditModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleEditProfile}
+        title="Editar Perfil"
+        type="profile"
+        initialData={{
+          username: profile?.username,
+          description: profile?.description,
+          profile_image: profile?.profile_image
+        }}
+        loading={editLoading}
+      />
     </Layout>
   )
 }

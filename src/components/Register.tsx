@@ -47,6 +47,11 @@ const Register: React.FC = () => {
 
   return (
     <div className="login-container">
+      <div className="back-to-home">
+        <Link to="/" className="back-to-home-btn">
+          ← Voltar para a página inicial
+        </Link>
+      </div>
       <h1>Cadastro - PedBook</h1>
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
@@ -87,7 +92,7 @@ const Register: React.FC = () => {
       </form>
 
       <p className="auth-link">
-        Já tem uma conta? <Link to="/">Faça login aqui</Link>
+        Já tem uma conta? <Link to="/login">Faça login aqui</Link>
       </p>
     </div>
   )

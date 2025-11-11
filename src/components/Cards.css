@@ -354,6 +354,19 @@
   margin: 0 auto 15px auto;
   box-shadow: 0 4px 12px rgba(22, 44, 116, 0.3);
   border: 3px solid white;
+  overflow: hidden;
+}
+
+.user-avatar-large {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.user-avatar-large:hover {
+  transform: scale(1.05);
 }
 
 .author-card .card-header {
@@ -556,20 +569,6 @@
 .author-avatar-small {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #ddd;
-}
-
-.author-link {
-  color: #162c74;
-  text-decoration: underline;
-}
-
-.user-avatar-large {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
 }
@@ -650,26 +649,29 @@
   display: block;
 }
 
-.back-to-users-button {
-  background: #6b7280;
+.back-to-users-button.btn-secondary {
+  background-color: #162c74;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
 }
 
-.back-to-users-button:hover {
-  background: #4b5563;
+.btn-secondary:hover {
+  background-color: #1a3080;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(22, 44, 116, 0.3);
 }
 
 .carousel-overlay {
   padding-left: 60px;
 }
-
 .star-rating-text {
   margin-left: 10px;
   color: #666;
@@ -741,6 +743,85 @@
   color: #555;
 }
 
+/* Estilos para busca de autores */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.section-header h2 {
+  margin: 20px 0 0 0;
+  color: #162c74;
+  font-size: 1.8em;
+}
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding: 10px 40px 10px 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1em;
+  width: 300px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #162c74;
+  box-shadow: 0 0 0 3px rgba(22, 44, 116, 0.1);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  background-color: #f3f4f6;
+  color: #333;
+}
+
+.search-results-info {
+  margin: 15px 0;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #162c74;
+}
+
+.search-results-info p {
+  margin: 0;
+  color: #495057;
+  font-size: 0.95em;
+}
+
+/* Estilos para títulos das listagens */
+.book-list h2,
+.search-section h2 {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  color: #162c74;
+  font-size: 1.8em;
+  padding-left: 10px;
+}
+
 @media (max-width: 768px) {
   .cards-grid {
     grid-template-columns: 1fr;
@@ -753,5 +834,19 @@
   
   .btn-primary, .btn-secondary, .btn-danger {
     margin: 2px 0;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+  
+  .book-list h2,
+  .search-section h2 {
+    padding-left: 5px;
   }
 }

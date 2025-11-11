@@ -6,7 +6,9 @@ export async function runSeeders() {
 
   try {
     await createTables()
+    await cleanDatabase()
     await createAdminUser()
+    await createAuthorsAndBooks()
     console.log('Seeders executados com sucesso!')
   } catch (error) {
     console.error('Erro ao executar seeders:', error)
@@ -115,41 +117,52 @@ async function createTables() {
   console.log('Todas as tabelas do banco foram criadas com sucesso!')
 }
 
+async function cleanDatabase() {
+  console.log('Limpando banco de dados...')
+  
+  await executeQuery('SET FOREIGN_KEY_CHECKS = 0')
+  
+  await executeQuery('UPDATE users SET favorite_book_id = NULL WHERE favorite_book_id IS NOT NULL')
+  
+  await executeQuery('DELETE FROM reviews')
+  await executeQuery('DELETE FROM loans')
+  await executeQuery('DELETE FROM book_categories')
+  await executeQuery('DELETE FROM book_publishers')
+  await executeQuery('DELETE FROM books')
+  await executeQuery('DELETE FROM authors')
+  await executeQuery('DELETE FROM users')
+  await executeQuery('DELETE FROM categories')
+  await executeQuery('DELETE FROM publishers')
+  
+  await executeQuery('ALTER TABLE users AUTO_INCREMENT = 1')
+  await executeQuery('ALTER TABLE authors AUTO_INCREMENT = 1')
+  await executeQuery('ALTER TABLE books AUTO_INCREMENT = 1')
+  await executeQuery('ALTER TABLE reviews AUTO_INCREMENT = 1')
+  await executeQuery('ALTER TABLE loans AUTO_INCREMENT = 1')
+  
+  await executeQuery('SET FOREIGN_KEY_CHECKS = 1')
+  
+  console.log('Banco de dados limpo!')
+}
+
 async function createAdminUser() {
-  console.log('Verificando usuário administrador...')
+  console.log('Criando usuário administrador...')
 
-  const existingUser = await executeQuery(
-    'SELECT * FROM users WHERE username = ? LIMIT 1',
-    ['kayky']
-  )
+  const hashedPassword = await bcrypt.hash('123', 10)
 
-  if (existingUser.length > 0) {
-    console.log('Usuário admin já existe')
-  } else {
-    const hashedPassword = await bcrypt.hash('123', 10)
+  await executeQuery(`
+    INSERT INTO users (username, password, role, description, profile_image) 
+    VALUES (?, ?, 'admin', 'Administrador do sistema PedBook', 'default-user')
+  `, ['kayky', hashedPassword])
 
-    await executeQuery(`
-      INSERT INTO users (username, password, role, description, profile_image) 
-      VALUES (?, ?, 'admin', 'Administrador do sistema PedBook', 'default-user')
-    `, ['kayky', hashedPassword])
-
-    console.log('   Usuário administrador criado com sucesso!')
-    console.log('   Usuário: kayky')
-    console.log('   Senha: 123')
-    console.log('   Role: admin')
-  }
-
-  await createAuthorsAndBooks()
+  console.log('   Usuário administrador criado com sucesso!')
+  console.log('   Usuário: kayky')
+  console.log('   Senha: 123')
+  console.log('   Role: admin')
 }
 
 async function createAuthorsAndBooks() {
   console.log('Criando autores e livros...')
-
-  await executeQuery('UPDATE users SET favorite_book_id = NULL WHERE favorite_book_id IS NOT NULL')
-  await executeQuery('DELETE FROM reviews')
-  await executeQuery('DELETE FROM loans')
-  await executeQuery('DELETE FROM books')
-  await executeQuery('DELETE FROM authors')
 
   await executeQuery(`
     INSERT INTO authors (author_id, name_author, description, photo) VALUES

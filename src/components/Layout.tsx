@@ -1,38 +1,20 @@
-import React, { useState, useEffect, ReactNode } from 'react'
+import React, { useState, ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
+import { useProfile } from '../contexts/ProfileContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 
 interface LayoutProps {
   children: ReactNode
   title: string
 }
-interface UserProfile {
-  profile_image?: string
-  username: string
-}
 
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const { logout, user, isAuthenticated } = useAuth()
+  const { userProfile, profileImageKey } = useProfile()
   const location = useLocation()
   const navigate = useNavigate()
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
-
-  useEffect(() => {
-    if (user?.username) {
-      fetchUserProfile()
-    }
-  }, [user])
-
-  const fetchUserProfile = async () => {
-    try {
-      const response = await axios.get(`/api/get-profile?username=${user?.username}&t=${Date.now()}`)
-      setUserProfile(response.data)
-    } catch (err) {
-    }
-  }
 
   const handleLogout = () => {
     logout()
@@ -54,7 +36,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
             {isAuthenticated ? (
               <div className="user-menu">
                 <img
-                  src={getImageUrl(userProfile?.profile_image, 'profile')}
+                  key={profileImageKey}
+                  src={getImageUrl(userProfile?.profile_image, 'profile', profileImageKey > 0)}
                   alt="Perfil"
                   className="user-avatar"
                   onClick={() => setShowDropdown(!showDropdown)}

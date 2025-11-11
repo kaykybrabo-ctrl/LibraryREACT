@@ -9,10 +9,9 @@
 }
 
 .cancel-button {
+  background-color: #6c757d;
   margin-left: 10px;
   padding: 8px 16px;
-  background-color: #6c757d;
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -61,9 +60,119 @@
   gap: 20px;
 }
 
+/* Estilos para a seção do livro favorito */
+.favorite-book-section {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.favorite-book-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #162c74;
+  font-size: 1.3em;
+}
+
+.favorite-book-card {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #dee2e6;
+}
+
+.favorite-book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
 .favorite-book-image {
   width: 120px;
   height: 160px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.favorite-book-image:hover {
+  transform: scale(1.05);
+}
+
+.favorite-book-info {
+  flex: 1;
+}
+
+.favorite-book-title {
+  margin: 0 0 10px 0;
+  color: #162c74;
+  font-size: 1.4em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.favorite-book-title:hover {
+  color: #0b5cab;
+  text-decoration: underline;
+}
+
+.favorite-book-description {
+  color: #666;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+/* Estilos para ações do perfil */
+.profile-actions {
+  margin-top: 30px;
+  text-align: center;
+  padding: 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.profile-actions .btn-primary {
+  background-color: #162c74;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profile-actions .btn-primary:hover {
+  background-color: #1a3080;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(22, 44, 116, 0.3);
+}
+
+@media (max-width: 768px) {
+  .favorite-book-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .favorite-book-image {
+    width: 100px;
+    height: 130px;
+    align-self: center;
+  }
+  
+  .profile-actions .btn-primary {
+    width: 100%;
+    padding: 15px;
+  }
 }

@@ -30,21 +30,6 @@
   margin-bottom: 10px;
 }
 
-.email-preview-link {
-  display: inline-block;
-  color: #0b5cab;
-  font-weight: 500;
-  word-break: break-all;
-  overflow-wrap: anywhere;
-  text-decoration: underline;
-  font-size: 0.9rem;
-}
-
-.email-preview-link:hover {
-  color: #084179;
-  text-decoration: underline;
-}
-
 .login-button {
   background-color: #162c74 !important;
   color: white !important;
@@ -67,4 +52,31 @@
   background-color: #ccc !important;
   color: #666 !important;
   cursor: not-allowed !important;
+}
+
+/* Estilos para o botão de voltar à página inicial */
+.back-to-home {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.back-to-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background-color: transparent;
+  border: 1px solid #e0e0e0;
+}
+
+.back-to-home-btn:hover {
+  color: #162c74;
+  background-color: #f8f9fa;
+  border-color: #162c74;
+  text-decoration: none;
 }
