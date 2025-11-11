@@ -175,16 +175,23 @@ const BookDetail: React.FC = () => {
       showLoginModal('É necessário fazer login para favoritar livros')
       return
     }
+    
+    if (isAdmin) {
+      alert('Administradores não podem favoritar livros')
+      return
+    }
+    
     try {
       await api.post(`/favorite/${id}`)
       alert('Livro adicionado aos favoritos!')
       setError('')
     } catch (err: any) {
       if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
-        return;
+        return
       }
+      console.error('Erro ao favoritar:', err)
       const errorMsg = err.response?.data?.error || 'Falha ao adicionar livro aos favoritos'
-      setError(errorMsg)
+      alert(errorMsg)
     }
   }
 

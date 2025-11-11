@@ -290,7 +290,7 @@ const UserProfile: React.FC = () => {
             <div className="favorite-book-section">
               <h3>Livro Favorito</h3>
               {!favoriteBook ? (
-                <p>{isOwnProfile ? 'Você ainda não definiu um livro favorito.' : `${targetUsername} ainda não definiu um livro favorito.`}</p>
+                <p>{isOwnProfile ? 'Você ainda não definiu um livro favorito.' : `${profile?.username || targetUsername} ainda não definiu um livro favorito.`}</p>
               ) : (
                 <div className="favorite-book-card">
                   <img

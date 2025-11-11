@@ -58,8 +58,9 @@ const Home: React.FC = () => {
             <h1 className={styles.title}>PedBook</h1>
           </div>
           <nav className={styles.homeNav}>
+            <Link to="/books" className={styles.navLink}>Livros</Link>
+            <Link to="/authors" className={styles.navLink}>Autores</Link>
             <a href="#highlights" className={styles.navLink}>Destaques</a>
-            <a href="#contato" className={styles.navLink}>Contato</a>
             <Link to="/login" className={styles.loginBtn}>Entrar</Link>
           </nav>
         </div>

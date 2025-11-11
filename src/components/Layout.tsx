@@ -25,11 +25,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
     <div className="page-wrapper">
       <div className="content-wrapper">
         <header>
-          <h1 
-            onClick={() => navigate('/')}
-            className="clickable-header"
-            title="Voltar para o início"
-          >
+          <h1>
             {title}
           </h1>
           <div className="header-user-menu">

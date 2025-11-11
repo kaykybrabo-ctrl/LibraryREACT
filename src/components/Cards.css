@@ -814,9 +814,11 @@
 
 /* Estilos para títulos das listagens */
 .book-list h2,
+.author-list h2,
 .search-section h2 {
   margin-top: 30px;
   margin-bottom: 20px;
+  margin-left: 15px;
   color: #162c74;
   font-size: 1.8em;
   padding-left: 10px;
