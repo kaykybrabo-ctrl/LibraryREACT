@@ -519,7 +519,7 @@ const loansHandler = async (req: Request, res: Response) => {
                    b.book_id, b.title, b.photo, b.description
             FROM loans l
             JOIN books b ON l.book_id = b.book_id
-            WHERE l.user_id = ? AND l.status = 'active'
+            WHERE l.user_id = ?
             ORDER BY l.loan_date DESC
         `, [userResult[0].id]);
         res.json(loans);
@@ -557,18 +557,34 @@ app.get('/my-loans', myLoansHandler);
 app.get('/api/my-loans', myLoansHandler);
 
 const returnHandler = async (req: Request, res: Response) => {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser) {
+        return res.status(401).json({ error: 'Não autenticado' });
+    }
+    
     const loanId = Number(req.params.loanId);
     if (isNaN(loanId)) return res.status(400).json({ error: 'ID do empréstimo inválido' });
     
     try {
-        const result: any = await executeQuery('DELETE FROM loans WHERE loans_id = ?', [loanId]);
+        const loan: any = await executeQuery('SELECT * FROM loans WHERE loans_id = ? AND user_id = ?', [loanId, sessionUser.id]);
+        
+        if (!loan.length) {
+            return res.status(404).json({ error: 'Empréstimo não encontrado' });
+        }
+        
+        if (loan[0].status === 'returned') {
+            return res.status(400).json({ error: 'Livro já foi devolvido' });
+        }
+        
+        const result: any = await executeQuery('UPDATE loans SET status = "returned" WHERE loans_id = ?', [loanId]);
         
         if (!result.affectedRows) {
-            return res.status(404).json({ error: 'Empréstimo não encontrado' });
+            return res.status(404).json({ error: 'Erro ao atualizar empréstimo' });
         }
         
         res.status(200).json({ message: 'Livro devolvido com sucesso' });
     } catch (error) {
+        console.error('Erro ao devolver livro:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };

@@ -157,7 +157,6 @@ const EditModal: React.FC<EditModalProps> = ({
 
         <form onSubmit={handleSubmit} className="edit-modal-form">
           <div className="edit-modal-body">
-            {/* Seção da Imagem */}
             <div className="edit-image-section">
               <h3>Imagem</h3>
               <div className="edit-image-container">
@@ -184,7 +183,6 @@ const EditModal: React.FC<EditModalProps> = ({
               </div>
             </div>
 
-            {/* Campos específicos por tipo */}
             <div className="edit-fields-section">
               {type === 'book' && (
                 <>

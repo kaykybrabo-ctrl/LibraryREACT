@@ -35,6 +35,7 @@ const UserProfile: React.FC = () => {
   const [imageKey, setImageKey] = useState(0)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
+  const [loanFilter, setLoanFilter] = useState<'all' | 'active' | 'returned' | 'overdue'>('all')
 
   const targetUsername = urlUsername || user?.username
   const isOwnProfile = !urlUsername || urlUsername === user?.username
@@ -80,7 +81,6 @@ const UserProfile: React.FC = () => {
     } catch (err) {
     }
   }
-
   const fetchFavoriteBook = async () => {
     if (!targetUsername) return
 
@@ -94,6 +94,44 @@ const UserProfile: React.FC = () => {
     } catch (err) {
       setFavoriteBook(null)
     }
+  }
+
+  const getFilteredLoans = () => {
+    const now = new Date()
+    
+    return loans.filter(loan => {
+      switch (loanFilter) {
+        case 'active':
+          return loan.status === 'active'
+        case 'returned':
+          return loan.status === 'returned'
+        case 'overdue':
+          if (loan.status !== 'active') return false
+          const returnDate = new Date(loan.return_date)
+          return returnDate < now
+        case 'all':
+        default:
+          return true
+      }
+    })
+  }
+
+  const getLoanStatusBadge = (loan: Loan) => {
+    const now = new Date()
+    
+    if (loan.status === 'returned') {
+      return <span style={{ color: '#28a745', fontWeight: 'bold' }}>✅ Devolvido</span>
+    }
+    
+    if (loan.status === 'active') {
+      const returnDate = new Date(loan.return_date)
+      if (returnDate < now) {
+        return <span style={{ color: '#dc3545', fontWeight: 'bold' }}>⚠️ Atrasado</span>
+      }
+      return <span style={{ color: '#ffc107', fontWeight: 'bold' }}>📚 Ativo</span>
+    }
+    
+    return null
   }
 
   const handleImageUpload = async (e: React.FormEvent) => {
@@ -291,7 +329,6 @@ const UserProfile: React.FC = () => {
               </div>
             </div>
 
-            {/* Seção do Livro Favorito - Apenas para usuários comuns */}
             {!profile?.role || profile.role !== 'admin' ? (
               <div className="favorite-book-section">
                 <h3>Livro Favorito</h3>
@@ -344,19 +381,118 @@ const UserProfile: React.FC = () => {
         ) && (
           <section className="profile-section">
             <h2>{isOwnProfile ? 'Meus Livros Emprestados' : `Livros Emprestados por ${targetUsername}`}</h2>
-            {loans.length === 0 ? (
-              <p>{isOwnProfile ? 'Você ainda não pegou nenhum livro emprestado.' : 'Este usuário não tem livros emprestados.'}</p>
+            
+            <div style={{ 
+              marginBottom: '20px', 
+              padding: '15px', 
+              backgroundColor: '#f8f9fa', 
+              borderRadius: '8px',
+              border: '1px solid #dee2e6'
+            }}>
+              <h4 style={{ marginBottom: '10px', color: '#495057' }}>Filtrar por:</h4>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setLoanFilter('all')}
+                  style={{
+                    padding: '8px 16px',
+                    border: '1px solid #007bff',
+                    borderRadius: '4px',
+                    backgroundColor: loanFilter === 'all' ? '#007bff' : '#fff',
+                    color: loanFilter === 'all' ? '#fff' : '#007bff',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  📚 Todos ({loans.length})
+                </button>
+                <button
+                  onClick={() => setLoanFilter('active')}
+                  style={{
+                    padding: '8px 16px',
+                    border: '1px solid #ffc107',
+                    borderRadius: '4px',
+                    backgroundColor: loanFilter === 'active' ? '#ffc107' : '#fff',
+                    color: loanFilter === 'active' ? '#000' : '#ffc107',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  📖 Ativos ({loans.filter(l => l.status === 'active').length})
+                </button>
+                <button
+                  onClick={() => setLoanFilter('returned')}
+                  style={{
+                    padding: '8px 16px',
+                    border: '1px solid #28a745',
+                    borderRadius: '4px',
+                    backgroundColor: loanFilter === 'returned' ? '#28a745' : '#fff',
+                    color: loanFilter === 'returned' ? '#fff' : '#28a745',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  ✅ Devolvidos ({loans.filter(l => l.status === 'returned').length})
+                </button>
+                <button
+                  onClick={() => setLoanFilter('overdue')}
+                  style={{
+                    padding: '8px 16px',
+                    border: '1px solid #dc3545',
+                    borderRadius: '4px',
+                    backgroundColor: loanFilter === 'overdue' ? '#dc3545' : '#fff',
+                    color: loanFilter === 'overdue' ? '#fff' : '#dc3545',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  ⚠️ Atrasados ({loans.filter(l => {
+                    if (l.status !== 'active') return false
+                    const returnDate = new Date(l.return_date)
+                    return returnDate < new Date()
+                  }).length})
+                </button>
+              </div>
+            </div>
+
+            {getFilteredLoans().length === 0 ? (
+              <p style={{ 
+                textAlign: 'center', 
+                color: '#6c757d', 
+                padding: '40px',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #dee2e6'
+              }}>
+                {loanFilter === 'all' 
+                  ? (isOwnProfile ? 'Você ainda não pegou nenhum livro emprestado.' : 'Este usuário não tem livros emprestados.')
+                  : `Nenhum empréstimo ${
+                      loanFilter === 'active' ? 'ativo' : 
+                      loanFilter === 'returned' ? 'devolvido' : 
+                      loanFilter === 'overdue' ? 'atrasado' : ''
+                    } encontrado.`
+                }
+              </p>
             ) : (
               <div>
-                {loans.map(loan => (
-                  <div key={loan.loans_id} className="loan-card">
+                {getFilteredLoans().map(loan => (
+                  <div key={loan.loans_id} className="loan-card" style={{
+                    border: '1px solid #dee2e6',
+                    borderRadius: '8px',
+                    padding: '20px',
+                    marginBottom: '15px',
+                    backgroundColor: '#fff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}>
                     <div>
-                      <h4>{loan.title}</h4>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                        <h4 style={{ margin: 0, color: '#495057' }}>{loan.title}</h4>
+                        {getLoanStatusBadge(loan)}
+                      </div>
                       <p><strong>Data do Empréstimo:</strong> {new Date(loan.loan_date).toLocaleDateString('pt-BR')}</p>
                       {loan.return_date && (
                         <p><strong>📅 Devolução:</strong> {new Date(loan.return_date).toLocaleDateString('pt-BR')}</p>
                       )}
-                      {loan.description && <p>{loan.description}</p>}
+                      {loan.description && <p style={{ color: '#6c757d', fontStyle: 'italic' }}>{loan.description}</p>}
                     </div>
                     <div>
                       <img
@@ -367,13 +503,23 @@ const UserProfile: React.FC = () => {
                           (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
                         }}
                       />
-                      {isOwnProfile && (
+                      {isOwnProfile && loan.status === 'active' && (
                         <button 
                           onClick={(e) => {
                             e.preventDefault()
                             handleReturnBook(loan.loans_id)
                           }}
                           className="return-button"
+                          style={{
+                            marginTop: '10px',
+                            padding: '8px 16px',
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold'
+                          }}
                         >
                           Devolver Livro
                         </button>

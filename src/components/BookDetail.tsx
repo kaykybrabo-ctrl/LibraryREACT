@@ -31,6 +31,7 @@ const BookDetail: React.FC = () => {
   const [authors, setAuthors] = useState<Author[]>([])
   const [isRented, setIsRented] = useState(false)
   const [returnDate, setReturnDate] = useState<string | null>(null)
+  const [currentLoanId, setCurrentLoanId] = useState<number | null>(null)
   const { isAdmin, user } = useAuth()
   const { showLoginModal } = useAuthModal()
 
@@ -74,9 +75,11 @@ const BookDetail: React.FC = () => {
       if (rentedBook) {
         setIsRented(true)
         setReturnDate(rentedBook.return_date || rentedBook.due_date)
+        setCurrentLoanId(rentedBook.loans_id)
       } else {
         setIsRented(false)
         setReturnDate(null)
+        setCurrentLoanId(null)
       }
     } catch (err) {
       setIsRented(false)
@@ -157,13 +160,17 @@ const BookDetail: React.FC = () => {
       showLoginModal('É necessário fazer login para devolver livros')
       return
     }
+    if (!currentLoanId) {
+      alert('Erro: ID do empréstimo não encontrado')
+      return
+    }
     try {
-      await api.post(`/return/${id}`)
+      await api.post(`/return/${currentLoanId}`)
       alert('Livro devolvido com sucesso!')
       await checkRentalStatus()
-    } catch (err) {
-      console.error('Erro ao devolver livro:', err)
-      alert('Erro ao devolver livro')
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Erro ao devolver livro'
+      alert(`Erro: ${errorMsg}`)
     }
   }
 
@@ -306,159 +313,229 @@ const BookDetail: React.FC = () => {
     <Layout title={`Livro: ${book.title}`}>
       {error && <div className="error-message">{error}</div>}
       
-      <section className="profile-section">
-        <button onClick={() => navigate('/books')} className="back-button">
+      <section className="unified-book-container">
+        <button onClick={() => navigate('/books')} className="back-button" style={{ marginBottom: '20px' }}>
           ← Voltar aos Livros
         </button>
         
-        <h2>{book.title}</h2>
-        <p><strong>Autor:</strong> 
-          <span 
-            className="author-link" 
-            onClick={() => navigate(`/authors/${book.author_id}`)}
-            style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginLeft: '8px' }}
-          >
-            {book.author_name || 'Desconhecido'}
-          </span>
-        </p>
-        <p><strong>Descrição:</strong> {book.description || 'Nenhuma descrição disponível'}</p>
-        
-        <div className="book-image-container">
-          <img 
-            src={getImageUrl(book.photo, 'book')} 
-            alt={book.title}
-            className="book-image-enhanced"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
-            }}
-          />
-        </div>
-
-        {isAdmin && user && (
-          <div className="image-upload">
-            <h3>Atualizar Imagem do Livro</h3>
-            <form onSubmit={handleImageUpload}>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              />
-              <button type="submit" disabled={!imageFile || uploading}>
-                {uploading ? 'Enviando...' : 'Enviar Imagem'}
-              </button>
-            </form>
+        <div style={{ marginBottom: '30px' }}>
+          <h2 style={{ marginBottom: '15px', color: '#495057' }}>{book.title}</h2>
+          <p style={{ marginBottom: '10px' }}><strong>Autor:</strong> 
+            <span 
+              className="author-link" 
+              onClick={() => navigate(`/authors/${book.author_id}`)}
+              style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginLeft: '8px' }}
+            >
+              {book.author_name || 'Desconhecido'}
+            </span>
+          </p>
+          <p style={{ marginBottom: '20px' }}><strong>Descrição:</strong> {book.description || 'Nenhuma descrição disponível'}</p>
+          
+          <div className="book-image-container" style={{ marginBottom: '20px' }}>
+            <img 
+              src={getImageUrl(book.photo, 'book')} 
+              alt={book.title}
+              className="book-image-enhanced"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
+              }}
+            />
           </div>
-        )}
-      </section>
 
-      {/* Container unificado para detalhes, ações e avaliações */}
-      <section className="unified-book-container">
-        <div className="book-actions-section">
-          <h3>Ações do Livro</h3>
-          {isRented && returnDate && (
-            <div style={{
-              padding: '12px',
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffc107',
+          {isAdmin && user && (
+            <div className="image-upload" style={{ 
+              padding: '20px', 
+              backgroundColor: '#f8f9fa', 
               borderRadius: '8px',
-              marginBottom: '15px',
-              color: '#856404'
+              border: '1px solid #dee2e6',
+              marginBottom: '20px'
             }}>
-              <strong>📅 Você alugou este livro</strong>
-              <br />
-              <span>Data de devolução: {new Date(returnDate).toLocaleDateString('pt-BR')}</span>
+              <h3 style={{ marginBottom: '15px' }}>Atualizar Imagem do Livro</h3>
+              <form onSubmit={handleImageUpload}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  style={{ marginBottom: '10px' }}
+                />
+                <button type="submit" disabled={!imageFile || uploading} style={{
+                  padding: '8px 16px',
+                  backgroundColor: (!imageFile || uploading) ? '#6c757d' : '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (!imageFile || uploading) ? 'not-allowed' : 'pointer'
+                }}>
+                  {uploading ? 'Enviando...' : 'Enviar Imagem'}
+                </button>
+              </form>
             </div>
           )}
-          <div className="book-actions">
-            {!isAdmin && (
-              <>
-                <button 
-                  onClick={handleRentBook}
-                  className={isRented ? 'btn-warning' : 'btn-success'}
-                  style={{ marginRight: '10px' }}
-                >
-                  {isRented ? '↩️ Devolver Livro' : '📚 Alugar Livro'}
-                </button>
-                <button onClick={handleFavoriteBook}>⭐ Adicionar aos Favoritos</button>
-              </>
-            )}
-          </div>
         </div>
+        {isRented && returnDate && (
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            color: '#856404'
+          }}>
+            <strong>📅 Você alugou este livro</strong>
+            <br />
+            <span>Data de devolução: {new Date(returnDate).toLocaleDateString('pt-BR')}</span>
+          </div>
+        )}
+        
+        {!isAdmin && (
+          <div className="book-actions" style={{ marginBottom: '30px' }}>
+            <button 
+              onClick={handleRentBook}
+              className={isRented ? 'btn-warning' : 'btn-success'}
+              style={{ marginRight: '10px' }}
+            >
+              {isRented ? '↩️ Devolver Livro' : '📚 Alugar Livro'}
+            </button>
+            <button onClick={handleFavoriteBook}>⭐ Adicionar aos Favoritos</button>
+          </div>
+        )}
 
-        <div className="reviews-section">
-          <h3>Avaliações</h3>
-          
-          {/* Formulário de avaliação no topo */}
-          {user && !isAdmin ? (
-            <div className="review-form-section">
-              <h4>Deixe sua avaliação</h4>
-              <form onSubmit={handleSubmitReview}>
-                <div className="review-form-container">
-                  <label>Avaliação:</label>
-                  <div className="star-rating star-rating-container">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span
-                        key={star}
-                        className={`star ${star <= newReview.rating ? 'filled' : ''}`}
-                        onClick={() => setNewReview({ ...newReview, rating: star })}
-                        style={{ marginRight: '4px' }}
-                      >
-                        ★
-                      </span>
-                    ))}
-                    <span className="star-rating-text">
-                      {newReview.rating === 0 ? 'Selecione uma avaliação' : `${newReview.rating} de 5 estrelas`}
+        {user && !isAdmin ? (
+          <div className="review-form-section" style={{ 
+            marginBottom: '30px', 
+            padding: '20px', 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '8px',
+            border: '1px solid #dee2e6'
+          }}>
+            <h4 style={{ marginBottom: '15px', color: '#495057' }}>Deixe sua avaliação</h4>
+            <form onSubmit={handleSubmitReview}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Avaliação:</label>
+                <div className="star-rating star-rating-container" style={{ marginBottom: '5px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      className={`star ${star <= newReview.rating ? 'filled' : ''}`}
+                      onClick={() => setNewReview({ ...newReview, rating: star })}
+                      style={{ 
+                        cursor: 'pointer',
+                        fontSize: '24px',
+                        color: star <= newReview.rating ? '#ffc107' : '#ddd',
+                        marginRight: '5px'
+                      }}
+                    >
+                      ★
                     </span>
-                  </div>
+                  ))}
                 </div>
+                <small style={{ color: '#6c757d' }}>
+                  {newReview.rating === 0 ? 'Selecione pelo menos 1 estrela' : `${newReview.rating} de 5 estrelas`}
+                </small>
+              </div>
 
-                <label htmlFor="comment">Comentário:</label>
+              <div style={{ marginBottom: '15px' }}>
+                <label htmlFor="comment" style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Comentário:</label>
                 <textarea
                   id="comment"
                   value={newReview.comment}
                   onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                   rows={4}
-                  className="review-textarea"
                   placeholder="Escreva sua opinião sobre o livro..."
+                  style={{ 
+                    width: '100%', 
+                    padding: '10px', 
+                    border: '1px solid #ced4da', 
+                    borderRadius: '4px',
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
                 />
+              </div>
 
-                <button type="submit" disabled={newReview.rating === 0}>
-                  Enviar Avaliação
-                </button>
-              </form>
-            </div>
-          ) : !user ? (
-            <div className="login-prompt">
-              <p style={{ color: '#666', fontStyle: 'italic', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', textAlign: 'center' }}>
-                É preciso fazer o login para deixar uma avaliação!
-              </p>
-            </div>
-          ) : null}
+              <button 
+                type="submit" 
+                disabled={newReview.rating === 0}
+                style={{
+                  backgroundColor: newReview.rating === 0 ? '#6c757d' : '#007bff',
+                  color: 'white',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: newReview.rating === 0 ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                Enviar Avaliação
+              </button>
+            </form>
+          </div>
+        ) : !user ? (
+          <div style={{ 
+            padding: '20px', 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '8px', 
+            marginBottom: '30px',
+            textAlign: 'center',
+            border: '1px solid #dee2e6'
+          }}>
+            <p style={{ margin: 0, color: '#6c757d', fontWeight: 'bold' }}>
+              É preciso fazer o login para deixar uma avaliação!
+            </p>
+          </div>
+        ) : null}
 
-          {/* Lista de avaliações com paginação */}
-          <div className="reviews-list">
-            {reviews.length === 0 ? (
-              <p>Nenhuma avaliação ainda.</p>
-            ) : (
-              <>
+        <div className="reviews-section">
+          <h3 style={{ marginBottom: '20px', color: '#495057' }}>Avaliações dos Usuários</h3>
+          
+          {reviews.length === 0 ? (
+            <p style={{ 
+              textAlign: 'center', 
+              color: '#6c757d', 
+              padding: '40px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              border: '1px solid #dee2e6'
+            }}>
+              Nenhuma avaliação ainda. Seja o primeiro a avaliar este livro!
+            </p>
+          ) : (
+            <>
+              <div className="reviews-list">
                 {reviews
                   .slice((currentPage - 1) * reviewsPerPage, currentPage * reviewsPerPage)
                   .map(review => (
-                    <div key={review.review_id} className="review-card">
-                      <div className="review-header">
-                        <div className="review-user-info">
+                    <div key={review.review_id} style={{
+                      padding: '20px',
+                      border: '1px solid #dee2e6',
+                      borderRadius: '8px',
+                      marginBottom: '15px',
+                      backgroundColor: '#fff',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '10px'
+                      }}>
+                        <div>
                           <strong 
                             onClick={() => navigate(`/profile/${review.username}`)}
-                            className="review-username"
-                            style={{ cursor: 'pointer', color: '#007bff' }}
+                            style={{ 
+                              cursor: 'pointer', 
+                              color: '#007bff',
+                              textDecoration: 'none',
+                              marginRight: '15px'
+                            }}
                           >
                             👤 {review.username || 'Usuário'}
                           </strong>
-                          <span className="review-stars">
+                          <span style={{ color: '#ffc107', fontSize: '18px' }}>
                             {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                           </span>
                         </div>
-                        <small className="review-date">
+                        <small style={{ color: '#6c757d' }}>
                           {review.created_at ? 
                             new Date(review.created_at).toLocaleDateString('pt-BR', {
                               day: '2-digit',
@@ -469,32 +546,65 @@ const BookDetail: React.FC = () => {
                           }
                         </small>
                       </div>
-                      <p className="review-comment">{review.comment}</p>
+                      {review.comment && (
+                        <p style={{ 
+                          margin: 0, 
+                          color: '#495057',
+                          lineHeight: '1.5',
+                          fontStyle: review.comment ? 'normal' : 'italic'
+                        }}>
+                          {review.comment}
+                        </p>
+                      )}
                     </div>
                   ))
                 }
-                
-                {/* Paginação */}
-                {reviews.length > reviewsPerPage && (
-                  <div className="pagination">
-                    <button 
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Anterior
-                    </button>
-                    <span>Página {currentPage} de {Math.ceil(reviews.length / reviewsPerPage)}</span>
-                    <button 
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reviews.length / reviewsPerPage)))}
-                      disabled={currentPage === Math.ceil(reviews.length / reviewsPerPage)}
-                    >
-                      Próxima
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+              </div>
+              
+              {reviews.length > reviewsPerPage && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '15px',
+                  marginTop: '30px',
+                  padding: '20px'
+                }}>
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '8px 16px',
+                      border: '1px solid #dee2e6',
+                      borderRadius: '4px',
+                      backgroundColor: currentPage === 1 ? '#f8f9fa' : '#fff',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      color: currentPage === 1 ? '#6c757d' : '#007bff'
+                    }}
+                  >
+                    ← Anterior
+                  </button>
+                  <span style={{ color: '#6c757d', fontWeight: 'bold' }}>
+                    Página {currentPage} de {Math.ceil(reviews.length / reviewsPerPage)}
+                  </span>
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reviews.length / reviewsPerPage)))}
+                    disabled={currentPage === Math.ceil(reviews.length / reviewsPerPage)}
+                    style={{
+                      padding: '8px 16px',
+                      border: '1px solid #dee2e6',
+                      borderRadius: '4px',
+                      backgroundColor: currentPage === Math.ceil(reviews.length / reviewsPerPage) ? '#f8f9fa' : '#fff',
+                      cursor: currentPage === Math.ceil(reviews.length / reviewsPerPage) ? 'not-allowed' : 'pointer',
+                      color: currentPage === Math.ceil(reviews.length / reviewsPerPage) ? '#6c757d' : '#007bff'
+                    }}
+                  >
+                    Próxima →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </section>
 
