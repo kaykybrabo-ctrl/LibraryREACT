@@ -9,5 +9,5 @@ docker compose down --rmi all --volumes --remove-orphans
 echo "Reconstruindo aplicação..."
 docker compose up --build -d
 
-echo "Aplicação rodando em: http://localhost:8080"
+echo "Sistema rodando em: http://localhost:8080"
 echo "phpMyAdmin disponível em: http://localhost:8081"
