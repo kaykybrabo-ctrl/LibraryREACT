@@ -29,19 +29,29 @@ const BookDetail: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
   const [authors, setAuthors] = useState<Author[]>([])
+  const [isRented, setIsRented] = useState(false)
+  const [returnDate, setReturnDate] = useState<string | null>(null)
   const { isAdmin, user } = useAuth()
   const { showLoginModal } = useAuthModal()
 
   useEffect(() => {
-    if (id) {
-      fetchBook()
-      fetchReviews()
-      checkAuthStatus()
-      if (isAdmin) {
-        fetchAuthors()
-      }
+    if (!id || id === 'undefined') {
+      navigate('/books')
+      return
     }
-  }, [id, isAdmin])
+    fetchBook()
+    fetchReviews()
+    checkAuthStatus()
+    if (isAdmin) {
+      fetchAuthors()
+    }
+  }, [id, isAdmin, navigate])
+
+  useEffect(() => {
+    if (user && id) {
+      checkRentalStatus()
+    }
+  }, [user, id])
 
   const checkAuthStatus = async () => {
     try {
@@ -49,6 +59,28 @@ const BookDetail: React.FC = () => {
       setCurrentUser(response.data)
     } catch (err) {
       setCurrentUser(null)
+    }
+  }
+
+  const checkRentalStatus = async () => {
+    if (!user || !id) return
+    
+    try {
+      const response = await api.get('/my-loans')
+      const rentedBook = response.data.find((loan: any) => 
+        loan.book_id === parseInt(id!) && loan.status === 'active'
+      )
+      
+      if (rentedBook) {
+        setIsRented(true)
+        setReturnDate(rentedBook.return_date || rentedBook.due_date)
+      } else {
+        setIsRented(false)
+        setReturnDate(null)
+      }
+    } catch (err) {
+      setIsRented(false)
+      setReturnDate(null)
     }
   }
 
@@ -113,7 +145,26 @@ const BookDetail: React.FC = () => {
       alert('Administradores não podem alugar livros')
       return
     }
-    setShowRentModal(true)
+    if (isRented) {
+      handleReturnBook()
+    } else {
+      setShowRentModal(true)
+    }
+  }
+
+  const handleReturnBook = async () => {
+    if (!user) {
+      showLoginModal('É necessário fazer login para devolver livros')
+      return
+    }
+    try {
+      await api.post(`/return/${id}`)
+      alert('Livro devolvido com sucesso!')
+      await checkRentalStatus()
+    } catch (err) {
+      console.error('Erro ao devolver livro:', err)
+      alert('Erro ao devolver livro')
+    }
   }
 
   const handleConfirmRent = async (returnDate: string) => {
@@ -125,6 +176,7 @@ const BookDetail: React.FC = () => {
       setShowRentModal(false)
       alert('Livro alugado com sucesso!')
       setError('')
+      await checkRentalStatus()
     } catch (err: any) {
       if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
         return;
@@ -191,7 +243,8 @@ const BookDetail: React.FC = () => {
       }
       console.error('Erro ao favoritar:', err)
       const errorMsg = err.response?.data?.error || 'Falha ao adicionar livro aos favoritos'
-      alert(errorMsg)
+      setError(errorMsg)
+      alert(`Erro: ${errorMsg}`)
     }
   }
 
@@ -263,7 +316,7 @@ const BookDetail: React.FC = () => {
           <span 
             className="author-link" 
             onClick={() => navigate(`/authors/${book.author_id}`)}
-            style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
+            style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginLeft: '8px' }}
           >
             {book.author_name || 'Desconhecido'}
           </span>
@@ -281,7 +334,7 @@ const BookDetail: React.FC = () => {
           />
         </div>
 
-        {isAdmin && (
+        {isAdmin && user && (
           <div className="image-upload">
             <h3>Atualizar Imagem do Livro</h3>
             <form onSubmit={handleImageUpload}>
@@ -302,13 +355,32 @@ const BookDetail: React.FC = () => {
       <section className="unified-book-container">
         <div className="book-actions-section">
           <h3>Ações do Livro</h3>
+          {isRented && returnDate && (
+            <div style={{
+              padding: '12px',
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '8px',
+              marginBottom: '15px',
+              color: '#856404'
+            }}>
+              <strong>📅 Você alugou este livro</strong>
+              <br />
+              <span>Data de devolução: {new Date(returnDate).toLocaleDateString('pt-BR')}</span>
+            </div>
+          )}
           <div className="book-actions">
-            {!isAdmin && user && <button onClick={handleRentBook}>Alugar Livro</button>}
-            {!isAdmin && user && <button onClick={handleFavoriteBook}>Adicionar aos Favoritos</button>}
-            {!user && (
-              <p style={{ color: '#666', fontStyle: 'italic' }}>
-                Faça login para alugar ou favoritar livros
-              </p>
+            {!isAdmin && (
+              <>
+                <button 
+                  onClick={handleRentBook}
+                  className={isRented ? 'btn-warning' : 'btn-success'}
+                  style={{ marginRight: '10px' }}
+                >
+                  {isRented ? '↩️ Devolver Livro' : '📚 Alugar Livro'}
+                </button>
+                <button onClick={handleFavoriteBook}>⭐ Adicionar aos Favoritos</button>
+              </>
             )}
           </div>
         </div>
@@ -425,6 +497,17 @@ const BookDetail: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {isAdmin && (
+        <div className="book-admin-actions" style={{ textAlign: 'center', margin: '30px 0' }}>
+          <button 
+            className="btn-primary-large"
+            onClick={() => setShowEditModal(true)}
+          >
+            EDITAR LIVRO
+          </button>
+        </div>
+      )}
 
       <RentModal
         isOpen={showRentModal}

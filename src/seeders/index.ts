@@ -7,7 +7,7 @@ export async function runSeeders() {
   try {
     await createTables()
     await cleanDatabase()
-    await createAdminUser()
+    await createDefaultUsers()
     await createAuthorsAndBooks()
     console.log('Seeders executados com sucesso!')
   } catch (error) {
@@ -145,8 +145,8 @@ async function cleanDatabase() {
   console.log('Banco de dados limpo!')
 }
 
-async function createAdminUser() {
-  console.log('Criando usuário administrador...')
+async function createDefaultUsers() {
+  console.log('Criando usuários padrão...')
 
   const hashedPassword = await bcrypt.hash('123', 10)
 
@@ -155,10 +155,14 @@ async function createAdminUser() {
     VALUES (?, ?, 'admin', 'Administrador do sistema PedBook', 'default-user')
   `, ['kayky', hashedPassword])
 
-  console.log('   Usuário administrador criado com sucesso!')
-  console.log('   Usuário: kayky')
-  console.log('   Senha: 123')
-  console.log('   Role: admin')
+  await executeQuery(`
+    INSERT INTO users (username, password, role, description, profile_image) 
+    VALUES (?, ?, 'user', 'Usuário de teste do sistema PedBook', 'default-user')
+  `, ['kaue', hashedPassword])
+
+  console.log('   Usuários criados com sucesso!')
+  console.log('   Admin: kayky/123')
+  console.log('   User: kaue/123')
 }
 
 async function createAuthorsAndBooks() {

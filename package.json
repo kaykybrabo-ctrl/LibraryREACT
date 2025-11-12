@@ -6,11 +6,19 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npm run react-dev\" \"npm run server\"",
     "server": "ts-node src/server.ts",
-    "build": "tsc",
+    "build": "npm run react-build && npm run server-build",
+    "server-build": "tsc --build tsconfig.backend.json",
     "react-dev": "vite",
-    "react-build": "tsc -p tsconfig.react.json && vite build",
+    "react-build": "vite build",
     "preview": "vite preview",
-    "seed": "ts-node src/scripts/seed.ts"
+    "seed": "ts-node src/scripts/seed.ts",
+    "start": "node dist/server.js",
+    "docker:build": "./docker-rebuild.sh",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "clean": "rm -rf node_modules package-lock.json dist FRONTEND/react-dist",
+    "fresh-install": "npm run clean && npm install"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

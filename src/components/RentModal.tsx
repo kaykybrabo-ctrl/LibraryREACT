@@ -13,7 +13,7 @@ interface Book {
 interface RentModalProps {
   isOpen: boolean
   onClose: () => void
-  book: Book | null
+  book?: Book | null
   onConfirm: (returnDate: string) => void
   loading?: boolean
 }
@@ -28,7 +28,7 @@ const RentModal: React.FC<RentModalProps> = ({
   const [returnDate, setReturnDate] = useState('')
   const [error, setError] = useState('')
 
-  if (!isOpen || !book) return null
+  if (!isOpen) return null
 
   const today = new Date()
   const tomorrow = new Date(today)
@@ -73,23 +73,25 @@ const RentModal: React.FC<RentModalProps> = ({
         </div>
 
         <div className="rent-modal-body">
-          <div className="rent-book-info">
-            <img
-              src={getImageUrl(book.photo, 'book')}
-              alt={book.title}
-              className="rent-book-image"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
-              }}
-            />
-            <div className="rent-book-details">
-              <h3>{book.title}</h3>
-              <p><strong>Autor:</strong> {book.author_name || 'Desconhecido'}</p>
-              {book.description && (
-                <p className="rent-book-description">{book.description}</p>
-              )}
+          {book && (
+            <div className="rent-book-info">
+              <img
+                src={getImageUrl(book.photo, 'book')}
+                alt={book.title}
+                className="rent-book-image"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
+                }}
+              />
+              <div className="rent-book-details">
+                <h3>{book.title}</h3>
+                <p><strong>Autor:</strong> {book.author_name || 'Desconhecido'}</p>
+                {book.description && (
+                  <p className="rent-book-description">{book.description}</p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="rent-date-section">
             <div className="rent-date-info">

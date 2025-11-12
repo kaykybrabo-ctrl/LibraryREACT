@@ -4,16 +4,19 @@ import axios from 'axios'
 import api from '../api'
 import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
+import { useAuthModal } from '../contexts/AuthModalContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Book, Author } from '../types'
 import EditModal from './EditModal'
+import RentModal from './RentModal'
 import './Cards.css'
 
 const Books: React.FC = () => {
   const { isAdmin, user, isAuthenticated } = useAuth()
+  const { showLoginModal } = useAuthModal()
   const [books, setBooks] = useState<Book[]>([])
   const [authors, setAuthors] = useState<Author[]>([])
-  const [rentedBooks, setRentedBooks] = useState<number[]>([])
+  const [rentedBooks, setRentedBooks] = useState<{book_id: number, return_date: string}[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -27,16 +30,22 @@ const Books: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
   const [editLoading, setEditLoading] = useState(false)
+  const [showRentModal, setShowRentModal] = useState(false)
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
+  const [rentLoading, setRentLoading] = useState(false)
   const limit = 6
   const navigate = useNavigate()
 
   useEffect(() => {
     fetchAuthors()
     fetchBooks()
+  }, [currentPage, searchQuery])
+
+  useEffect(() => {
     if (!isAdmin && user?.username) {
       fetchRentedBooks()
     }
-  }, [currentPage, searchQuery, user])
+  }, [user, isAdmin])
 
   const fetchBooks = async () => {
     try {
@@ -69,12 +78,16 @@ const Books: React.FC = () => {
     if (!user?.username) return
     
     try {
-      const response = await axios.get(`/api/loans?username=${user.username}`, {
-        withCredentials: true
-      })
-      const rentedBookIds = response.data.map((loan: any) => loan.book_id)
-      setRentedBooks(rentedBookIds)
+      const loansResponse = await api.get('/my-loans')
+      const rentedData = loansResponse.data
+        .filter((loan: any) => loan.status === 'active')
+        .map((loan: any) => ({
+          book_id: loan.book_id,
+          return_date: loan.return_date
+        }))
+      setRentedBooks(rentedData)
     } catch (err) {
+      console.error('Erro ao buscar livros alugados:', err)
     }
   }
 
@@ -115,7 +128,7 @@ const Books: React.FC = () => {
       
       setNewBook({ title: '', author_id: '', author_name: '' })
       setUseNewAuthor(false)
-      fetchBooks()
+      await fetchBooks()
     } catch (err) {
       setError('Falha ao criar livro')
     }
@@ -195,18 +208,29 @@ const Books: React.FC = () => {
     }
   }
 
-  const handleRentBook = async (bookId: number) => {
+  const handleRentBook = (bookId: number) => {
     if (!isAuthenticated) {
-      setShowLoginMessage(true)
-      setTimeout(() => setShowLoginMessage(false), 4000)
+      showLoginModal('Para alugar livros, você precisa estar logado no sistema.')
       return
     }
+    setSelectedBookId(bookId)
+    setShowRentModal(true)
+  }
+
+  const handleConfirmRent = async (returnDate: string) => {
+    if (!selectedBookId) return
+    setRentLoading(true)
     
     try {
-      await api.post(`/rent/${bookId}`)
+      await api.post(`/rent/${selectedBookId}`, {
+        return_date: returnDate
+      })
+      setShowRentModal(false)
       alert('Livro alugado com sucesso!')
       setError('')
-      setRentedBooks(prev => [...prev, bookId])
+      
+      await fetchRentedBooks()
+      setSelectedBookId(null)
     } catch (err: any) {
       if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
         return;
@@ -214,6 +238,8 @@ const Books: React.FC = () => {
       const errorMsg = err.response?.data?.error || 'Falha ao alugar livro.'
       setError(errorMsg)
       alert(`Erro: ${errorMsg}`)
+    } finally {
+      setRentLoading(false)
     }
   }
 
@@ -233,7 +259,7 @@ const Books: React.FC = () => {
         })
         alert('Livro devolvido com sucesso!')
         setError('')
-        setRentedBooks(prev => prev.filter(id => id !== bookId))
+        await fetchRentedBooks()
       }
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao devolver livro.'
@@ -388,7 +414,8 @@ const Books: React.FC = () => {
           )}
           <div className="cards-grid">
             {books.map(book => {
-              const isRented = rentedBooks.includes(book.book_id)
+              const rentedInfo = rentedBooks.find(r => r.book_id === book.book_id)
+              const isRented = !!rentedInfo
               return (
               <div key={book.book_id} className={`card book-card ${editingBook === book.book_id ? 'editing' : ''} ${isRented ? 'rented' : ''}`}>
                 <div className="card-image-container">
@@ -401,6 +428,22 @@ const Books: React.FC = () => {
                       (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
                     }}
                   />
+                  {isRented && rentedInfo && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      backgroundColor: '#ffc107',
+                      color: '#000',
+                      padding: '5px 10px',
+                      borderRadius: '5px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                    }}>
+                      📅 Devolução: {new Date(rentedInfo.return_date).toLocaleDateString('pt-BR')}
+                    </div>
+                  )}
                 </div>
 
                 <div className="card-body">
@@ -483,15 +526,46 @@ const Books: React.FC = () => {
                           👁️ Ver
                         </button>
                         {!isAdmin && (
-                          isRented ? (
-                            <button className="btn-warning" onClick={() => handleReturnBook(book.book_id)}>
-                              ↩️ Devolver
+                          <>
+                            {isRented ? (
+                              <button className="btn-warning" onClick={(e) => {
+                                e.stopPropagation()
+                                if (!isAuthenticated) {
+                                  showLoginModal('Para devolver livros, você precisa estar logado no sistema.')
+                                  return
+                                }
+                                handleReturnBook(book.book_id)
+                              }}>
+                                ↩️ Devolver
+                              </button>
+                            ) : (
+                              <button className="btn-success" onClick={(e) => {
+                                e.stopPropagation()
+                                if (!isAuthenticated) {
+                                  showLoginModal('Para alugar livros, você precisa estar logado no sistema.')
+                                  return
+                                }
+                                handleRentBook(book.book_id)
+                              }}>
+                                📚 Alugar
+                              </button>
+                            )}
+                            <button className="btn-secondary" onClick={async (e) => {
+                              e.stopPropagation()
+                              if (!isAuthenticated) {
+                                showLoginModal('Para favoritar livros, você precisa estar logado no sistema.')
+                                return
+                              }
+                              try {
+                                await api.post(`/favorite/${book.book_id}`)
+                                alert('Livro adicionado aos favoritos!')
+                              } catch (err) {
+                                console.error('Erro ao favoritar:', err)
+                              }
+                            }}>
+                              ⭐ Favoritar
                             </button>
-                          ) : (
-                            <button className="btn-success" onClick={() => handleRentBook(book.book_id)}>
-                              📚 Alugar
-                            </button>
-                          )
+                          </>
                         )}
                         {isAdmin && (
                           <>
@@ -540,6 +614,16 @@ const Books: React.FC = () => {
         initialData={selectedBook}
         authors={authors}
         loading={editLoading}
+      />
+
+      <RentModal
+        isOpen={showRentModal}
+        onClose={() => {
+          setShowRentModal(false)
+          setSelectedBookId(null)
+        }}
+        onConfirm={handleConfirmRent}
+        loading={rentLoading}
       />
     </Layout>
   )

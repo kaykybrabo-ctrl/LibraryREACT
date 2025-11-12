@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - /usr/src/app/node_modules
+      - ./FRONTEND/uploads:/usr/src/app/FRONTEND/uploads
     ports:
       - "8080:8080"
     depends_on:
@@ -13,6 +15,13 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=12345678
+      - DB_NAME=library1
 
   db:
     image: mysql:8.0

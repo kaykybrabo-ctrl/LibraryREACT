@@ -818,10 +818,10 @@
 .search-section h2 {
   margin-top: 30px;
   margin-bottom: 20px;
-  margin-left: 15px;
+  margin-left: 0;
   color: #162c74;
   font-size: 1.8em;
-  padding-left: 10px;
+  padding-left: 0;
 }
 
 @media (max-width: 768px) {
@@ -849,6 +849,6 @@
   
   .book-list h2,
   .search-section h2 {
-    padding-left: 5px;
+    padding-left: 0;
   }
 }

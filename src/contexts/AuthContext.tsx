@@ -60,7 +60,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       return true
     } catch (error: any) {
-      console.log('Login error:', error.response?.status, error.response?.data)
       return false
     }
   }

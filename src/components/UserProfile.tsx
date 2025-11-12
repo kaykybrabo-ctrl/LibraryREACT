@@ -45,9 +45,14 @@ const UserProfile: React.FC = () => {
     if (targetUsername) {
       fetchProfile()
       fetchLoans()
-      fetchFavoriteBook()
     }
   }, [targetUsername])
+
+  useEffect(() => {
+    if (profile && (!profile.role || profile.role !== 'admin')) {
+      fetchFavoriteBook()
+    }
+  }, [profile])
 
   const fetchProfile = async () => {
     try {
@@ -286,37 +291,39 @@ const UserProfile: React.FC = () => {
               </div>
             </div>
 
-            {/* Seção do Livro Favorito */}
-            <div className="favorite-book-section">
-              <h3>Livro Favorito</h3>
-              {!favoriteBook ? (
-                <p>{isOwnProfile ? 'Você ainda não definiu um livro favorito.' : `${profile?.username || targetUsername} ainda não definiu um livro favorito.`}</p>
-              ) : (
-                <div className="favorite-book-card">
-                  <img
-                    src={getImageUrl(favoriteBook.photo, 'book')}
-                    alt={favoriteBook.title}
-                    className="favorite-book-image"
-                    onClick={() => navigate(`/book/${favoriteBook.book_id}`)}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
-                    }}
-                  />
-                  <div className="favorite-book-info">
-                    <h4 
-                      className="favorite-book-title"
+            {/* Seção do Livro Favorito - Apenas para usuários comuns */}
+            {!profile?.role || profile.role !== 'admin' ? (
+              <div className="favorite-book-section">
+                <h3>Livro Favorito</h3>
+                {!favoriteBook ? (
+                  <p>{isOwnProfile ? 'Você ainda não definiu um livro favorito.' : `${profile?.username || targetUsername} ainda não definiu um livro favorito.`}</p>
+                ) : (
+                  <div className="favorite-book-card">
+                    <img
+                      src={getImageUrl(favoriteBook.photo, 'book')}
+                      alt={favoriteBook.title}
+                      className="favorite-book-image"
                       onClick={() => navigate(`/book/${favoriteBook.book_id}`)}
-                    >
-                      {favoriteBook.title}
-                    </h4>
-                    <p><strong>Autor:</strong> {favoriteBook.author_name || 'Desconhecido'}</p>
-                    {favoriteBook.description && (
-                      <p className="favorite-book-description">{favoriteBook.description}</p>
-                    )}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getFallbackImageUrl('book')
+                      }}
+                    />
+                    <div className="favorite-book-info">
+                      <h4 
+                        className="favorite-book-title"
+                        onClick={() => navigate(`/book/${favoriteBook.book_id}`)}
+                      >
+                        {favoriteBook.title}
+                      </h4>
+                      <p><strong>Autor:</strong> {favoriteBook.author_name || 'Desconhecido'}</p>
+                      {favoriteBook.description && (
+                        <p className="favorite-book-description">{favoriteBook.description}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : null}
 
             {canEdit && (
               <div className="profile-actions">
@@ -346,6 +353,9 @@ const UserProfile: React.FC = () => {
                     <div>
                       <h4>{loan.title}</h4>
                       <p><strong>Data do Empréstimo:</strong> {new Date(loan.loan_date).toLocaleDateString('pt-BR')}</p>
+                      {loan.return_date && (
+                        <p><strong>📅 Devolução:</strong> {new Date(loan.return_date).toLocaleDateString('pt-BR')}</p>
+                      )}
                       {loan.description && <p>{loan.description}</p>}
                     </div>
                     <div>

@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { executeQuery } from './DB/connection';
 import { updateProfile } from './interface/updateProfile';
 import { profileStorage, bookStorage } from './config/cloudinary';
@@ -62,6 +63,7 @@ async function readBooks(req: Request, res: Response) {
 
 const app = express();
 const PORT = Number(process.env.PORT) || 8082;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
 
 const upload = multer({ storage: profileStorage });
 const uploadBook = multer({ storage: bookStorage });
@@ -301,32 +303,19 @@ app.get('/legacy', (_req, res) => res.sendFile(path.join(__dirname, '../FRONTEND
 app.get('/legacy/index.html', (_req, res) => res.sendFile(path.join(__dirname, '../FRONTEND/index.html')));
 app.get('/legacy/user.html', (_req, res) => res.sendFile(path.join(__dirname, '../FRONTEND/interface/user.html')));
 
+
 const requireAdmin = async (req: Request, res: Response, next: any) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'Authorization token required' });
-        }
-
-        const token = authHeader.substring(7);
-        const decoded = atob(token);
-        const username = decoded.split(':')[0];
-
-        const results: any = await executeQuery('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
-        if (!results.length) {
-            return res.status(401).json({ error: 'Invalid token' });
-        }
-
-        const user = results[0];
-        if (user.role !== 'admin') {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        (req as any).user = user;
-        next();
-    } catch (error) {
-        return res.status(401).json({ error: 'Invalid token' });
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser) {
+        return res.status(401).json({ error: 'Não autenticado' });
     }
+    
+    if (sessionUser.role !== 'admin') {
+        return res.status(403).json({ error: 'Acesso de administrador necessário' });
+    }
+    
+    (req as any).user = sessionUser;
+    next();
 };
 
 app.get('/books/count', countBooks);
@@ -460,12 +449,15 @@ const rentHandler = async (req: Request, res: Response) => {
     
     try {
         const userId = sessionUser.id;
-        const alreadyLoaned: any = await executeQuery('SELECT * FROM loans WHERE user_id = ? AND book_id = ?', [userId, bookId]);
+        const alreadyLoaned: any = await executeQuery('SELECT * FROM loans WHERE user_id = ? AND book_id = ? AND status = "active"', [userId, bookId]);
         if (alreadyLoaned.length) return res.status(409).json({ error: 'Livro já alugado por você' });
         
-        await executeQuery('INSERT INTO loans (user_id, book_id, loan_date) VALUES (?, ?, NOW())', [userId, bookId]);
+        const returnDate = req.body.return_date || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        await executeQuery('INSERT INTO loans (user_id, book_id, loan_date, return_date, status) VALUES (?, ?, NOW(), ?, "active")', [userId, bookId, returnDate]);
         res.status(201).json({ message: 'Livro alugado com sucesso' });
     } catch (error) {
+        console.error('Erro ao alugar livro:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -483,9 +475,10 @@ const favoriteHandler = async (req: Request, res: Response) => {
     if (isNaN(bookId)) return res.status(400).json({ error: 'ID do livro inválido' });
     
     try {
-        await executeQuery('UPDATE users SET favorite_book_id = ? WHERE username = ?', [bookId, sessionUser.username]);
+        await executeQuery('UPDATE users SET favorite_book_id = ? WHERE id = ?', [bookId, sessionUser.id]);
         res.status(200).json({ message: 'Livro adicionado aos favoritos' });
     } catch (error) {
+        console.error('Erro ao favoritar livro:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -522,11 +515,11 @@ const loansHandler = async (req: Request, res: Response) => {
         const userResult: any = await executeQuery('SELECT id FROM users WHERE username = ?', [username]);
         if (!userResult.length) return res.status(404).end();
         const loans = await executeQuery(`
-            SELECT l.loans_id, l.loan_date,
+            SELECT l.loans_id, l.loan_date, l.return_date, l.status,
                    b.book_id, b.title, b.photo, b.description
             FROM loans l
             JOIN books b ON l.book_id = b.book_id
-            WHERE l.user_id = ?
+            WHERE l.user_id = ? AND l.status = 'active'
             ORDER BY l.loan_date DESC
         `, [userResult[0].id]);
         res.json(loans);
@@ -537,6 +530,31 @@ const loansHandler = async (req: Request, res: Response) => {
 
 app.get('/loans', loansHandler);
 app.get('/api/loans', loansHandler);
+
+const myLoansHandler = async (req: Request, res: Response) => {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser) {
+        return res.json([]);
+    }
+    
+    try {
+        const loans = await executeQuery(`
+            SELECT l.loans_id, l.loan_date, l.return_date, l.status,
+                   b.book_id, b.title, b.photo, b.description
+            FROM loans l
+            JOIN books b ON l.book_id = b.book_id
+            WHERE l.user_id = ? AND l.status = 'active'
+            ORDER BY l.loan_date DESC
+        `, [sessionUser.id]);
+        res.json(loans || []);
+    } catch (err) {
+        console.error('Erro ao buscar empréstimos:', err);
+        res.status(500).json({ error: 'Erro ao buscar empréstimos' });
+    }
+};
+
+app.get('/my-loans', myLoansHandler);
+app.get('/api/my-loans', myLoansHandler);
 
 const returnHandler = async (req: Request, res: Response) => {
     const loanId = Number(req.params.loanId);

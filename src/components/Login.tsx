@@ -24,7 +24,6 @@ const Login: React.FC = () => {
         setError('Usuário ou senha inválidos. Verifique suas credenciais e tente novamente.')
       }
     } catch (err: any) {
-      console.log('Login component error:', err)
       if (err.response?.status === 401) {
         setError('Usuário ou senha inválidos.')
       } else if (err.response?.status === 500) {

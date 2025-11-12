@@ -30,14 +30,12 @@ console.warn = (...args) => {
 const api = axios.create({
   baseURL: '/api',
   timeout: 10000,
+  withCredentials: true,
 })
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+    config.withCredentials = true
     return config
   },
   (error) => {
@@ -57,8 +55,8 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
       
-      if (url.includes('get-profile') || url.includes('user/me')) {
-        const silentError = new Error('User not authenticated');
+      if (url.includes('/get-profile') || url.includes('/user/me') || url.includes('/auth/me')) {
+        const silentError = new Error('Silent auth check');
         silentError.name = 'SilentAuthError';
         error.config.suppressLog = true;
         return Promise.reject(silentError);
@@ -67,7 +65,6 @@ api.interceptors.response.use(
       let message = 'Para realizar esta ação, você precisa estar logado no sistema.';
       
       if (url.includes('favorite')) {
-        message = 'Para favoritar livros, você precisa estar logado no sistema.';
       } else if (url.includes('rent')) {
         message = 'Para alugar livros, você precisa estar logado no sistema.';
       } else if (url.includes('review')) {
@@ -90,6 +87,8 @@ api.interceptors.response.use(
   }
 )
 
+axios.defaults.withCredentials = true
+
 axios.interceptors.response.use(
   (response) => {
     return response
@@ -102,7 +101,9 @@ axios.interceptors.response.use(
         return Promise.reject(error);
       }
       
-      if (!error.config?.url?.includes('get-profile') && !error.config?.url?.includes('user/me')) {
+      if (!error.config?.url?.includes('get-profile') && 
+          !error.config?.url?.includes('user/me') && 
+          !error.config?.url?.includes('auth/me')) {
         if (showLoginModalGlobal) {
           showLoginModalGlobal('Para realizar esta ação, você precisa estar logado no sistema.');
         }

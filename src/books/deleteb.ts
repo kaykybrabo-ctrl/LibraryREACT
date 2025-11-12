@@ -32,7 +32,7 @@ export async function deleteb(req: Request, res: Response) {
             const deleteImageResult = await safeDeleteImage(imagePublicId);
             
             if (!deleteImageResult.success) {
-                console.log('Aviso ao deletar imagem:', deleteImageResult.message);
+                console.warn('Aviso ao deletar imagem:', deleteImageResult.message);
             }
         }
 

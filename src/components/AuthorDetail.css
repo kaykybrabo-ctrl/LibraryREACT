@@ -82,3 +82,135 @@
   border-radius: 4px;
   width: 100%;
 }
+
+.unified-author-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-top: 20px;
+}
+
+.author-biography-section {
+  margin: 20px 0;
+}
+
+.author-biography-section h3 {
+  color: #162c74;
+  margin-bottom: 15px;
+  font-size: 1.4em;
+}
+
+.author-books-section h3 {
+  color: #162c74;
+  margin-bottom: 20px;
+  font-size: 1.4em;
+}
+
+.author-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.author-book-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.author-book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.author-book-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.author-book-image:hover {
+  transform: scale(1.02);
+}
+
+.author-book-info {
+  text-align: left;
+}
+
+.author-book-title {
+  color: #162c74;
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.author-book-title:hover {
+  color: #0b5cab;
+  text-decoration: underline;
+}
+
+.author-book-description {
+  color: #6b7280;
+  font-size: 0.95em;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.author-actions {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.btn-primary {
+  background: #162c74;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #1a3080;
+}
+
+.author-book-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.author-book-actions .btn-secondary {
+  background: #6b7280;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.author-book-actions .btn-secondary:hover {
+  background: #4b5563;
+}
+
+.author-book-actions .btn-primary {
+  padding: 8px 16px;
+  font-size: 0.9em;
+}
