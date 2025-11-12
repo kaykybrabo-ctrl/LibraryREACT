@@ -18,8 +18,6 @@ const BookDetail: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 0, comment: '' })
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -118,26 +116,6 @@ const BookDetail: React.FC = () => {
     }
   }
 
-  const handleImageUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!imageFile || !id) return
-
-    setUploading(true)
-    const formData = new FormData()
-    formData.append('book_image', imageFile)
-
-    try {
-      await axios.post(`/api/books/${id}/update`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      fetchBook()
-      setImageFile(null)
-    } catch (err) {
-      setError('Falha ao enviar imagem')
-    } finally {
-      setUploading(false)
-    }
-  }
 
   const handleRentBook = () => {
     if (!user) {
@@ -342,35 +320,6 @@ const BookDetail: React.FC = () => {
             />
           </div>
 
-          {isAdmin && user && (
-            <div className="image-upload" style={{ 
-              padding: '20px', 
-              backgroundColor: '#f8f9fa', 
-              borderRadius: '8px',
-              border: '1px solid #dee2e6',
-              marginBottom: '20px'
-            }}>
-              <h3 style={{ marginBottom: '15px' }}>Atualizar Imagem do Livro</h3>
-              <form onSubmit={handleImageUpload}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                  style={{ marginBottom: '10px' }}
-                />
-                <button type="submit" disabled={!imageFile || uploading} style={{
-                  padding: '8px 16px',
-                  backgroundColor: (!imageFile || uploading) ? '#6c757d' : '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: (!imageFile || uploading) ? 'not-allowed' : 'pointer'
-                }}>
-                  {uploading ? 'Enviando...' : 'Enviar Imagem'}
-                </button>
-              </form>
-            </div>
-          )}
         </div>
         {isRented && returnDate && (
           <div style={{

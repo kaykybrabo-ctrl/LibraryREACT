@@ -19,9 +19,6 @@ const AuthorDetail: React.FC = () => {
   const [editingDescription, setEditingDescription] = useState(false)
   const [descriptionText, setDescriptionText] = useState('')
   const [updating, setUpdating] = useState(false)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [imageKey, setImageKey] = useState(0)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
   const [showBookEditModal, setShowBookEditModal] = useState(false)
@@ -108,28 +105,6 @@ const AuthorDetail: React.FC = () => {
     setEditingDescription(false)
   }
 
-  const handleImageUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!imageFile || !id) return
-
-    const formData = new FormData()
-    formData.append('author_image', imageFile)
-
-    setUploading(true)
-    try {
-      const response = await axios.post(`/api/authors/${id}/update`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      
-      setAuthor(prev => prev ? { ...prev, photo: response.data.photo } : null)
-      setImageKey(prev => prev + 1)
-      setImageFile(null)
-      alert('Imagem do autor atualizada com sucesso!')
-    } catch (err) {
-      alert('Erro ao fazer upload da imagem')
-      setUploading(false)
-    }
-  }
 
   const handleEditAuthor = async (data: any) => {
     setEditLoading(true)
@@ -228,8 +203,7 @@ const AuthorDetail: React.FC = () => {
 
         <div className="author-image-container">
           <img
-            key={imageKey}
-            src={getImageUrl(author.photo, 'author', imageKey > 0)}
+            src={getImageUrl(author.photo, 'author')}
             alt={author.name_author}
             className="author-image-enhanced"
             onError={(e) => {
@@ -252,21 +226,6 @@ const AuthorDetail: React.FC = () => {
           </div>
         </div>
 
-        {isAdmin && (
-          <div className="image-upload">
-            <h3>Atualizar Imagem do Autor</h3>
-            <form onSubmit={handleImageUpload}>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              />
-              <button type="submit" disabled={!imageFile || uploading}>
-                {uploading ? 'Enviando...' : 'Enviar Imagem'}
-              </button>
-            </form>
-          </div>
-        )}
       </section>
 
       <section className="unified-author-container">
