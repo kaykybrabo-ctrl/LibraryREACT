@@ -1,19 +1,13 @@
 #!/bin/bash
 
-echo "🐳 Reconstruindo PedBook com Docker..."
-
-echo "⏹️  Parando containers existentes..."
+echo "Parando containers..."
 docker compose down
 
-echo "🗑️  Removendo imagens antigas..."
+echo "Limpando cache e volumes..."
 docker compose down --rmi all --volumes --remove-orphans
 
-echo "🔨 Reconstruindo e iniciando containers..."
+echo "Reconstruindo aplicação..."
 docker compose up --build -d
 
-echo "📋 Mostrando logs dos containers..."
-docker compose logs -f
-
-echo "✅ Deploy concluído!"
-echo "🌐 Aplicação disponível em: http://localhost:8080"
-echo "🗄️  phpMyAdmin disponível em: http://localhost:8081"
+echo "Aplicação rodando em: http://localhost:8080"
+echo "phpMyAdmin disponível em: http://localhost:8081"

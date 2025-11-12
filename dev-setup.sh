@@ -1,48 +1,46 @@
 #!/bin/bash
 
-echo "🚀 Configurando ambiente de desenvolvimento PedBook..."
+echo "Configurando ambiente de desenvolvimento..."
 
 if ! command -v node &> /dev/null; then
-    echo "❌ Node.js não encontrado. Por favor, instale Node.js 18+ primeiro."
+    echo "ERRO: Node.js não encontrado. Instale Node.js 18+ primeiro."
     exit 1
 fi
 
 NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
 if [ "$NODE_VERSION" -lt 18 ]; then
-    echo "❌ Node.js versão $NODE_VERSION encontrada. Requer versão 18 ou superior."
+    echo "ERRO: Node.js versão $NODE_VERSION encontrada. Requer versão 18+."
     exit 1
 fi
 
-echo "✅ Node.js $(node -v) encontrado"
+echo "Node.js $(node -v) encontrado"
 
 if [ -d "node_modules" ]; then
-    echo "🗑️  Removendo node_modules existente..."
+    echo "Removendo node_modules..."
     rm -rf node_modules
 fi
 
 if [ -f "package-lock.json" ]; then
-    echo "🗑️  Removendo package-lock.json..."
+    echo "Removendo package-lock.json..."
     rm package-lock.json
 fi
 
-echo "🧹 Limpando cache do npm..."
+echo "Limpando cache npm..."
 npm cache clean --force
 
-echo "📦 Instalando dependências..."
+echo "Instalando dependências..."
 npm install
 
 if [ ! -f ".env" ]; then
-    echo "📝 Criando arquivo .env..."
+    echo "Criando arquivo .env..."
     cp .envexemple .env
 fi
 
-echo "🔨 Fazendo build do projeto..."
+echo "Fazendo build..."
 npm run build
 
-echo "✅ Configuração concluída!"
+echo "Configuração concluída!"
 echo ""
-echo "Para rodar em desenvolvimento:"
-echo "  npm run dev"
-echo ""
-echo "Para rodar com Docker:"
-echo "  ./docker-rebuild.sh"
+echo "Para rodar:"
+echo "  npm run dev (desenvolvimento)"
+echo "  ./docker-rebuild.sh (Docker)"
