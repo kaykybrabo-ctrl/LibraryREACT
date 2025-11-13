@@ -5,8 +5,11 @@ import Layout from './Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../contexts/ProfileContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
+import { formatDateWithoutTimezone } from '../utils/dateUtils'
 import { User, Loan } from '../types'
 import EditModal from './EditModal'
+import ConfirmModal from './ConfirmModal'
+import { useConfirm } from '../hooks/useConfirm'
 import './UserProfile.css'
 
 interface FavoriteBook {
@@ -36,6 +39,7 @@ const UserProfile: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
   const [loanFilter, setLoanFilter] = useState<'all' | 'active' | 'returned' | 'overdue'>('all')
+  const { confirmState, showConfirm, hideConfirm, handleCancel } = useConfirm()
 
   const targetUsername = urlUsername || user?.username
   const isOwnProfile = !urlUsername || urlUsername === user?.username
@@ -239,6 +243,22 @@ const UserProfile: React.FC = () => {
   }
 
   const handleReturnBook = async (loanId: number) => {
+    const loan = loans.find(l => l.loans_id === loanId)
+    const bookTitle = loan?.title || 'este livro'
+    
+    const confirmed = await showConfirm({
+      title: 'Devolver Livro',
+      message: `Tem certeza que deseja devolver "${bookTitle}"?`,
+      confirmText: 'Sim, Devolver',
+      cancelText: 'Cancelar',
+      type: 'warning'
+    })
+
+    if (!confirmed) {
+      hideConfirm()
+      return
+    }
+
     try {
       await axios.post(`/api/return/${loanId}`, {}, {
         withCredentials: true,
@@ -250,9 +270,11 @@ const UserProfile: React.FC = () => {
       
       alert('Livro devolvido com sucesso!')
       setError('')
+      hideConfirm()
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao devolver livro'
       setError(errorMsg)
+      hideConfirm()
       alert(`Erro: ${errorMsg}`)
     }
   }
@@ -488,9 +510,9 @@ const UserProfile: React.FC = () => {
                         <h4 style={{ margin: 0, color: '#495057' }}>{loan.title}</h4>
                         {getLoanStatusBadge(loan)}
                       </div>
-                      <p><strong>Data do Empréstimo:</strong> {new Date(loan.loan_date).toLocaleDateString('pt-BR')}</p>
+                      <p><strong>Data do Empréstimo:</strong> {formatDateWithoutTimezone(loan.loan_date)}</p>
                       {loan.return_date && (
-                        <p><strong>📅 Devolução:</strong> {new Date(loan.return_date).toLocaleDateString('pt-BR')}</p>
+                        <p><strong>📅 Devolução:</strong> {formatDateWithoutTimezone(loan.return_date)}</p>
                       )}
                       {loan.description && <p style={{ color: '#6c757d', fontStyle: 'italic' }}>{loan.description}</p>}
                     </div>
@@ -546,6 +568,18 @@ const UserProfile: React.FC = () => {
           profile_image: profile?.profile_image
         }}
         loading={editLoading}
+      />
+
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        onClose={handleCancel}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        type={confirmState.type}
+        loading={confirmState.loading}
       />
     </Layout>
   )

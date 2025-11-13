@@ -27,7 +27,6 @@ export async function executeQuery<T = any>(query: string, params: any[] = []): 
         } catch (error: any) {
             retries--;
             if (retries === 0) throw error;
-            console.log(`Tentativa de conexão falhou, tentando novamente... (${retries} tentativas restantes)`);
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
     }

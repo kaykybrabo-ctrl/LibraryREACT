@@ -73,11 +73,19 @@ app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
 }));
+const sessionStore = new session.MemoryStore();
+
 app.use(session({
-    secret: 'your-secret-key',
+    store: sessionStore,
+    secret: 'your-secret-key-' + Date.now(),
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { 
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true
+    },
+    rolling: true
 }));
 
 app.use('/api/uploads', express.static(path.join(__dirname, '../FRONTEND/uploads')));
@@ -104,7 +112,6 @@ const loginHandler = async (req: Request, res: Response) => {
         (req.session as any).user = { id: user.id, username: user.username, role: user.role };
         res.json({ role: user.role, username: user.username, id: user.id });
     } catch (error) {
-        console.error('Erro no login:', error);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 };
@@ -138,7 +145,6 @@ const registerHandler = async (req: Request, res: Response) => {
         await executeQuery('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [username, hashedPassword, 'user']);
         res.status(201).json({ message: 'Usuário criado com sucesso' });
     } catch (error) {
-        console.error('Erro no registro:', error);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 };
@@ -201,7 +207,6 @@ app.post('/api/setup-profile-columns', async (_, res) => {
         
         res.json({ message: 'Configuração das colunas de perfil concluída' });
     } catch (error) {
-        console.error('Error setting up profile columns:', error);
         res.status(500).json({ error: 'Falha ao configurar colunas de perfil' });
     }
 });
@@ -229,7 +234,6 @@ app.get('/api/map-existing-photos', async (_, res) => {
         
         res.json({ message: 'Fotos mapeadas com sucesso', photoMap, filesInDir: files.length });
     } catch (error) {
-        console.error('Error mapping photos:', error);
         res.status(500).json({ error: 'Falha ao mapear fotos' });
     }
 });
@@ -256,7 +260,6 @@ app.get('/api/test-profile', async (req, res) => {
             description: user.description || ''
         });
     } catch (error) {
-        console.error('test-profile error:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 });
@@ -433,7 +436,6 @@ app.get('/api/authors/:id/books', async (req: Request, res: Response) => {
         `, [authorId]);
         res.json(books);
     } catch (error) {
-        console.error('Error fetching author books:', error);
         res.status(500).json({ error: 'Falha ao carregar livros do autor' });
     }
 });
@@ -452,12 +454,26 @@ const rentHandler = async (req: Request, res: Response) => {
         const alreadyLoaned: any = await executeQuery('SELECT * FROM loans WHERE user_id = ? AND book_id = ? AND status = "active"', [userId, bookId]);
         if (alreadyLoaned.length) return res.status(409).json({ error: 'Livro já alugado por você' });
         
-        const returnDate = req.body.return_date || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        let returnDate;
+        if (req.body.return_date) {
+            const dateStr = req.body.return_date;
+            if (dateStr.includes('T')) {
+                returnDate = dateStr.slice(0, 10) + ' 23:59:59';
+            } else {
+                returnDate = dateStr + ' 23:59:59';
+            }
+        } else {
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 14);
+            const year = defaultDate.getFullYear();
+            const month = String(defaultDate.getMonth() + 1).padStart(2, '0');
+            const day = String(defaultDate.getDate()).padStart(2, '0');
+            returnDate = `${year}-${month}-${day} 23:59:59`;
+        }
         
         await executeQuery('INSERT INTO loans (user_id, book_id, loan_date, return_date, status) VALUES (?, ?, NOW(), ?, "active")', [userId, bookId, returnDate]);
         res.status(201).json({ message: 'Livro alugado com sucesso' });
     } catch (error) {
-        console.error('Erro ao alugar livro:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -478,7 +494,6 @@ const favoriteHandler = async (req: Request, res: Response) => {
         await executeQuery('UPDATE users SET favorite_book_id = ? WHERE id = ?', [bookId, sessionUser.id]);
         res.status(200).json({ message: 'Livro adicionado aos favoritos' });
     } catch (error) {
-        console.error('Erro ao favoritar livro:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -548,7 +563,6 @@ const myLoansHandler = async (req: Request, res: Response) => {
         `, [sessionUser.id]);
         res.json(loans || []);
     } catch (err) {
-        console.error('Erro ao buscar empréstimos:', err);
         res.status(500).json({ error: 'Erro ao buscar empréstimos' });
     }
 };
@@ -584,7 +598,6 @@ const returnHandler = async (req: Request, res: Response) => {
         
         res.status(200).json({ message: 'Livro devolvido com sucesso' });
     } catch (error) {
-        console.error('Erro ao devolver livro:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -601,7 +614,6 @@ const getReviewsHandler = async (_req: Request, res: Response) => {
         `);
         res.json(reviews || []);
     } catch (error) {
-        console.error('Error fetching reviews:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -643,7 +655,6 @@ const reviewsHandler = async (req: Request, res: Response) => {
             res.status(201).json({ message: 'Avaliação criada com sucesso' });
         }
     } catch (error) {
-        console.error('Error creating/updating review:', error);
         res.status(500).json({ error: 'Erro no banco de dados' });
     }
 };
@@ -699,7 +710,6 @@ app.get('/api/stats', async (_req: Request, res: Response) => {
             totalUsers: usersResult[0]?.count || 0
         });
     } catch (error) {
-        console.error('Error fetching stats:', error);
         res.status(500).json({ error: 'Falha ao carregar estatísticas' });
     }
 });
@@ -712,7 +722,6 @@ app.get('/api/protected-images', requireAdmin, async (req: Request, res: Respons
             images: protectedImages 
         });
     } catch (error) {
-        console.error('Erro ao listar imagens protegidas:', error);
         res.status(500).json({ error: 'Falha ao listar imagens protegidas' });
     }
 });
@@ -731,7 +740,6 @@ app.get('/api/cloudinary-images', requireAdmin, async (req: Request, res: Respon
             }))
         });
     } catch (error) {
-        console.error('Erro ao listar imagens do Cloudinary:', error);
         res.status(500).json({ error: 'Falha ao listar imagens do Cloudinary' });
     }
 });
@@ -752,7 +760,6 @@ app.post('/api/safe-delete-image', requireAdmin, async (req: Request, res: Respo
             res.status(400).json({ error: result.message });
         }
     } catch (error) {
-        console.error('Erro ao deletar imagem:', error);
         res.status(500).json({ error: 'Falha ao deletar imagem' });
     }
 });
@@ -766,7 +773,6 @@ app.get('/api/image-backup', requireAdmin, async (req: Request, res: Response) =
             generated_at: new Date().toISOString()
         });
     } catch (error) {
-        console.error('Erro ao criar backup de imagens:', error);
         res.status(500).json({ error: 'Falha ao criar backup de imagens' });
     }
 });
@@ -790,7 +796,6 @@ async function startServer() {
       console.log(`Acesse: http://localhost:${PORT}`)
     })
   } catch (error) {
-    console.error('Erro ao iniciar servidor:', error)
     process.exit(1)
   }
 }

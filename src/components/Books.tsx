@@ -9,6 +9,8 @@ import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Book, Author } from '../types'
 import EditModal from './EditModal'
 import RentModal from './RentModal'
+import ConfirmModal from './ConfirmModal'
+import { useConfirm } from '../hooks/useConfirm'
 import './Cards.css'
 
 const Books: React.FC = () => {
@@ -33,6 +35,7 @@ const Books: React.FC = () => {
   const [showRentModal, setShowRentModal] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
   const [rentLoading, setRentLoading] = useState(false)
+  const { confirmState, showConfirm, hideConfirm, handleCancel } = useConfirm()
   const limit = 6
   const navigate = useNavigate()
 
@@ -87,7 +90,6 @@ const Books: React.FC = () => {
         }))
       setRentedBooks(rentedData)
     } catch (err) {
-      console.error('Erro ao buscar livros alugados:', err)
     }
   }
 
@@ -198,13 +200,29 @@ const Books: React.FC = () => {
   }
 
   const handleDeleteBook = async (bookId: number) => {
-    if (!confirm('Tem certeza que deseja excluir este livro?')) return
+    const book = books.find(b => b.book_id === bookId)
+    const bookTitle = book?.title || 'este livro'
+    
+    const confirmed = await showConfirm({
+      title: 'Excluir Livro',
+      message: `Tem certeza que deseja excluir "${bookTitle}"? Esta ação não pode ser desfeita.`,
+      confirmText: 'Sim, Excluir',
+      cancelText: 'Cancelar',
+      type: 'danger'
+    })
+
+    if (!confirmed) {
+      hideConfirm()
+      return
+    }
 
     try {
       await axios.delete(`/api/books/${bookId}`)
       fetchBooks()
+      hideConfirm()
     } catch (err) {
       setError('Falha ao excluir livro')
+      hideConfirm()
     }
   }
 
@@ -219,6 +237,24 @@ const Books: React.FC = () => {
 
   const handleConfirmRent = async (returnDate: string) => {
     if (!selectedBookId) return
+    
+    const book = books.find(b => b.book_id === selectedBookId)
+    const bookTitle = book?.title || 'este livro'
+    const formattedDate = new Date(returnDate).toLocaleDateString('pt-BR')
+    
+    const confirmed = await showConfirm({
+      title: 'Confirmar Empréstimo',
+      message: `Deseja alugar "${bookTitle}" com devolução prevista para ${formattedDate}?`,
+      confirmText: 'Sim, Alugar',
+      cancelText: 'Cancelar',
+      type: 'info'
+    })
+
+    if (!confirmed) {
+      hideConfirm()
+      return
+    }
+
     setRentLoading(true)
     
     try {
@@ -231,8 +267,10 @@ const Books: React.FC = () => {
       
       await fetchRentedBooks()
       setSelectedBookId(null)
+      hideConfirm()
     } catch (err: any) {
       if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
+        hideConfirm()
         return;
       }
       const errorMsg = err.response?.data?.error || 'Falha ao alugar livro.'
@@ -245,6 +283,22 @@ const Books: React.FC = () => {
 
   const handleReturnBook = async (bookId: number) => {
     if (!user?.username) return
+    
+    const book = books.find(b => b.book_id === bookId)
+    const bookTitle = book?.title || 'este livro'
+    
+    const confirmed = await showConfirm({
+      title: 'Devolver Livro',
+      message: `Tem certeza que deseja devolver "${bookTitle}"?`,
+      confirmText: 'Sim, Devolver',
+      cancelText: 'Cancelar',
+      type: 'warning'
+    })
+
+    if (!confirmed) {
+      hideConfirm()
+      return
+    }
     
     try {
       const loansResponse = await axios.get(`/api/loans?username=${user.username}`, {
@@ -260,9 +314,11 @@ const Books: React.FC = () => {
         alert('Livro devolvido com sucesso!')
         setError('')
         await fetchRentedBooks()
+        hideConfirm()
       }
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao devolver livro.'
+      hideConfirm()
       setError(errorMsg)
       alert(`Erro: ${errorMsg}`)
     }
@@ -560,7 +616,6 @@ const Books: React.FC = () => {
                                 await api.post(`/favorite/${book.book_id}`)
                                 alert('Livro adicionado aos favoritos!')
                               } catch (err) {
-                                console.error('Erro ao favoritar:', err)
                               }
                             }}>
                               ⭐ Favoritar
@@ -624,6 +679,18 @@ const Books: React.FC = () => {
         }}
         onConfirm={handleConfirmRent}
         loading={rentLoading}
+      />
+
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        onClose={handleCancel}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        type={confirmState.type}
+        loading={confirmState.loading}
       />
     </Layout>
   )

@@ -82,20 +82,19 @@ const Authors: React.FC = () => {
   const handleSaveAuthor = async (data: any) => {
     setEditLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('name_author', data.name_author)
-      
-      if (data.description) {
-        formData.append('description', data.description)
-      }
-      
-      if (data.imageFile) {
-        formData.append('photo', data.imageFile)
-      }
-
-      await axios.put(`/api/authors/${selectedAuthor?.author_id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      await axios.put(`/api/authors/${selectedAuthor?.author_id}`, {
+        name_author: data.name_author,
+        description: data.description
       })
+
+      if (data.imageFile) {
+        const formData = new FormData()
+        formData.append('author_image', data.imageFile)
+        
+        await axios.post(`/api/authors/${selectedAuthor?.author_id}/update`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+      }
       
       fetchAuthors()
       setShowEditModal(false)

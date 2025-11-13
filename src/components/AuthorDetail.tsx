@@ -10,15 +10,11 @@ import './AuthorDetail.css'
 
 const AuthorDetail: React.FC = () => {
   const { isAdmin } = useAuth()
-  const params = useParams<{ id: string }>()
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const id = params.id
   const [author, setAuthor] = useState<Author | null>(null)
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingDescription, setEditingDescription] = useState(false)
-  const [descriptionText, setDescriptionText] = useState('')
-  const [updating, setUpdating] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
   const [showBookEditModal, setShowBookEditModal] = useState(false)
@@ -27,10 +23,18 @@ const AuthorDetail: React.FC = () => {
   const [authors, setAuthors] = useState<Author[]>([])
 
   useEffect(() => {
-    if (!id || id === 'undefined') {
+    if (!id) {
+      const timeout = setTimeout(() => {
+        navigate('/authors')
+      }, 2000)
+      return () => clearTimeout(timeout)
+    }
+    
+    if (id === 'undefined' || isNaN(Number(id))) {
       navigate('/authors')
       return
     }
+    
     fetchAuthor()
     fetchAuthorBooks()
     fetchAuthors()
@@ -42,21 +46,9 @@ const AuthorDetail: React.FC = () => {
     try {
       const response = await axios.get(`/api/authors/${id}`)
       
-      const biografias = {
-        1: "Guilherme Biondo é um escritor que começou a escrever desde jovem, movido pela curiosidade e paixão por contar histórias. Seus livros falam sobre pessoas, sentimentos e tudo que faz parte do cotidiano, mas com uma perspectiva única e sincera.",
-        2: "Manoel Leite é um autor e observador atento da vida cotidiana. Suas histórias surgem de experiências simples, mas cheias de significado. Com um estilo de escrita direto e humano, Manoel busca tocar o leitor com temas sobre memória, afeto e identidade."
-      }
-      
-      const authorData = {
-        ...response.data,
-        description: biografias[response.data.author_id as keyof typeof biografias] || response.data.description || null
-      }
-      
-      setAuthor(authorData)
-      setDescriptionText(authorData.description || '')
+      setAuthor(response.data)
     } catch (err: any) {
       if (err.response?.status !== 400) {
-        console.error('Failed to fetch author:', err)
       }
     } finally {
       setLoading(false)
@@ -68,7 +60,6 @@ const AuthorDetail: React.FC = () => {
       const response = await axios.get(`/api/authors/${id}/books`)
       setBooks(response.data)
     } catch (err) {
-      console.error('Failed to fetch author books')
     }
   }
 
@@ -77,58 +68,34 @@ const AuthorDetail: React.FC = () => {
       const response = await axios.get('/api/authors')
       setAuthors(response.data)
     } catch (err) {
-      console.error('Failed to fetch authors')
     }
   }
 
-  const handleUpdateBiography = async () => {
-    if (!id) return
-    
-    setUpdating(true)
-    try {
-      await axios.put(`/api/authors/${id}`, {
-        description: descriptionText
-      })
-      
-      setAuthor(prev => prev ? { ...prev, description: descriptionText } : null)
-      setEditingDescription(false)
-      alert('Biografia atualizada com sucesso!')
-    } catch (err) {
-      alert('Erro ao atualizar biografia')
-    } finally {
-      setUpdating(false)
-    }
-  }
-
-  const handleCancelEdit = () => {
-    setDescriptionText(author?.description || '')
-    setEditingDescription(false)
-  }
 
 
   const handleEditAuthor = async (data: any) => {
     setEditLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('name_author', data.name_author)
-      if (data.description) {
-        formData.append('description', data.description)
-      }
-      if (data.imageFile) {
-        formData.append('photo', data.imageFile)
-      }
-
-      await axios.put(`/api/authors/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      await axios.put(`/api/authors/${id}`, {
+        name_author: data.name_author,
+        description: data.description
       })
+
+      if (data.imageFile) {
+        const formData = new FormData()
+        formData.append('author_image', data.imageFile)
+        
+        await axios.post(`/api/authors/${id}/update`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+      }
 
       await fetchAuthor()
       await fetchAuthorBooks()
-      setImageKey(prev => prev + 1)
       alert('Autor atualizado com sucesso!')
-    } catch (err) {
+    } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao atualizar autor'
       alert(`Erro: ${errorMsg}`)
     } finally {
@@ -216,12 +183,7 @@ const AuthorDetail: React.FC = () => {
           <h3>Biografia</h3>
           <div className="biography-text">
             <p>
-              {author?.author_id === 1 ? 
-                "Guilherme Biondo é um escritor que começou a escrever desde jovem, movido pela curiosidade e paixão por contar histórias. Seus livros falam sobre pessoas, sentimentos e tudo que faz parte do cotidiano, mas com uma perspectiva única e sincera." :
-                author?.author_id === 2 ?
-                "Manoel Leite é um autor e observador atento da vida cotidiana. Suas histórias surgem de experiências simples, mas cheias de significado. Com um estilo de escrita direto e humano, Manoel busca tocar o leitor com temas sobre memória, afeto e identidade." :
-                "Nenhuma biografia disponível ainda."
-              }
+              {author?.description || "Nenhuma biografia disponível ainda."}
             </p>
           </div>
         </div>

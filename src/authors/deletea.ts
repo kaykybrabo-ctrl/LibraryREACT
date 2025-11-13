@@ -41,13 +41,11 @@ export async function deletea(req: Request, res: Response) {
             const deleteImageResult = await safeDeleteImage(imagePublicId);
             
             if (!deleteImageResult.success) {
-                console.warn('Aviso ao deletar imagem:', deleteImageResult.message);
             }
         }
 
         res.json({ message: 'Autor deletado com sucesso' });
     } catch (error) {
-        console.error('Erro ao deletar autor:', error);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 }

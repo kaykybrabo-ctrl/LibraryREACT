@@ -57,7 +57,6 @@ export async function update(req: Request, res: Response) {
 
         res.json({ message: 'Livro atualizado com sucesso' });
     } catch (error) {
-        console.error('Erro ao atualizar livro:', error);
         res.status(500).json({ error: 'Falha ao atualizar livro' });
     }
 }

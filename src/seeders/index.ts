@@ -155,14 +155,8 @@ async function createDefaultUsers() {
     VALUES (?, ?, 'admin', 'Administrador do sistema PedBook', 'default-user')
   `, ['kayky', hashedPassword])
 
-  await executeQuery(`
-    INSERT INTO users (username, password, role, description, profile_image) 
-    VALUES (?, ?, 'user', 'Usuário de teste do sistema PedBook', 'default-user')
-  `, ['kaue', hashedPassword])
-
   console.log('   Usuários criados com sucesso!')
   console.log('   Admin: kayky/123')
-  console.log('   User: kaue/123')
 }
 
 async function createAuthorsAndBooks() {

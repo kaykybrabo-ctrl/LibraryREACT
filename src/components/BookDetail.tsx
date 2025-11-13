@@ -90,7 +90,6 @@ const BookDetail: React.FC = () => {
       const response = await axios.get('/api/authors?limit=1000')
       setAuthors(response.data)
     } catch (err) {
-      console.error('Erro ao carregar autores:', err)
     }
   }
 
@@ -226,7 +225,6 @@ const BookDetail: React.FC = () => {
       if (err.name === 'AuthModalError' || err.name === 'SilentAuthError') {
         return
       }
-      console.error('Erro ao favoritar:', err)
       const errorMsg = err.response?.data?.error || 'Falha ao adicionar livro aos favoritos'
       setError(errorMsg)
       alert(`Erro: ${errorMsg}`)

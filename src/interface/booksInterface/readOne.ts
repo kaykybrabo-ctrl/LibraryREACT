@@ -10,6 +10,7 @@ export async function readOneBook(req: Request, res: Response) {
             SELECT 
                 b.book_id, 
                 b.title, 
+                b.author_id,
                 a.name_author AS author_name, 
                 b.description,
                 b.photo,

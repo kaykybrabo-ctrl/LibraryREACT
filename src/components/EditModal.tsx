@@ -111,7 +111,6 @@ const EditModal: React.FC<EditModalProps> = ({
       await onSave(submitData)
       handleClose()
     } catch (error) {
-      console.error('Erro ao salvar:', error)
     }
   }
 

@@ -32,13 +32,11 @@ export async function deleteb(req: Request, res: Response) {
             const deleteImageResult = await safeDeleteImage(imagePublicId);
             
             if (!deleteImageResult.success) {
-                console.warn('Aviso ao deletar imagem:', deleteImageResult.message);
             }
         }
 
         res.json({ message: 'Livro deletado com sucesso' });
     } catch (error) {
-        console.error('Erro ao deletar livro:', error);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 }

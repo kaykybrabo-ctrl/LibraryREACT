@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Loan } from '../types'
+import { formatDateWithoutTimezone } from '../utils/dateUtils'
 import './MyLoans.css'
 
 interface UserLoan extends Loan {
@@ -186,14 +187,14 @@ const MyLoans: React.FC = () => {
                   <div className="date-item">
                     <span className="date-label">Emprestado:</span>
                     <span className="date-value">
-                      {new Date(loan.loan_date).toLocaleDateString()}
+                      {formatDateWithoutTimezone(loan.loan_date)}
                     </span>
                   </div>
                   {loan.due_date && (
                     <div className="date-item">
                       <span className="date-label">Data de Vencimento:</span>
                       <span className={`date-value ${loan.status === 'overdue' ? 'overdue-date' : ''}`}>
-                        {new Date(loan.due_date).toLocaleDateString()}
+                        {formatDateWithoutTimezone(loan.due_date)}
                       </span>
                     </div>
                   )}
@@ -201,7 +202,7 @@ const MyLoans: React.FC = () => {
                     <div className="date-item">
                       <span className="date-label">Devolvido:</span>
                       <span className="date-value">
-                        {new Date(loan.return_date).toLocaleDateString()}
+                        {formatDateWithoutTimezone(loan.return_date)}
                       </span>
                     </div>
                   )}

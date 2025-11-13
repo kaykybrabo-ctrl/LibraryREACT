@@ -50,7 +50,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
       const response = await axios.get(`/api/get-profile?username=${user.username}&t=${Date.now()}`)
       setUserProfile(response.data)
     } catch (err) {
-      console.error('Erro ao carregar perfil:', err)
     }
   }
 

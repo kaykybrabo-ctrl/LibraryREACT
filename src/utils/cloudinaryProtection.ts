@@ -113,7 +113,6 @@ export async function listAllImages(): Promise<any[]> {
     })
     return result.resources
   } catch (error) {
-    console.error('Erro ao listar imagens:', error)
     return []
   }
 }
@@ -126,7 +125,6 @@ export async function createImageBackupList(): Promise<{ [key: string]: string }
       const resource = await cloudinary.api.resource(publicId)
       backupList[publicId] = resource.secure_url
     } catch (error) {
-      console.warn(`Imagem protegida não encontrada: ${publicId}`)
     }
   }
   

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Loan } from '../types'
+import ConfirmModal from './ConfirmModal'
+import { useConfirm } from '../hooks/useConfirm'
 import './Loans.css'
 
 interface ExtendedLoan extends Loan {
@@ -16,6 +18,7 @@ const Loans: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState<'all' | 'active' | 'returned' | 'overdue'>('all')
+  const { confirmState, showConfirm, hideConfirm, handleCancel } = useConfirm()
 
   useEffect(() => {
     fetchLoans()
@@ -38,13 +41,29 @@ const Loans: React.FC = () => {
       setLoans(data)
     } catch (err) {
       setError('Falha ao carregar empréstimos')
-      console.error('Erro ao carregar empréstimos:', err)
     } finally {
       setLoading(false)
     }
   }
 
   const handleReturnBook = async (loanId: number) => {
+    const loan = loans.find(l => l.loans_id === loanId)
+    const bookTitle = loan?.title || 'este livro'
+    const username = loan?.username || 'usuário'
+    
+    const confirmed = await showConfirm({
+      title: 'Marcar como Devolvido',
+      message: `Tem certeza que deseja marcar "${bookTitle}" (emprestado por ${username}) como devolvido?`,
+      confirmText: 'Sim, Marcar como Devolvido',
+      cancelText: 'Cancelar',
+      type: 'warning'
+    })
+
+    if (!confirmed) {
+      hideConfirm()
+      return
+    }
+
     try {
       const response = await fetch(`/api/loans/${loanId}/return`, {
         method: 'PUT',
@@ -59,9 +78,10 @@ const Loans: React.FC = () => {
       }
       
       fetchLoans()
+      hideConfirm()
     } catch (err) {
       setError('Falha ao devolver livro')
-      console.error('Erro ao devolver livro:', err)
+      hideConfirm()
     }
   }
 
@@ -157,14 +177,14 @@ const Loans: React.FC = () => {
                   <div className="date-item">
                     <span className="date-label">Data do Empréstimo:</span>
                     <span className="date-value">
-                      {new Date(loan.loan_date).toLocaleDateString()}
+                      {new Date(loan.loan_date).toLocaleString('pt-BR')}
                     </span>
                   </div>
                   {loan.return_date && (
                     <div className="date-item">
                       <span className="date-label">Data de Devolução:</span>
                       <span className="date-value">
-                        {new Date(loan.return_date).toLocaleDateString()}
+                        {new Date(loan.return_date).toLocaleString('pt-BR')}
                       </span>
                     </div>
                   )}
@@ -192,6 +212,18 @@ const Loans: React.FC = () => {
           ))
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        onClose={handleCancel}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        type={confirmState.type}
+        loading={confirmState.loading}
+      />
     </div>
   )
 }
