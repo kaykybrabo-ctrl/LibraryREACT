@@ -147,8 +147,9 @@ const Authors: React.FC = () => {
       setShowConfirmDelete(false)
       setAuthorToDelete(null)
       fetchAuthors()
-    } catch (err) {
-      setError('Falha ao excluir autor')
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 'Falha ao excluir autor'
+      setError(errorMessage)
       setShowConfirmDelete(false)
       setAuthorToDelete(null)
     } finally {
