@@ -34,6 +34,8 @@ const RentModal: React.FC<RentModalProps> = ({
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
   const minDate = tomorrow.toISOString().split('T')[0]
+  
+  const maxDate = '2030-01-01'
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,14 +48,21 @@ const RentModal: React.FC<RentModalProps> = ({
     const selectedDate = new Date(returnDate)
     const currentDate = new Date()
     currentDate.setHours(0, 0, 0, 0)
+    const maxAllowedDate = new Date('2030-01-01')
 
     if (selectedDate <= currentDate) {
       setError('A data de devolução deve ser no futuro')
       return
     }
 
+    if (selectedDate >= maxAllowedDate) {
+      setError('Data muito distante. Máximo permitido: 01/01/2030')
+      return
+    }
+
     setError('')
-    onConfirm(returnDate)
+    const localDateString = returnDate + 'T12:00:00'
+    onConfirm(localDateString)
   }
 
   const handleClose = () => {
@@ -108,12 +117,27 @@ const RentModal: React.FC<RentModalProps> = ({
                   id="returnDate"
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
+                  onInvalid={(e) => {
+                    const target = e.target as HTMLInputElement
+                    if (target.validity.rangeOverflow) {
+                      target.setCustomValidity('Data muito distante. Máximo: 01/01/2030')
+                    } else if (target.validity.rangeUnderflow) {
+                      target.setCustomValidity('Data deve ser pelo menos amanhã')
+                    } else if (target.validity.valueMissing) {
+                      target.setCustomValidity('Por favor, selecione uma data')
+                    }
+                  }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLInputElement
+                    target.setCustomValidity('')
+                  }}
                   min={minDate}
+                  max={maxDate}
                   required
                   className="rent-date-input"
                 />
                 <small className="rent-date-help">
-                  A data de devolução não pode ser hoje nem no passado
+                  Data deve ser entre amanhã e 01/01/2030
                 </small>
               </div>
 

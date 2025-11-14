@@ -457,6 +457,23 @@ const rentHandler = async (req: Request, res: Response) => {
         let returnDate;
         if (req.body.return_date) {
             const dateStr = req.body.return_date;
+            
+            const selectedDate = new Date(dateStr);
+            const maxDate = new Date('2030-01-01');
+            const minDate = new Date();
+            minDate.setDate(minDate.getDate() + 1); 
+            if (selectedDate >= maxDate) {
+                return res.status(400).json({ 
+                    error: 'Data de devolução muito distante. Máximo permitido: 01/01/2030' 
+                });
+            }
+            
+            if (selectedDate < minDate) {
+                return res.status(400).json({ 
+                    error: 'Data de devolução deve ser pelo menos amanhã' 
+                });
+            }
+            
             if (dateStr.includes('T')) {
                 returnDate = dateStr.slice(0, 10) + ' 23:59:59';
             } else {
@@ -474,7 +491,8 @@ const rentHandler = async (req: Request, res: Response) => {
         await executeQuery('INSERT INTO loans (user_id, book_id, loan_date, return_date, status) VALUES (?, ?, NOW(), ?, "active")', [userId, bookId, returnDate]);
         res.status(201).json({ message: 'Livro alugado com sucesso' });
     } catch (error) {
-        res.status(500).json({ error: 'Erro no banco de dados' });
+        console.error('Rent error:', error);
+        res.status(500).json({ error: 'Erro no banco de dados', details: error instanceof Error ? error.message : 'Erro desconhecido' });
     }
 };
 
