@@ -144,8 +144,7 @@
   }
 }
 
-/* Responsivo */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .confirm-modal-content {
     margin: 20px;
     width: calc(100% - 40px);

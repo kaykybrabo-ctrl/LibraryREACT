@@ -268,7 +268,6 @@
   cursor: not-allowed;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
   .edit-modal-overlay {
     padding: 10px;
