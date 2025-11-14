@@ -1,4 +1,3 @@
-/* Modal de Edição */
 .edit-modal-overlay {
   position: fixed;
   top: 0;
@@ -29,6 +28,7 @@
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -273,41 +273,41 @@
   .edit-modal-overlay {
     padding: 10px;
   }
-  
+
   .edit-modal-content {
     max-width: 100%;
     max-height: 95vh;
   }
-  
+
   .edit-modal-header {
     padding: 15px 20px;
   }
-  
+
   .edit-modal-body {
     padding: 20px;
   }
-  
+
   .edit-image-container {
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
-  
+
   .edit-image-preview {
     width: 100px;
     height: 130px;
   }
-  
+
   .author-selection {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .edit-modal-actions {
     flex-direction: column;
     padding: 15px 20px;
   }
-  
+
   .edit-btn-cancel,
   .edit-btn-save {
     width: 100%;
