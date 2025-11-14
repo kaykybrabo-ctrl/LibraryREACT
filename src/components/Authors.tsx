@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { getImageUrl, getFallbackImageUrl } from '../utils/imageUtils'
 import { Author } from '../types'
 import EditModal from './EditModal'
+import ConfirmModal from './ConfirmModal'
 import './Cards.css'
 
 const Authors: React.FC = () => {
@@ -23,6 +24,9 @@ const Authors: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
   const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [authorToDelete, setAuthorToDelete] = useState<number | null>(null)
   const limit = 5
   const navigate = useNavigate()
 
@@ -129,14 +133,26 @@ const Authors: React.FC = () => {
     setEditData({ name: '' })
   }
 
-  const handleDeleteAuthor = async (authorId: number) => {
-    if (!confirm('Tem certeza que deseja excluir este autor?')) return
+  const handleDeleteAuthor = (authorId: number) => {
+    setAuthorToDelete(authorId)
+    setShowConfirmDelete(true)
+  }
 
+  const confirmDeleteAuthor = async () => {
+    if (!authorToDelete) return
+    
+    setDeleteLoading(true)
     try {
-      await axios.delete(`/api/authors/${authorId}`)
+      await axios.delete(`/api/authors/${authorToDelete}`)
+      setShowConfirmDelete(false)
+      setAuthorToDelete(null)
       fetchAuthors()
     } catch (err) {
       setError('Falha ao excluir autor')
+      setShowConfirmDelete(false)
+      setAuthorToDelete(null)
+    } finally {
+      setDeleteLoading(false)
     }
   }
 
@@ -298,6 +314,21 @@ const Authors: React.FC = () => {
         type="author"
         initialData={selectedAuthor}
         loading={editLoading}
+      />
+
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        onClose={() => {
+          setShowConfirmDelete(false)
+          setAuthorToDelete(null)
+        }}
+        onConfirm={confirmDeleteAuthor}
+        title="Excluir Autor"
+        message="Tem certeza que deseja excluir este autor? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+        loading={deleteLoading}
       />
     </Layout>
   )
