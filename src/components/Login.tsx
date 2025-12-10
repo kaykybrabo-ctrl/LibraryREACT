@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './Login.css'
+import { toast } from 'react-toastify'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
@@ -21,15 +22,23 @@ const Login: React.FC = () => {
       if (success) {
         navigate('/books')
       } else {
-        setError('Usuário ou senha inválidos. Verifique suas credenciais e tente novamente.')
+        const message = 'Usuário ou senha inválidos. Verifique suas credenciais e tente novamente.'
+        setError(message)
+        toast.error(message)
       }
     } catch (err: any) {
       if (err.response?.status === 401) {
-        setError('Usuário ou senha inválidos.')
+        const message = 'Usuário ou senha inválidos.'
+        setError(message)
+        toast.error(message)
       } else if (err.response?.status === 500) {
-        setError('Erro interno do servidor. Tente novamente mais tarde.')
+        const message = 'Erro interno do servidor. Tente novamente mais tarde.'
+        setError(message)
+        toast.error(message)
       } else {
-        setError('Falha no login. Verifique sua conexão e tente novamente.')
+        const message = 'Falha no login. Verifique sua conexão e tente novamente.'
+        setError(message)
+        toast.error(message)
       }
     } finally {
       setLoading(false)

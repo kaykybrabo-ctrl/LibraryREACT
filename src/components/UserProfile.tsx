@@ -11,6 +11,7 @@ import EditModal from './EditModal'
 import ConfirmModal from './ConfirmModal'
 import { useConfirm } from '../hooks/useConfirm'
 import './UserProfile.css'
+import { toast } from 'react-toastify'
 
 interface FavoriteBook {
   book_id: number
@@ -166,7 +167,7 @@ const UserProfile: React.FC = () => {
         await refreshProfile()
       }
       
-      alert('Imagem do perfil atualizada com sucesso!')
+      toast.success('Imagem do perfil atualizada com sucesso!')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Falha ao enviar imagem do perfil')
     } finally {
@@ -204,12 +205,12 @@ const UserProfile: React.FC = () => {
         await refreshProfile()
       }
       
-      alert('Perfil atualizado com sucesso!')
+      toast.success('Perfil atualizado com sucesso!')
       setError('')
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao atualizar perfil'
       setError(errorMsg)
-      alert(`Erro: ${errorMsg}`)
+      toast.error(`Erro: ${errorMsg}`)
     } finally {
       setEditLoading(false)
     }
@@ -234,9 +235,10 @@ const UserProfile: React.FC = () => {
       }))
       setEditingDescription(false)
       setError('')
-      alert('Descrição atualizada com sucesso!')
+      toast.success('Descrição atualizada com sucesso!')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Falha ao atualizar descrição')
+      toast.error(err.response?.data?.error || 'Falha ao atualizar descrição')
     } finally {
       setUploading(false)
     }
@@ -268,14 +270,14 @@ const UserProfile: React.FC = () => {
       })
       await fetchLoans()
       
-      alert('Livro devolvido com sucesso!')
+      toast.success('Livro devolvido com sucesso!')
       setError('')
       hideConfirm()
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao devolver livro'
       setError(errorMsg)
       hideConfirm()
-      alert(`Erro: ${errorMsg}`)
+      toast.error(`Erro: ${errorMsg}`)
     }
   }
 

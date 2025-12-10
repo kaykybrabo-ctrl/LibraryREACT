@@ -17,6 +17,7 @@ import AuthorDetail from './components/AuthorDetail'
 import UserProfile from './components/UserProfile'
 import Loans from './components/Loans'
 import MyLoans from './components/MyLoans'
+import { ToastContainer } from 'react-toastify'
 
 function AppContent() {
   const { showLoginModal, hideLoginModal, isModalOpen, modalMessage } = useAuthModal();
@@ -62,12 +63,14 @@ function AppContent() {
         } />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      
+
       <LoginModal 
         isOpen={isModalOpen} 
         onClose={hideLoginModal} 
         message={modalMessage}
       />
+
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover />
     </>
   );
 }

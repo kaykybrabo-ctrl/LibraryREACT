@@ -12,6 +12,7 @@ import RentModal from './RentModal'
 import ConfirmModal from './ConfirmModal'
 import { useConfirm } from '../hooks/useConfirm'
 import './Cards.css'
+import { toast } from 'react-toastify'
 
 const Books: React.FC = () => {
   const { isAdmin, user, isAuthenticated } = useAuth()
@@ -122,10 +123,10 @@ const Books: React.FC = () => {
       const response = await axios.post('/api/books', payload)
       
       if (response.data.author_created) {
-        alert('Livro criado com sucesso! Novo autor foi criado automaticamente.')
+        toast.success('Livro criado com sucesso! Novo autor foi criado automaticamente.')
         fetchAuthors()
       } else {
-        alert('Livro criado com sucesso!')
+        toast.success('Livro criado com sucesso!')
       }
       
       setNewBook({ title: '', author_id: '', author_name: '' })
@@ -168,12 +169,12 @@ const Books: React.FC = () => {
       fetchBooks()
       setShowEditModal(false)
       setSelectedBook(null)
-      alert('Livro atualizado com sucesso!')
+      toast.success('Livro atualizado com sucesso!')
       setError('')
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao atualizar livro'
       setError(errorMsg)
-      alert(`Erro: ${errorMsg}`)
+      toast.error(`Erro: ${errorMsg}`)
     } finally {
       setEditLoading(false)
     }
@@ -222,6 +223,7 @@ const Books: React.FC = () => {
       hideConfirm()
     } catch (err) {
       setError('Falha ao excluir livro')
+      toast.error('Falha ao excluir livro')
       hideConfirm()
     }
   }
@@ -262,7 +264,7 @@ const Books: React.FC = () => {
         return_date: returnDate
       })
       setShowRentModal(false)
-      alert('Livro alugado com sucesso!')
+      toast.success('Livro alugado com sucesso!')
       setError('')
       
       await fetchRentedBooks()
@@ -275,7 +277,7 @@ const Books: React.FC = () => {
       }
       const errorMsg = err.response?.data?.error || 'Falha ao alugar livro.'
       setError(errorMsg)
-      alert(`Erro: ${errorMsg}`)
+      toast.error(`Erro: ${errorMsg}`)
     } finally {
       setRentLoading(false)
     }
@@ -311,7 +313,7 @@ const Books: React.FC = () => {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         })
-        alert('Livro devolvido com sucesso!')
+        toast.success('Livro devolvido com sucesso!')
         setError('')
         await fetchRentedBooks()
         hideConfirm()
@@ -320,7 +322,7 @@ const Books: React.FC = () => {
       const errorMsg = err.response?.data?.error || 'Falha ao devolver livro.'
       hideConfirm()
       setError(errorMsg)
-      alert(`Erro: ${errorMsg}`)
+      toast.error(`Erro: ${errorMsg}`)
     }
   }
 
@@ -614,7 +616,7 @@ const Books: React.FC = () => {
                               }
                               try {
                                 await api.post(`/favorite/${book.book_id}`)
-                                alert('Livro adicionado aos favoritos!')
+                                toast.success('Livro adicionado aos favoritos!')
                               } catch (err) {
                               }
                             }}>

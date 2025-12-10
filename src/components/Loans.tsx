@@ -4,6 +4,7 @@ import { Loan } from '../types'
 import ConfirmModal from './ConfirmModal'
 import { useConfirm } from '../hooks/useConfirm'
 import './Loans.css'
+import { toast } from 'react-toastify'
 
 interface ExtendedLoan extends Loan {
   user_id: number
@@ -41,6 +42,7 @@ const Loans: React.FC = () => {
       setLoans(data)
     } catch (err) {
       setError('Falha ao carregar empréstimos')
+      toast.error('Falha ao carregar empréstimos')
     } finally {
       setLoading(false)
     }
@@ -79,8 +81,10 @@ const Loans: React.FC = () => {
       
       fetchLoans()
       hideConfirm()
+      toast.success('Empréstimo marcado como devolvido com sucesso!')
     } catch (err) {
       setError('Falha ao devolver livro')
+      toast.error('Falha ao devolver livro')
       hideConfirm()
     }
   }

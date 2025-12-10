@@ -8,6 +8,7 @@ import { Author } from '../types'
 import EditModal from './EditModal'
 import ConfirmModal from './ConfirmModal'
 import './Cards.css'
+import { toast } from 'react-toastify'
 
 const Authors: React.FC = () => {
   const { isAdmin } = useAuth()
@@ -103,12 +104,12 @@ const Authors: React.FC = () => {
       fetchAuthors()
       setShowEditModal(false)
       setSelectedAuthor(null)
-      alert('Autor atualizado com sucesso!')
+      toast.success('Autor atualizado com sucesso!')
       setError('')
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Falha ao atualizar autor'
       setError(errorMsg)
-      alert(`Erro: ${errorMsg}`)
+      toast.error(`Erro: ${errorMsg}`)
     } finally {
       setEditLoading(false)
     }

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './Register.css'
+import { toast } from 'react-toastify'
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('')
@@ -20,11 +21,13 @@ const Register: React.FC = () => {
 
     if (password !== confirmPassword) {
       setError('As senhas não coincidem')
+      toast.error('As senhas não coincidem')
       return
     }
 
     if (password.length < 3) {
       setError('A senha deve ter pelo menos 3 caracteres')
+      toast.error('A senha deve ter pelo menos 3 caracteres')
       return
     }
 
@@ -34,12 +37,15 @@ const Register: React.FC = () => {
       const success = await register(username, password)
       if (success) {
         setSuccess('Cadastro realizado com sucesso! Redirecionando...')
+        toast.success('Cadastro realizado com sucesso! Redirecionando...')
         setTimeout(() => navigate('/books'), 1500)
       } else {
         setError('Falha no cadastro. Nome de usuário pode já existir.')
+        toast.error('Falha no cadastro. Nome de usuário pode já existir.')
       }
     } catch (err) {
       setError('Falha no cadastro. Tente novamente.')
+      toast.error('Falha no cadastro. Tente novamente.')
     } finally {
       setLoading(false)
     }

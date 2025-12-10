@@ -220,6 +220,11 @@
   filter: brightness(0.9);
 }
 
+.book-list,
+.author-list {
+  padding: 0 20px;
+}
+
 
 .book-card.rented::after {
   content: 'ALUGADO';
@@ -821,7 +826,7 @@
   margin-left: 0;
   color: #162c74;
   font-size: 1.8em;
-  padding-left: 0;
+  padding-left: 20px;
 }
 
 @media (max-width: 768px) {

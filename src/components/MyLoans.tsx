@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { Loan } from '../types'
 import { formatDateWithoutTimezone } from '../utils/dateUtils'
 import './MyLoans.css'
+import { toast } from 'react-toastify'
 
 interface UserLoan extends Loan {
   return_date?: string
@@ -42,6 +43,7 @@ const MyLoans: React.FC = () => {
       setLoans(data)
     } catch (err) {
       setError('Falha ao carregar seus empréstimos')
+      toast.error('Falha ao carregar seus empréstimos')
     } finally {
       setLoading(false)
     }
@@ -62,8 +64,10 @@ const MyLoans: React.FC = () => {
       }
       
       fetchMyLoans()
+      toast.success('Empréstimo renovado com sucesso!')
     } catch (err) {
       setError('Falha ao renovar empréstimo')
+      toast.error('Falha ao renovar empréstimo')
     }
   }
 
